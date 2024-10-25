@@ -312,7 +312,7 @@ class Account(Facebook):
     def share(self: Self, page_url: str, group: str, count: int = 5) -> None:
         pass
 
-    def like(self: Self, page_url: str, count: int) -> Union[bool, None]:
+    def like(self: Self, page_url: str, count: int = 50) -> Union[bool, None]:
         """
         Likes a specified number of posts on a given Facebook page.
 
@@ -388,7 +388,7 @@ class Account(Facebook):
                 f"<r>Failed</r> to like posts on {page_url!r}. <i>[Username: <b>{self.username!r}</b>]</i>"
             )
 
-    def comment(self: Self, page_url: str, count: int) -> Union[None, bool]:
+    def comment(self: Self, page_url: str, count: int = 50) -> Union[None, bool]:
         """
         Posts comments on a specified number of posts on a Facebook page.
 
@@ -428,49 +428,42 @@ class Account(Facebook):
         if comments := get_comments():
             facebook_element.send_keys(Keys.ESCAPE)
             try:
-                comment_buttons: List[WebElement] = self.driver.find_elements(
+                comment_textbox_elements: List[WebElement] = self.driver.find_elements(
                     By.XPATH,
-                    "//span[contains(text(), 'Comment')]/ancestor::*[@role='button']",
+                    '//div[@aria-label="Write a comment…"]',
                 )
 
-                for comment_button in comment_buttons:
-                    facebook_element.send_keys(Keys.ESCAPE)
-
+                for comment_textbox in comment_textbox_elements:
                     try:
-                        # Click comment button and enter comment
-                        comment_button.click()
-                        time.sleep(0.5)
-
-                        for i in range(int(count / 100 * 30)):
-                            facebook_element.send_keys(Keys.ESCAPE)
-                            comment_text = random.choice(comments)
-                            facebook_element.send_keys(comment_text)
-                            facebook_element.send_keys(Keys.ENTER)
+                        for i in range(int(count / 100 * 25)):
+                            comment_textbox.send_keys(Keys.ESCAPE)
+                            comment_textbox.send_keys(text := random.choice(comments))
+                            comment_textbox.send_keys(Keys.ENTER)
                             time.sleep(2.5)
 
                             logger.success(
-                                f"<g>Successfully</g> posted comment {i+1}/{count}: '{comment_text}'"
+                                f"<g>Successfully</g> posted comment {i+1}/{count}: <b>'{text!r}'</b>"
                             )
 
                             # Increment comment count in report
                             if Facebook.report[f"{self.username}"]["comment"] > count:
                                 logger.info(
-                                    f"Completed commenting on {count} posts for user '{self.username}'."
+                                    f"<b>Completed</b> commenting on <b>{count}</b> posts for user <b>'{self.username}'</b>."
                                 )
                                 return True
 
                             Facebook.report[f"{self.username}"]["comment"] += 1
 
-                    except Exception as error:
-                        logger.error(f"<r>Failed</r> to post a comment due to: {error}")
+                    except Exception as _:
+                        logger.error("<r>Failed</r> to post a commet.")
 
-            except Exception as error:
+            except Exception as _:
                 logger.error(
-                    f"Failed to locate or interact with comment buttons due to: {error}"
+                    "<r>Failed</r> to locate or interact with comment buttons."
                 )
 
         else:
-            logger.error("No comments available to post.")
+            logger.error("<r>No</r> comments available to post.")
 
     def start(
         self: Self,
@@ -479,7 +472,7 @@ class Account(Facebook):
         username: Union[None, str] = None,
         groups: Union[None, List[str]] = None,
         like_count: int = 50,
-        comment_count: int = 10,
+        comment_count: int = 50,
         share_count: int = 5,
     ):
         if username and username != self.username:
@@ -494,7 +487,8 @@ class Account(Facebook):
             count=like_count,
         )
 
-        self.driver.execute_script("window.scrollTo(0, 0); ")
+        self.driver.refresh()
+        time.sleep(5)
 
         self.infinite_scroll(
             callback=self.comment,
@@ -611,7 +605,7 @@ def start(
     username: Union[None, str] = None,
     groups: Union[None, List[str]] = None,
     like_count: int = 50,
-    comment_count: int = 5,
+    comment_count: int = 50,
     share_count: int = 5,
     *args,
     **kwarg,
@@ -726,7 +720,7 @@ def main(
     username: Union[None, str] = None,
     groups: Union[None, List[str]] = None,
     share_count: int = 5,
-    comment_count: int = 10,
+    comment_count: int = 50,
     like_count: int = 50,
 ) -> None:
     """
