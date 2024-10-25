@@ -63,6 +63,10 @@ jobs:
       - name: Execute facebook.py (Only For Manual Workflow)
         if: ${{ github.event_name == 'workflow_dispatch' }}
         run: |
+          # Start Xvfb
+          Xvfb :99 -ac &
+          export DISPLAY=:99
+
           python facebook.py \
             --headless \
               --disable-gpu \
@@ -70,10 +74,11 @@ jobs:
                   --disable-extensions \
                     --start-maximized \
                       --block-notifications \
-                        main \
-                          --page-url "${{ github.event.inputs.page_url}}" \
-                            --username "${{ github.event.inputs.username }}" \
-                              --groups "${{ github.event.inputs.groups}}" \
-                                --share-count "${{ github.event.inputs.share_count}}" \
-                                  --comment-count "${{ github.event.inputs.share_count}}" \
-                                    --like-count "${{ github.event.inputs.share_count}}"
+                        --no-sandbox \
+                          main \
+                            --page-url "${{ github.event.inputs.page_url}}" \
+                              --username "${{ github.event.inputs.username }}" \
+                                --groups "${{ github.event.inputs.groups}}" \
+                                  --share-count "${{ github.event.inputs.share_count}}" \
+                                    --comment-count "${{ github.event.inputs.share_count}}" \
+                                      --like-count "${{ github.event.inputs.share_count}}"
