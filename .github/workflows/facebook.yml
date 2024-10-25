@@ -19,7 +19,7 @@ on:
 
       comment_count:
         description: "[Optional] The number of comments to write. Default is 10."
-        default: "10"
+        default: "50"
 
       like_count:
         description: "[Optional] The number of posts you want to like on the specified Facebook page. Default is 50."
