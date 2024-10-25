@@ -1,3 +1,4 @@
+import random
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -83,3 +84,12 @@ def send_email(
         logger.error(f"<r><b>ERROR</b></r>: <b><i>{e}</i></b>")
 
     return False
+
+
+def get_comments() -> Union[List[str], None]:
+    comments: Union[List[str], None] = None
+    with open("comments.txt", "rt", encoding="UTF-8") as f:
+        comments = [line.strip() for line in f.readlines()]
+    random.shuffle(comments)
+
+    return comments
