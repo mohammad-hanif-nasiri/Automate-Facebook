@@ -60,6 +60,28 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Execute facebook.py
+        if: startsWith(github.event.schedule, '0 */4')
+        run: |
+          # Start Xvfb
+          Xvfb :99 -ac &
+          export DISPLAY=:99
+
+          python facebook.py \
+            --headless \
+              --disable-gpu \
+                --disable-infobars \
+                  --disable-extensions \
+                    --start-maximized \
+                      --block-notifications \
+                        --no-sandbox \
+                          main \
+                            --page-url "https://www.facebook.com/CityComputerStore" \
+                                --groups "Math" \
+                                  --share-count "150" \
+                                    --comment-count "100" \
+                                      --like-count "100"
+
       - name: Execute facebook.py (Only For Manual Workflow)
         if: ${{ github.event_name == 'workflow_dispatch' }}
         run: |
