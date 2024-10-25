@@ -405,7 +405,10 @@ class Account(Facebook):
         self.driver.get(page_url)
         time.sleep(5)
 
+        facebook_element = self.driver.find_element(By.ID, "facebook")
+
         self.infinite_scroll(
+            element=facebook_element,
             callback=self.like,
             page_url=page_url,
             count=like_count,
