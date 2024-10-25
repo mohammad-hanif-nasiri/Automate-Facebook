@@ -357,10 +357,9 @@ class Account(Facebook):
             like_buttons: List[WebElement] = [
                 button
                 for button in self.driver.find_elements(
-                    By.XPATH, "//div[@aria-label='Like']"
+                    By.XPATH,
+                    "//div[@aria-label='Like']//span[contains(@class, 'x3nfvp2')]//i/ancestor::div[@role='button']",
                 )
-                if button.get_attribute("class")
-                == "x1i10hfl x1qjc9v5 xjbqb8w xjqpnuy xa49m3k xqeqjp1 x2hbi6w x13fuv20 xu3j5b3 x1q0q8m5 x26u7qi x972fbf xcfux6l x1qhh985 xm0m39n x9f619 x1ypdohk xdl72j9 x2lah0s xe8uvvx xdj266r x11i5rnm xat24cr x1mh8g0r x2lwn1j xeuugli xexx8yu x4uap5 x18d9i69 xkhd6sd x1n2onr6 x16tdsg8 x1hl2dhg x1ja2u2z x1t137rt x1o1ewxj x3x9cwd x1e5q0jg x13rtm0m x3nfvp2 x1q0g3np x87ps6o x1lku1pv x1a2a7pz x5ve5x3"
             ]
 
             for like_button in like_buttons:
@@ -368,13 +367,14 @@ class Account(Facebook):
                     like_button.click()
                     time.sleep(2.5)
 
-                    Facebook.report[f"{self.username}"]["like"] += 1
-
                     logger.success(
                         f"<g>Successfully</g> liked. <i>[Username: <b>{self.username!r}</b>]</i>"
                     )
+                    Facebook.report[f"{self.username}"]["like"] += 1
 
                     if Facebook.report[f"{self.username}"]["like"] > count:
+                        console.print(count)
+                        console.print(Facebook.report)
                         logger.info(
                             f"<b>Completed</b> the like operation for user: {self.username!r}."
                         )
@@ -486,8 +486,6 @@ class Account(Facebook):
 
         count = 0  # Initialize scroll count
         while True:
-            element = self.driver.find_element(By.ID, "facebook")
-
             # Scroll to the bottom of the page
             self.driver.execute_script(
                 "window.scrollTo(0, arguments[0].scrollHeight);", element
