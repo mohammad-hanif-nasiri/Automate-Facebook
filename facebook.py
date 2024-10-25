@@ -528,13 +528,15 @@ class Account(Facebook):
                     logger.success(
                         f"<g>Successfully</g> liked. <i>[Username: <b>{self.username!r}</b>]</i>"
                     )
-                    Facebook.report[f"{self.username}"]["like"] += 1
 
-                    if Facebook.report[f"{self.username}"]["like"] > count:
+                    if Facebook.report[f"{self.username}"]["like"] >= count:
                         logger.info(
                             f"<b>Completed</b> the like operation for user: {self.username!r}."
                         )
                         return True
+
+                    # Increment like count in report
+                    Facebook.report[f"{self.username}"]["like"] += 1
 
                 except Exception as _:
                     logger.error(
@@ -603,13 +605,13 @@ class Account(Facebook):
                                 f"<g>Successfully</g> posted comment {i+1}/{count}: <b>{text!r}</b> [Username: <b>{self.username!r}</b>]"
                             )
 
-                            # Increment comment count in report
-                            if Facebook.report[f"{self.username}"]["comment"] > count:
+                            if Facebook.report[f"{self.username}"]["comment"] >= count:
                                 logger.info(
                                     f"<b>Completed</b> commenting on <b>{count}</b> posts for user <b>{self.username!r}</b>."
                                 )
                                 return True
 
+                            # Increment comment count in report
                             Facebook.report[f"{self.username}"]["comment"] += 1
 
                             try:
@@ -671,6 +673,7 @@ class Account(Facebook):
                         f"Preparing to share the latest post... (Attempt <c>{index + 1}</c> of <c>{share_count}</c>)"
                     )
                     if self.share(page_url, group, share_count):
+                        # Increment share count in report
                         Facebook.report[f"{self.username}"]["share"] += 1
 
     def infinite_scroll(
