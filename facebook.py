@@ -619,7 +619,7 @@ class Account(Facebook):
 
                     except Exception as _:
                         logger.error(
-                            "<r>Failed</r> to post a commet. [Username: <b>{self.username!r}</b>]"
+                            "<r>Failed</r> to post a comment. [Username: <b>{self.username!r}</b>]"
                         )
 
             except Exception as _:
@@ -666,7 +666,10 @@ class Account(Facebook):
 
         if groups:
             for group in groups:
-                for _ in range(share_count):
+                for index in range(share_count):
+                    logger.info(
+                        f"Preparing to share the latest post... (Attempt <c>{index + 1}</c> of <c>{share_count}</c>)"
+                    )
                     if self.share(page_url, group, share_count):
                         Facebook.report[f"{self.username}"]["share"] += 1
 
