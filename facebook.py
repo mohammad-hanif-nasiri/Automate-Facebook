@@ -211,7 +211,6 @@ class Account(Facebook):
         )
 
         self.cookie_file: str = cookie_file
-        self.logged: bool = False
 
     def __enter__(self: Self) -> Union[Self, None]:
         self.driver.get("https://facebook.com")
@@ -222,6 +221,8 @@ class Account(Facebook):
             self.driver.add_cookie(cookie)
 
         self.driver.refresh()
+
+        print(self.username)
 
         if self.is_logged_in and self.username:
             Facebook.report.setdefault(
@@ -273,8 +274,10 @@ class Account(Facebook):
         try:
             # Example: Check for the presence of the profile picture or the user's name
             self.driver.find_element(By.XPATH, "//div[@aria-label='Your profile']")
+            print("Logged in...")
             return True
         except Exception:
+            print("Not Logged in...")
             return False
 
     @property
@@ -452,7 +455,6 @@ def start(
     **kwarg,
 ):
     with Account(cookie_file, *args, **kwarg) as account:
-        print("SD")
         if account:
             account.start(
                 page_url=page_url,
