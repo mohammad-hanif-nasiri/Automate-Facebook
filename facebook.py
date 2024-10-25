@@ -373,8 +373,6 @@ class Account(Facebook):
                     Facebook.report[f"{self.username}"]["like"] += 1
 
                     if Facebook.report[f"{self.username}"]["like"] > count:
-                        console.print(count)
-                        console.print(Facebook.report)
                         logger.info(
                             f"<b>Completed</b> the like operation for user: {self.username!r}."
                         )
