@@ -311,8 +311,9 @@ class Account(Facebook):
     def share(self: Self, page_url: str, group: str, count: int = 5) -> None:
         pass
 
-    def like(self: Self, page_url: str, count: int) -> None:
+    def like(self: Self, page_url: str, count: int) -> bool:
         logger.success(f"{self.username} Like...")
+        return True
 
     def comment(self: Self, page_url: str, count: int) -> None:
         pass
