@@ -371,6 +371,9 @@ class Account(Facebook):
                     )
 
                     if report["like"] > count:
+                        logger.info(
+                            f"<b>Completed</b> the like operation for user: {self.username!r}."
+                        )
                         return True
 
                 except Exception as _:
