@@ -1,3 +1,4 @@
+from asyncio import sleep
 import os
 import pickle
 import random
@@ -348,6 +349,10 @@ class Account(Facebook):
         >>> if like_success:
         >>>     print("Successfully liked the posts.")
         """
+        if self.driver.current_url != page_url:
+            self.driver.get(page_url)
+            time.sleep(5)
+
         try:
             like_buttons: List[WebElement] = self.driver.find_elements(
                 By.XPATH, "//div[@aria-label='Like']"
