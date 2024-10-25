@@ -231,7 +231,14 @@ class Account(Facebook):
         self.driver.refresh()
 
         if self.is_logged_in and self.username:
-            Facebook.report.setdefault(f"{self.username}", {"share": 0})
+            Facebook.report.setdefault(
+                f"{self.username}",
+                {
+                    "share": 0,
+                    "like": 0,
+                    "comment": 0,
+                },
+            )
 
             return self
 
