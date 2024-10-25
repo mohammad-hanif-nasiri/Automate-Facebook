@@ -18,7 +18,7 @@ from selenium.webdriver.remote.webelement import WebElement
 from webdriver_manager.chrome import ChromeDriverManager
 
 from console import console
-from functions import send_email
+from functions import send_email, get_comments
 from logger import logger
 
 
@@ -388,8 +388,89 @@ class Account(Facebook):
                 f"<r>Failed</r> to like posts on {page_url!r}. <i>[Username: <b>{self.username!r}</b>]</i>"
             )
 
-    def comment(self: Self, page_url: str, count: int) -> None:
-        pass
+    def comment(self: Self, page_url: str, count: int) -> Union[None, bool]:
+        """
+        Posts comments on a specified number of posts on a Facebook page.
+
+        This method navigates to the provided Facebook page URL, locates comment buttons on posts,
+        and posts a random comment from a pre-defined list. It will continue to post comments until
+        reaching the specified count limit or encountering an error.
+
+        Parameters:
+        -----------
+        page_url: str
+            The URL of the Facebook page where comments will be posted.
+
+        count: int
+            The maximum number of comments to post. If the count is reached, the method stops.
+
+        Returns:
+        --------
+        bool
+            True if the comment process completed up to the specified count.
+            Returns None if an error occurs during the comment process.
+
+        Raises:
+        -------
+        WebDriverException
+            If there is an issue with the Selenium WebDriver while navigating, locating elements,
+            or interacting with the page.
+        """
+
+        if self.driver.current_url != page_url:
+            logger.info(f"Navigating to the Facebook page: {page_url}")
+            self.driver.get(page_url)
+            time.sleep(5)
+
+        facebook_element = self.driver.find_element(By.ID, "facebook")
+
+        # Retrieve comments and prepare to post
+        if comments := get_comments():
+            facebook_element.send_keys(Keys.ESCAPE)
+            try:
+                comment_buttons: List[WebElement] = self.driver.find_elements(
+                    By.XPATH,
+                    "//span[contains(text(), 'Comment')]/ancestor::*[@role='button']",
+                )
+
+                for comment_button in comment_buttons:
+                    facebook_element.send_keys(Keys.ESCAPE)
+
+                    try:
+                        # Click comment button and enter comment
+                        comment_button.click()
+                        time.sleep(0.5)
+
+                        for i in range(int(count / 100 * 30)):
+                            facebook_element.send_keys(Keys.ESCAPE)
+                            comment_text = random.choice(comments)
+                            facebook_element.send_keys(comment_text)
+                            facebook_element.send_keys(Keys.ENTER)
+                            time.sleep(2.5)
+
+                            logger.success(
+                                f"<g>Successfully</g> posted comment {i+1}/{count}: '{comment_text}'"
+                            )
+
+                            # Increment comment count in report
+                            if Facebook.report[f"{self.username}"]["comment"] > count:
+                                logger.info(
+                                    f"Completed commenting on {count} posts for user '{self.username}'."
+                                )
+                                return True
+
+                            Facebook.report[f"{self.username}"]["comment"] += 1
+
+                    except Exception as error:
+                        logger.error(f"<r>Failed</r> to post a comment due to: {error}")
+
+            except Exception as error:
+                logger.error(
+                    f"Failed to locate or interact with comment buttons due to: {error}"
+                )
+
+        else:
+            logger.error("No comments available to post.")
 
     def start(
         self: Self,
@@ -411,6 +492,14 @@ class Account(Facebook):
             callback=self.like,
             page_url=page_url,
             count=like_count,
+        )
+
+        self.driver.execute_script("window.scrollTo(0, 0); ")
+
+        self.infinite_scroll(
+            callback=self.comment,
+            page_url=page_url,
+            count=comment_count,
         )
 
     def infinite_scroll(
