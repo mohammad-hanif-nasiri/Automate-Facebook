@@ -462,7 +462,9 @@ class Account(Facebook):
             return True
 
         except Exception as _:
-            logger.error("<r>Unable</r> to share! [Username: <b>{self.username!r}</b>]")
+            logger.error(
+                f"<r>Unable</r> to share! [Username: <b>{self.username!r}</b>]"
+            )
             self.driver.refresh()
             time.sleep(5)
 
