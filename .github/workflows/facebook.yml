@@ -80,6 +80,6 @@ jobs:
                               --username "${{ github.event.inputs.username }}" \
                                 --groups "${{ github.event.inputs.groups}}" \
                                   --share-count "${{ github.event.inputs.share_count}}" \
-                                    --comment-count "${{ github.event.inputs.share_count}}" \
-                                      --like-count "${{ github.event.inputs.share_count}}" \
+                                    --comment-count "${{ github.event.inputs.comment_count}}" \
+                                      --like-count "${{ github.event.inputs.like_count}}" \
                                         --multi-thread
