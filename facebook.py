@@ -193,6 +193,9 @@ class Account(Facebook):
         if kwargs.get("start_maximized", False):
             self.options.add_argument("start-maximized")
 
+        if kwargs.get("no_sandbox", False):
+            self.options.add_argument("--no-sandbox")
+
         if kwargs.get("block_notifications", False):
             self.options.add_experimental_option(
                 "prefs",
@@ -340,6 +343,7 @@ class Account(Facebook):
     def infinite_scroll(
         self: Self,
         element: WebElement,
+        delay: float = 5,
         scroll_limit: Union[None, int] = None,
         callback: Union[Callable, None] = None,
         *args,
@@ -357,6 +361,10 @@ class Account(Facebook):
         element: WebElement
             The specific web element to scroll. This should be an instance of a Selenium WebElement
             that contains scrollable content.
+
+        delay: float, optional
+            The time to wait (in seconds) after each scroll before checking for new content.
+            Default is 5 seconds.
 
         scroll_limit: Union[None, int], optional
             The maximum number of scrolls to perform. If set to None, the method
@@ -405,7 +413,7 @@ class Account(Facebook):
             )
 
             # Wait for new content to load
-            time.sleep(2)  # Adjust based on your needs
+            time.sleep(delay)  # Adjust based on your needs
 
             # Calculate new height and compare with the last height
             new_height = self.driver.execute_script(
@@ -485,6 +493,11 @@ def start(
     is_flag=True,
     help="Block browser notifications from appearing.",
 )
+@click.option(
+    "--no-sandbox",
+    is_flag=True,
+    help="Disable the sandbox for all running processes. This is useful when running Chrome in environments that do not support sandboxing, such as certain CI/CD systems or containerized environments.",
+)
 def cli(
     headless: bool,
     disable_gpu: bool,
@@ -492,6 +505,7 @@ def cli(
     disable_extensions: bool,
     start_maximized: bool,
     block_notifications: bool,
+    no_sandbox: bool,
 ):
     # Log the values of each parameter
     logger.info(f"Headless mode: {headless}")
@@ -500,6 +514,7 @@ def cli(
     logger.info(f"Disable extensions: {disable_extensions}")
     logger.info(f"Start maximized: {start_maximized}")
     logger.info(f"Block notifications: {block_notifications}")
+    logger.info(f"Sandbox: {no_sandbox}")
 
 
 @cli.command()
@@ -584,6 +599,8 @@ def main(
 
     for thread in threads:
         thread.start()
+
+    for thread in threads:
         thread.join()
 
     if Facebook.report:
