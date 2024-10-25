@@ -23,7 +23,7 @@ from logger import logger
 
 class Facebook:
 
-    report: Dict[str, Dict[str, Union[str, int]]] = {}
+    report: Dict[str, Dict[str, Any]] = {}
     driver_path: str = ChromeDriverManager().install()
 
     @staticmethod
@@ -311,9 +311,72 @@ class Account(Facebook):
     def share(self: Self, page_url: str, group: str, count: int = 5) -> None:
         pass
 
-    def like(self: Self, page_url: str, count: int) -> bool:
-        logger.success(f"{self.username} Like...")
-        return True
+    def like(self: Self, page_url: str, count: int) -> Union[bool, None]:
+        """
+        Likes a specified number of posts on a given Facebook page.
+
+        This method locates the "Like" buttons on the specified Facebook page and clicks
+        on them to like the posts. It continues to like posts until either the specified
+        count is reached or there are no more like buttons available.
+
+        Parameters:
+        -----------
+        page_url: str
+            The URL of the Facebook page containing the posts to like. This should be
+            a valid URL that the user has access to.
+
+        count: int
+            The number of posts to like. The method will attempt to like this many posts
+            on the specified page. If there are fewer available posts, it will like as many
+            as possible.
+
+        Returns:
+        --------
+        Union[bool, None]
+            Returns True if the specified number of likes is successfully performed,
+            or None if the action could not be completed due to an error.
+
+        Raises:
+        -------
+        WebDriverException
+            If there is an issue with the WebDriver while trying to interact with the
+            page elements.
+
+        Example:
+        ---------
+        >>> like_success = like(page_url="https://www.facebook.com/yourpage", count=5)
+        >>> if like_success:
+        >>>     print("Successfully liked the posts.")
+        """
+        try:
+            like_buttons: List[WebElement] = self.driver.find_elements(
+                By.XPATH, "//div[@aria-label='Like']"
+            )
+
+            for like_button in like_buttons:
+                try:
+                    like_button.click()
+                    time.sleep(2.5)
+
+                    report = self.report.get(f"{self.username}", {"like": 0})
+                    report["like"] += 1
+
+                    logger.success(
+                        f"<g>Successfully</g> liked. <i>[Username: <b>{self.username!r}</b>]</i>"
+                    )
+
+                    if report["like"] > count:
+                        return True
+
+                except Exception as _:
+                    logger.error(
+                        f"<r>Error</r> clicking like button. <i>[Username: <b>{self.username!r}</b>]</i>"
+                    )
+
+        except Exception as _:
+            logger.error(
+                f"<r>Failed</r> to like posts on {page_url!r}. <i>[Username: <b>{self.username!r}</b>]</i>"
+            )
 
     def comment(self: Self, page_url: str, count: int) -> None:
         pass
