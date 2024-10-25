@@ -442,24 +442,26 @@ class Account(Facebook):
                             time.sleep(2.5)
 
                             logger.success(
-                                f"<g>Successfully</g> posted comment {i+1}/{count}: <b>'{text!r}'</b>"
+                                f"<g>Successfully</g> posted comment {i+1}/{count}: <b>{text!r}</b> [Username: <b>{self.username!r}</b>]"
                             )
 
                             # Increment comment count in report
                             if Facebook.report[f"{self.username}"]["comment"] > count:
                                 logger.info(
-                                    f"<b>Completed</b> commenting on <b>{count}</b> posts for user <b>'{self.username}'</b>."
+                                    f"<b>Completed</b> commenting on <b>{count}</b> posts for user <b>{self.username!r}</b>."
                                 )
                                 return True
 
                             Facebook.report[f"{self.username}"]["comment"] += 1
 
                     except Exception as _:
-                        logger.error("<r>Failed</r> to post a commet.")
+                        logger.error(
+                            "<r>Failed</r> to post a commet. [Username: <b>{self.username!r}</b>]"
+                        )
 
             except Exception as _:
                 logger.error(
-                    "<r>Failed</r> to locate or interact with comment buttons."
+                    "<r>Failed</r> to locate or interact with comment buttons. [Username: <b>{self.username!r}</b>]"
                 )
 
         else:
