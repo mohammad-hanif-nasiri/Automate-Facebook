@@ -452,6 +452,7 @@ def start(
     **kwarg,
 ):
     with Account(cookie_file, *args, **kwarg) as account:
+        print("SD")
         if account:
             account.start(
                 page_url=page_url,
@@ -593,11 +594,6 @@ def main(
 
     for thread in threads:
         thread.start()
-
-        if not multi_thread:
-            thread.join()
-
-    for thread in threads:
         thread.join()
 
 
