@@ -24,6 +24,7 @@ from logger import logger
 class Facebook:
 
     report: Dict[str, Dict[str, Union[str, int]]] = {}
+    driver_path: str = ChromeDriverManager().install()
 
     @staticmethod
     def save_cookies(driver: webdriver.Chrome) -> None:
@@ -204,9 +205,7 @@ class Account(Facebook):
                 },
             )
 
-        self.service: Service = Service(
-            ChromeDriverManager().install(),
-        )
+        self.service: Service = Service(self.driver_path)
 
         self.driver: webdriver.Chrome = webdriver.Chrome(
             service=self.service,
