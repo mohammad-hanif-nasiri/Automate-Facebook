@@ -354,9 +354,16 @@ class Account(Facebook):
             time.sleep(5)
 
         try:
-            like_buttons: List[WebElement] = self.driver.find_elements(
-                By.XPATH, "//div[@aria-label='Like']"
-            )
+            like_buttons: List[WebElement] = [
+                button
+                for button in self.driver.find_elements(
+                    By.XPATH, "//div[@aria-label='Like']"
+                )
+                if button.get_attribute("class")
+                == "x1i10hfl x1qjc9v5 xjbqb8w xjqpnuy xa49m3k xqeqjp1 x2hbi6w x13fuv20 xu3j5b3 x1q0q8m5 x26u7qi x972fbf xcfux6l x1qhh985 xm0m39n x9f619 x1ypdohk xdl72j9 x2lah0s xe8uvvx xdj266r x11i5rnm xat24cr x1mh8g0r x2lwn1j xeuugli xexx8yu x4uap5 x18d9i69 xkhd6sd x1n2onr6 x16tdsg8 x1hl2dhg x1ja2u2z x1t137rt x1o1ewxj x3x9cwd x1e5q0jg x13rtm0m x3nfvp2 x1q0g3np x87ps6o x1lku1pv x1a2a7pz x5ve5x3"
+            ]
+
+            console.print(self.report)
 
             for like_button in like_buttons:
                 try:
@@ -405,10 +412,7 @@ class Account(Facebook):
         self.driver.get(page_url)
         time.sleep(5)
 
-        facebook_element = self.driver.find_element(By.ID, "facebook")
-
         self.infinite_scroll(
-            element=facebook_element,
             callback=self.like,
             page_url=page_url,
             count=like_count,
@@ -485,6 +489,8 @@ class Account(Facebook):
 
         count = 0  # Initialize scroll count
         while True:
+            element = self.driver.find_element(By.ID, "facebook")
+
             # Scroll to the bottom of the page
             self.driver.execute_script(
                 "window.scrollTo(0, arguments[0].scrollHeight);", element
