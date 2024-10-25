@@ -201,20 +201,6 @@ class Account(Facebook):
                 },
             )
 
-        self.options.add_argument("--headless")
-        self.options.add_argument("--disable-gpu")
-        self.options.add_argument("--disable-infobars")
-        self.options.add_argument("--disable-extensions")
-        self.options.add_argument("--start-maximized")
-        self.options.add_argument("--block-notifications")
-
-        self.options.add_experimental_option(
-            "prefs",
-            {
-                "profile.default_content_setting_values.notifications": 1,
-            },
-        )
-
         self.service: Service = Service(
             ChromeDriverManager().install(),
         )
