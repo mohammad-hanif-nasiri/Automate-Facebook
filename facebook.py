@@ -399,6 +399,9 @@ class Account(Facebook):
         if username and username != self.username:
             return
 
+        self.driver.get(page_url)
+        time.sleep(5)
+
         self.infinite_scroll(
             callback=self.like,
             page_url=page_url,
