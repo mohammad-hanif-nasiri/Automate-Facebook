@@ -399,10 +399,7 @@ class Account(Facebook):
         if username and username != self.username:
             return
 
-        facebook_element = self.driver.find_element(By.ID, "facebook")
-
         self.infinite_scroll(
-            facebook_element,
             callback=self.like,
             page_url=page_url,
             count=like_count,
@@ -410,7 +407,7 @@ class Account(Facebook):
 
     def infinite_scroll(
         self: Self,
-        element: WebElement,
+        element: Union[WebElement, None] = None,
         delay: float = 5,
         scroll_limit: Union[None, int] = None,
         callback: Union[Callable, None] = None,
@@ -426,22 +423,22 @@ class Account(Facebook):
 
         Parameters:
         -----------
-        element: WebElement
-            The specific web element to scroll. This should be an instance of a Selenium WebElement
-            that contains scrollable content.
+        element: Union[WebElement, None], optional
+            The specific web element to scroll. If not provided, the method defaults to
+            finding the Facebook main element by its ID. This should be an instance of a
+            Selenium WebElement that contains scrollable content.
 
         delay: float, optional
             The time to wait (in seconds) after each scroll before checking for new content.
             Default is 5 seconds.
 
         scroll_limit: Union[None, int], optional
-            The maximum number of scrolls to perform. If set to None, the method
-            will continue scrolling until no more new content is loaded. Default is None.
+            The maximum number of scrolls to perform. If set to None, the method will continue
+            scrolling until no more new content is loaded. Default is None.
 
         callback: Union[Callable, None], optional
-            A function to be executed after each successful scroll. This can be
-            used to perform actions such as logging the number of items loaded
-            or any other processing. Default is None.
+            A function to be executed after each successful scroll. This can be used to perform
+            actions such as logging the number of items loaded or any other processing. Default is None.
 
         *args:
             Additional positional arguments to pass to the callback function.
@@ -452,23 +449,27 @@ class Account(Facebook):
         Returns:
         --------
         None
-            This method does not return any value. It performs scrolling actions
-            on the specified web element and may execute the provided callback function.
+            This method does not return any value. It performs scrolling actions on the specified
+            web element and may execute the provided callback function.
 
         Raises:
         -------
         WebDriverException
-            If the Selenium WebDriver encounters an issue while executing the
-            scrolling actions or JavaScript commands.
+            If the Selenium WebDriver encounters an issue while executing the scrolling actions
+            or JavaScript commands.
 
         Example:
-        ---------
+        --------
         >>> def my_callback(arg1, kwarg1=None):
         >>>     print(f"Scrolled and loaded new content! Arg1: {arg1}, Kwarg1: {kwarg1}")
         >>>
         >>> element_to_scroll = driver.find_element(By.ID, "scrollable-element-id")  # Example element
         >>> infinite_scroll(element=element_to_scroll, scroll_limit=5, callback=my_callback, "Some value", kwarg1="Some keyword value")
         """
+
+        if not element:
+            element = self.driver.find_element(By.ID, "facebook")
+
         last_height = self.driver.execute_script(
             "return arguments[0].scrollHeight", element
         )
