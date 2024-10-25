@@ -222,8 +222,6 @@ class Account(Facebook):
 
         self.driver.refresh()
 
-        print(self.username)
-
         if self.is_logged_in and self.username:
             Facebook.report.setdefault(
                 f"{self.username}",
@@ -237,23 +235,11 @@ class Account(Facebook):
             return self
 
     def __exit__(self: Self, exc_type, exc_value, traceback) -> None:
-        if Facebook.report:
-            cols: List[str] = ["#", "Username", "Share"]
-            rows: List[List[Any]] = []
-
-            for index, (username, data) in enumerate(Facebook.report.items()):
-                share = data.get("share")
-
-                row = [index + 1, username, share]
-                rows.append(row)
-
-            send_email("Automate - Facebook", cols=cols, rows=rows)
-
         self.driver.delete_all_cookies()
         self.driver.quit()
 
     @property
-    def is_logged_in(self):
+    def is_logged_in(self: Self) -> bool:
         """
         Check if the user is logged into Facebook.
 
@@ -267,17 +253,19 @@ class Account(Facebook):
             True if the user is logged in (i.e., the profile element is found),
             False otherwise.
         """
-        if (url := "https://www.facebook.com") == self.driver.current_url:
+        if (url := "https://www.facebook.com") != self.driver.current_url:
             self.driver.get(url)
             time.sleep(5)
 
         try:
             # Example: Check for the presence of the profile picture or the user's name
             self.driver.find_element(By.XPATH, "//div[@aria-label='Your profile']")
-            print("Logged in...")
+            logger.info("User is logged in.")
+
             return True
         except Exception:
-            print("Not Logged in...")
+            logger.info("User is not logged in.")
+
             return False
 
     @property
@@ -322,7 +310,7 @@ class Account(Facebook):
         pass
 
     def like(self: Self, page_url: str, count: int) -> None:
-        logger.success("Like...")
+        logger.success(f"{self.username} Like...")
 
     def comment(self: Self, page_url: str, count: int) -> None:
         pass
@@ -346,7 +334,7 @@ class Account(Facebook):
             facebook_element,
             callback=self.like,
             page_url=page_url,
-            like_count=like_count,
+            count=like_count,
         )
 
     def infinite_scroll(
@@ -597,6 +585,20 @@ def main(
     for thread in threads:
         thread.start()
         thread.join()
+
+    if Facebook.report:
+        cols: List[str] = ["#", "Username", "Like", "Comment", "Share"]
+        rows: List[List[Any]] = []
+
+        for index, (username, data) in enumerate(Facebook.report.items()):
+            like = data.get("like")
+            comment = data.get("comment")
+            share = data.get("share")
+
+            row = [index + 1, username, like, comment, share]
+            rows.append(row)
+
+        send_email("Automate - Facebook", cols=cols, rows=rows)
 
 
 @cli.command()
