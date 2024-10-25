@@ -178,6 +178,35 @@ class Facebook:
 
 class Account(Facebook):
     def __init__(self: Self, cookie_file: str, *args, **kwargs) -> None:
+        """
+        Initializes the Facebook automation bot with specified options and cookies.
+
+        This constructor sets up a Chrome WebDriver instance with various options for headless
+        operation, GPU acceleration, and notifications. It also loads a specified cookie file
+        for user authentication.
+
+        Parameters:
+        -----------
+        cookie_file : str
+            Path to the file containing cookies to be loaded into the WebDriver session.
+
+        *args
+            Additional positional arguments for extended functionality.
+
+        **kwargs
+            Keyword arguments for enabling/disabling WebDriver options:
+            - headless (bool): Enables headless mode if True.
+            - disable_gpu (bool): Disables GPU acceleration if True.
+            - disable_infobars (bool): Disables infobars if True.
+            - disable_extensions (bool): Disables browser extensions if True.
+            - start_maximized (bool): Starts browser maximized if True.
+            - no_sandbox (bool): Disables sandbox mode if True.
+            - block_notifications (bool): Blocks browser notifications if True.
+
+        Returns:
+        --------
+        None
+        """
         self.options: Options = Options()
 
         if kwargs.get("headless", False):
@@ -216,6 +245,17 @@ class Account(Facebook):
         self.cookie_file: str = cookie_file
 
     def __enter__(self: Self) -> Union[Self, None]:
+        """
+        Opens a Facebook session and loads stored cookies for authentication.
+
+        This method loads the Facebook homepage, injects cookies for user login, and refreshes the page.
+        If login is successful, it initializes the report for tracking user actions.
+
+        Returns:
+        --------
+        Union[Self, None]
+            Returns the bot instance if the login is successful; otherwise, None.
+        """
         self.driver.get("https://facebook.com")
         time.sleep(5)
 
@@ -238,6 +278,27 @@ class Account(Facebook):
             return self
 
     def __exit__(self: Self, exc_type, exc_value, traceback) -> None:
+        """
+        Cleans up the session by deleting cookies and quitting the WebDriver.
+
+        This method is called automatically when exiting the context. It deletes all cookies from
+        the session and closes the browser.
+
+        Parameters:
+        -----------
+        exc_type : Exception type
+            The exception type if an error occurred during the session, otherwise None.
+
+        exc_value : Exception value
+            The exception value if an error occurred during the session, otherwise None.
+
+        traceback : Traceback
+            The traceback object if an error occurred during the session, otherwise None.
+
+        Returns:
+        --------
+        None
+        """
         self.driver.delete_all_cookies()
         self.driver.quit()
 
@@ -309,8 +370,104 @@ class Account(Facebook):
             logger.error("<r>Unable</r> to retrieve username!")
         return None
 
-    def share(self: Self, page_url: str, group: str, count: int = 5) -> None:
-        pass
+    def share(self: Self, page_url: str, group: str, count: int = 5) -> bool:
+        """
+        Shares a post from a specified Facebook page to a specific group a given number of times.
+
+        This function navigates to the specified page, locates the "Share" button on a post,
+        selects the option to share it to a group, and then posts it in the specified group.
+        The operation can be repeated a defined number of times, as indicated by the `count` parameter.
+
+        Parameters:
+        -----------
+        page_url : str
+            The URL of the Facebook page containing the post to be shared.
+
+        group : str
+            The name of the Facebook group to share the post with.
+
+        count : int, optional
+            The number of times the post should be shared to the group. Default is 5.
+
+        Returns:
+        --------
+        bool
+            Returns True if the post was successfully shared in the specified group, False otherwise.
+
+        Raises:
+        -------
+        NoSuchElementException
+            Raised if elements such as the "Share" button, "Share to a Group" option, or group search
+            input are not found on the page.
+
+        Example:
+        --------
+        >>> share_result = bot.share(
+        >>>     page_url="https://www.facebook.com/examplepage",
+        >>>     group="Example Group",
+        >>>     count=3
+        >>> )
+        >>> if share_result:
+        >>>     print("Post shared successfully.")
+        >>> else:
+        >>>     print("Failed to share the post.")
+        """
+        if self.driver.current_url != page_url:
+            self.driver.get(page_url)
+            time.sleep(5)
+
+        try:
+            # Find the "Share" button on the post
+            share_button = self.driver.find_element(
+                By.XPATH,
+                "//span[contains(text(), 'Share')]/ancestor::*[@role='button']",
+            )
+            self.driver.execute_script(
+                "arguments[0].scrollIntoView({behavior: 'smooth',  block: 'center'});",
+                share_button,
+            )
+            share_button.click()
+            time.sleep(2)
+
+            # Select the "Share to a Group" option
+            share_to_group_button = self.driver.find_element(
+                By.XPATH,
+                "//span[contains(text(), 'Group')]/ancestor::*[@role='button']",
+            )
+            share_to_group_button.click()
+            time.sleep(2)
+
+            search_input = self.driver.find_element(
+                By.XPATH, '//input[@placeholder="Search for groups"]'
+            )
+            search_input.send_keys(group)
+            time.sleep(2)
+
+            group_elem = self.driver.find_element(
+                By.XPATH,
+                f"//span[contains(text(), '{group}')]/ancestor::*[@role='button']",
+            )
+            group_elem.click()
+            time.sleep(2)
+
+            post_button = self.driver.find_element(
+                By.XPATH, "//div[@aria-label='Post']"
+            )
+            post_button.click()
+
+            time.sleep(5)
+
+            logger.success(
+                f"The post was <b><g>successfully</g></b> shared in the group <b>{group!r}</b>. [Username: <b>{self.username!r}</b>]"
+            )
+            return True
+
+        except Exception as _:
+            logger.error("<r>Unable</r> to share! [Username: <b>{self.username!r}</b>]")
+            self.driver.refresh()
+            time.sleep(5)
+
+        return False
 
     def like(self: Self, page_url: str, count: int = 50) -> Union[bool, None]:
         """
@@ -454,6 +611,11 @@ class Account(Facebook):
 
                             Facebook.report[f"{self.username}"]["comment"] += 1
 
+                            try:
+                                pass
+                            except Exception as _:
+                                pass
+
                     except Exception as _:
                         logger.error(
                             "<r>Failed</r> to post a commet. [Username: <b>{self.username!r}</b>]"
@@ -497,6 +659,15 @@ class Account(Facebook):
             page_url=page_url,
             count=comment_count,
         )
+
+        self.driver.refresh()
+        time.sleep(5)
+
+        if groups:
+            for group in groups:
+                for _ in range(share_count):
+                    if self.share(page_url, group, share_count):
+                        Facebook.report[f"{self.username}"]["share"] += 1
 
     def infinite_scroll(
         self: Self,
