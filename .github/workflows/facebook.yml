@@ -1,0 +1,86 @@
+name: Automate Facebook
+
+on:
+  workflow_dispatch:
+    inputs:
+      username:
+        description: "[Optional] The Facebook username to log in as."
+
+      page_url:
+        description: "[Required] The URL of the Facebook page where you want to like all posts and add comments."
+        required: true
+
+      groups:
+        description: "[Optional] The names of the groups where you want to share the post, separated by commas."
+
+      share_count:
+        description: "[Optional] The number of times to share the post in the specified groups. Default is 5."
+        default: "5"
+
+      comment_count:
+        description: "[Optional] The number of comments to write per post. Default is 10."
+        default: "10"
+
+      like_count:
+        description: "[Optional] The number of posts you want to like on the specified Facebook page. Default is 50."
+        default: "50"
+
+      multi_thread:
+        description: "Enable multi-threading to process multiple accounts simultaneously."
+        required: true
+        options: "True, False"
+        default: "False"
+
+  schedule:
+    - cron: "0 */4 * * *" # Runs at 0 minutes past the hour, every 4 hours.
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install tor and proxychains4
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y tor proxychains4
+
+      - name: Configure and Start Tor Service
+        run: |
+          echo "ControlPort 9051" | sudo tee -a /etc/tor/torrc
+          echo "HashedControlPassword 16:F6619F3AC6F73A1C603AF765CD9850B6D0FC6F0E2E56FA0A32A255B191" | sudo tee -a /etc/tor/torrc
+          echo "CookieAuthentication 0" | sudo tee -a /etc/tor/torrc
+
+      - name: Start tor service
+        run: sudo service tor start
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Execute facebook.py (Only For Manual Workflow)
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        run: |
+          python facebook.py \
+            --headless \
+              --disable-gpu \
+                --disable-infobars \
+                  --disable-extensions \
+                    --start-maximized \
+                      --block-notifications \
+                        main \
+                          --page-url "${{ github.event.inputs.page_url}}" \
+                            --username "${{ github.event.inputs.username }}" \
+                              --groups "${{ github.event.inputs.groups}}" \
+                                --share-count "${{ github.event.inputs.share_count}}" \
+                                  --comment-count "${{ github.event.inputs.share_count}}" \
+                                    --like-count "${{ github.event.inputs.share_count}}" \
+                                      --multi-thread
