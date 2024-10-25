@@ -645,6 +645,18 @@ class Account(Facebook):
         if username and username != self.username:
             return
 
+        match self.username:
+            case "aliabdullah.nasiri":
+                page_url = "https://www.facebook.com/CityComputerStore"
+            case "hanif.nasiri.1967":
+                page_url = "https://www.facebook.com/profile.php?id=61554947310688"
+            case "ali.nasiri.20050727":
+                page_url = "https://www.facebook.com/PaytakhtMobile"
+            case "mohammad.hanif.nasiri.1967":
+                page_url = "https://www.facebook.com/PaytakhtMobile"
+            case "milad.noori.7860":
+                page_url = "https://www.facebook.com/CityComputerStore"
+
         self.driver.get(page_url)
         time.sleep(5)
 
