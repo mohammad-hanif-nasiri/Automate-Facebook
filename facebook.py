@@ -632,11 +632,6 @@ def cli(
     default=50,
     help="Specify the number of posts to like. Default is 50.",
 )
-@click.option(
-    "--multi-thread",
-    is_flag=True,
-    help="Enable multi-threading to process multiple accounts simultaneously.",
-)
 @click.pass_context
 def main(
     ctx: click.core.Context,
@@ -646,7 +641,6 @@ def main(
     share_count: int = 5,
     comment_count: int = 10,
     like_count: int = 50,
-    multi_thread: bool = False,
 ) -> None:
     """
     Main command  for interacting with Facebook posts and groups.
