@@ -18,7 +18,7 @@ on:
         default: "5"
 
       comment_count:
-        description: "[Optional] The number of comments to write per post. Default is 10."
+        description: "[Optional] The number of comments to write. Default is 10."
         default: "10"
 
       like_count:
