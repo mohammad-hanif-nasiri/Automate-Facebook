@@ -64,14 +64,25 @@ class Facebook:
         --------
         None
         """
+        # Info: Starting cookie management process
+        logger.info(
+            "Starting the process to load and add cookies (file: {cookie_file})."
+        )
+
         # Remove all current cookies
         driver.delete_all_cookies()
+        logger.info("All existing cookies have been deleted from the driver.")
 
         # Load cookies from the .pkl file
         with open(cookie_file, "rb") as f:
             cookies = pickle.load(f)
             for cookie in cookies:
                 driver.add_cookie(cookie)
+
+        # Success: Cookies have been loaded and added
+        logger.success(
+            "Cookies have been <g>successfully</g> loaded from the file and added to the driver."
+        )
 
     @staticmethod
     def login(
@@ -370,7 +381,7 @@ class Account(Facebook):
             logger.error("<r>Unable</r> to retrieve username!")
         return None
 
-    def share(self: Self, page_url: str, group: str, count: int = 5) -> bool:
+    def share(self: Self, page_url: str, group: str) -> bool:
         """
         Shares a post from a specified Facebook page to a specific group a given number of times.
 
@@ -385,9 +396,6 @@ class Account(Facebook):
 
         group : str
             The name of the Facebook group to share the post with.
-
-        count : int, optional
-            The number of times the post should be shared to the group. Default is 5.
 
         Returns:
         --------
@@ -457,40 +465,40 @@ class Account(Facebook):
                 By.XPATH, "//div[@aria-label='Post']"
             )
             post_button.click()
-            time.sleep(5)
+            time.sleep(0.5)
 
-            try:
-                dialog_element = self.driver.find_element(
-                    By.XPATH, "//div[role='dialog']"
-                )
-                heading_element = dialog_element.find_element(
-                    By.XPATH, "//h2[dir='auto']"
-                )
+            timeout: int = 10
+            while timeout > 0:
+                try:
+                    self.driver.find_element(
+                        By.XPATH, "//span[contains(text(), 'Shared to your group.')]"
+                    )
+                    logger.success(
+                        f"User <b>{self.username!r}</b> - The post was <b><g>successfully</g></b> shared in the group <b>{group!r}</b>."
+                    )
 
-                logger.warning(f"<yellow><b>{heading_element.text}</b></yellow>")
-
-                facebook_element.send_keys(Keys.ESCAPE)
-
-                raise ShareLimitException(
-                    "Post sharing limit reached. "
-                    "You cannot share any posts right now. "
-                    "Please try again later."
-                )
-            except Exception as _:
-                pass
-
-            logger.success(
-                f"The post was <b><g>successfully</g></b> shared in the group <b>{group!r}</b>. [Username: <b>{self.username!r}</b>]"
-            )
-
-            return True
+                    return True
+                except Exception as error:
+                    pass
+                time.sleep(1)
+                timeout -= 1
 
         except Exception as _:
-            logger.error(
-                f"<r>Unable</r> to share! [Username: <b>{self.username!r}</b>]"
-            )
-            self.driver.refresh()
-            time.sleep(5)
+            pass
+
+        logger.error(
+            f"User <b>{self.username!r}</b> - <r>Unable</r> to share the post."
+        )
+
+        self.driver.refresh()
+        time.sleep(5)
+
+        self.infinite_scroll(
+            element=None,
+            scroll_limit=5,
+            delay=2.5,
+            callback=None,
+        )
 
         return False
 
@@ -550,12 +558,12 @@ class Account(Facebook):
                     time.sleep(2.5)
 
                     logger.success(
-                        f"<g>Successfully</g> liked. <i>[Username: <b>{self.username!r}</b>]</i>"
+                        f"User <b>{self.username!r}</b> - <g>Successfully</g> post liked."
                     )
 
                     if Facebook.report[f"{self.username}"]["like"] >= count:
                         logger.info(
-                            f"<b>Completed</b> the like operation for user: {self.username!r}."
+                            f"<b>Completed</b> the like operation for user: <b>{self.username!r}</b>."
                         )
                         return True
 
@@ -564,12 +572,12 @@ class Account(Facebook):
 
                 except Exception as _:
                     logger.error(
-                        f"<r>Error</r> clicking like button. <i>[Username: <b>{self.username!r}</b>]</i>"
+                        f"User <b>{self.username!r}</b> - <r>Error</r> clicking like button."
                     )
 
         except Exception as _:
             logger.error(
-                f"<r>Failed</r> to like posts on {page_url!r}. <i>[Username: <b>{self.username!r}</b>]</i>"
+                f"User {self.username!r} - <r>Failed</r> to like posts on {page_url!r}."
             )
 
     def comment(self: Self, page_url: str, count: int = 50) -> Union[None, bool]:
@@ -619,19 +627,19 @@ class Account(Facebook):
 
                 for comment_textbox in comment_textbox_elements:
                     try:
-                        for i in range(int(count / 100 * 25)):
+                        for i in range(int(count / 100 * 50)):
                             comment_textbox.send_keys(Keys.ESCAPE)
                             comment_textbox.send_keys(text := random.choice(comments))
                             comment_textbox.send_keys(Keys.ENTER)
                             time.sleep(2.5)
 
                             logger.success(
-                                f"<g>Successfully</g> posted comment {i+1}/{count}: <b>{text!r}</b> [Username: <b>{self.username!r}</b>]"
+                                f"User <b>{self.username!r}</b> - <g>Successfully</g> posted comment {i+1}/{count}: <b>{text!r}</b>"
                             )
 
                             if Facebook.report[f"{self.username}"]["comment"] >= count:
                                 logger.info(
-                                    f"<b>Completed</b> commenting on <b>{count}</b> posts for user <b>{self.username!r}</b>."
+                                    f"User <b>{self.username!r}</b> - <b>Completed</b> commenting on <b>{int(count / 100 * 50)}</b> posts for user."
                                 )
                                 return True
 
@@ -658,12 +666,12 @@ class Account(Facebook):
 
                     except Exception as _:
                         logger.error(
-                            "<r>Failed</r> to post a comment. [Username: <b>{self.username!r}</b>]"
+                            "User <b>{self.username!r}</b> - <r>Failed</r> to post a comment."
                         )
 
             except Exception as _:
                 logger.error(
-                    "<r>Failed</r> to locate or interact with comment buttons. [Username: <b>{self.username!r}</b>]"
+                    "User <b>{self.username!r}</b> - <r>Failed</r> to locate or interact with comment buttons."
                 )
 
         else:
@@ -685,27 +693,17 @@ class Account(Facebook):
         self.driver.get(page_url)
         time.sleep(5)
 
-        # self.infinite_scroll(
-        #     callback=self.like,
-        #     page_url=page_url,
-        #     count=like_count,
-        # )
-
-        # self.infinite_scroll(
-        #     callback=self.comment,
-        #     page_url=page_url,
-        #     count=comment_count,
-        # )
+        self.infinite_scroll(scroll_limit=5)
 
         if groups:
             for group in groups:
                 for index in range(share_count):
                     logger.info(
-                        f"Preparing to share the latest post... (Attempt <c>{index + 1}</c> of <c>{share_count}</c>)"
+                        f"<b>[{self.username!r}]</b> Preparing to share the latest post... (Attempt <c>{index + 1}</c> of <c>{share_count}</c>)"
                     )
 
                     try:
-                        if self.share(page_url, group, share_count):
+                        if self.share(page_url, group):
                             # Increment share count in report
                             Facebook.report[f"{self.username}"]["share"] += 1
                     except ShareLimitException as error:
