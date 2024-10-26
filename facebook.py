@@ -19,7 +19,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from console import console
 from functions import send_email, get_comments
 from logger import logger
-from exceptions import FBException, ShareLimitException
+from exceptions import ShareLimitException
 
 
 class Facebook:
@@ -424,8 +424,6 @@ class Account(Facebook):
             self.driver.get(page_url)
             time.sleep(5)
 
-        facebook_element = self.driver.find_element(By.ID, "facebook")
-
         try:
             # Find the "Share" button on the post
             share_button = self.driver.find_element(
@@ -699,7 +697,7 @@ class Account(Facebook):
             for group in groups:
                 for index in range(share_count):
                     logger.info(
-                        f"<b>[{self.username!r}]</b> Preparing to share the latest post... (Attempt <c>{index + 1}</c> of <c>{share_count}</c>)"
+                        f"<b>{self.username!r}</b> Preparing to share the latest post... (Attempt <c>{index + 1}</c> of <c>{share_count}</c>)"
                     )
 
                     try:
