@@ -615,7 +615,20 @@ class Account(Facebook):
                             Facebook.report[f"{self.username}"]["comment"] += 1
 
                             try:
-                                pass
+                                dialog_element = self.driver.find_element(
+                                    By.XPATH, "//div[role='dialog']"
+                                )
+                                dialog_element.find_element(
+                                    By.XPATH,
+                                    "//span[contains(text(), 'You Can't Comment Right Now')]",
+                                )
+
+                                logger.warning(
+                                    "You Can't Comment Right Now [Username: <b>{self.username!r}</b>]"
+                                )
+                                facebook_element.send_keys(Keys.ESCAPE)
+
+                                return False
                             except Exception as _:
                                 pass
 
@@ -779,7 +792,9 @@ class Account(Facebook):
 
             # Execute the callback function
             if callback:
-                if callback(*args, **kwargs):  # Call the provided callback function
+                if (
+                    callback(*args, **kwargs) is not None
+                ):  # Call the provided callback function
                     return
 
             # Increment the scroll count and check against the limit
