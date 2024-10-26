@@ -19,6 +19,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from console import console
 from functions import send_email, get_comments
 from logger import logger
+from exceptions import FBException, ShareLimitException
 
 
 class Facebook:
@@ -415,6 +416,8 @@ class Account(Facebook):
             self.driver.get(page_url)
             time.sleep(5)
 
+        facebook_element = self.driver.find_element(By.ID, "facebook")
+
         try:
             # Find the "Share" button on the post
             share_button = self.driver.find_element(
@@ -425,6 +428,7 @@ class Account(Facebook):
                 "arguments[0].scrollIntoView({behavior: 'smooth',  block: 'center'});",
                 share_button,
             )
+
             share_button.click()
             time.sleep(2)
 
@@ -453,12 +457,32 @@ class Account(Facebook):
                 By.XPATH, "//div[@aria-label='Post']"
             )
             post_button.click()
-
             time.sleep(5)
+
+            try:
+                dialog_element = self.driver.find_element(
+                    By.XPATH, "//div[role='dialog']"
+                )
+                heading_element = dialog_element.find_element(
+                    By.XPATH, "//h2[dir='auto']"
+                )
+
+                logger.warning(f"<yellow><b>{heading_element.text}</b></yellow>")
+
+                facebook_element.send_keys(Keys.ESCAPE)
+
+                raise ShareLimitException(
+                    "Post sharing limit reached. "
+                    "You cannot share any posts right now. "
+                    "Please try again later."
+                )
+            except Exception as _:
+                pass
 
             logger.success(
                 f"The post was <b><g>successfully</g></b> shared in the group <b>{group!r}</b>. [Username: <b>{self.username!r}</b>]"
             )
+
             return True
 
         except Exception as _:
@@ -629,8 +653,8 @@ class Account(Facebook):
                                 facebook_element.send_keys(Keys.ESCAPE)
 
                                 return False
-                            except Exception as _:
-                                pass
+                            except Exception as error:
+                                console.print(error)
 
                     except Exception as _:
                         logger.error(
@@ -658,38 +682,20 @@ class Account(Facebook):
         if username and username != self.username:
             return
 
-        match self.username:
-            case "aliabdullah.nasiri":
-                page_url = "https://www.facebook.com/CityComputerStore"
-            case "hanif.nasiri.1967":
-                page_url = "https://www.facebook.com/profile.php?id=61554947310688"
-            case "ali.nasiri.20050727":
-                page_url = "https://www.facebook.com/PaytakhtMobile"
-            case "mohammad.hanif.nasiri.1967":
-                page_url = "https://www.facebook.com/PaytakhtMobile"
-            case "milad.noori.7860":
-                page_url = "https://www.facebook.com/CityComputerStore"
-
         self.driver.get(page_url)
         time.sleep(5)
 
-        self.infinite_scroll(
-            callback=self.like,
-            page_url=page_url,
-            count=like_count,
-        )
+        # self.infinite_scroll(
+        #     callback=self.like,
+        #     page_url=page_url,
+        #     count=like_count,
+        # )
 
-        self.driver.refresh()
-        time.sleep(5)
-
-        self.infinite_scroll(
-            callback=self.comment,
-            page_url=page_url,
-            count=comment_count,
-        )
-
-        self.driver.refresh()
-        time.sleep(5)
+        # self.infinite_scroll(
+        #     callback=self.comment,
+        #     page_url=page_url,
+        #     count=comment_count,
+        # )
 
         if groups:
             for group in groups:
@@ -697,9 +703,14 @@ class Account(Facebook):
                     logger.info(
                         f"Preparing to share the latest post... (Attempt <c>{index + 1}</c> of <c>{share_count}</c>)"
                     )
-                    if self.share(page_url, group, share_count):
-                        # Increment share count in report
-                        Facebook.report[f"{self.username}"]["share"] += 1
+
+                    try:
+                        if self.share(page_url, group, share_count):
+                            # Increment share count in report
+                            Facebook.report[f"{self.username}"]["share"] += 1
+                    except ShareLimitException as error:
+                        logger.error(f"<r>{error}</r>")
+                        return
 
     def infinite_scroll(
         self: Self,
