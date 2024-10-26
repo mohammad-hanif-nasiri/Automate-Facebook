@@ -618,14 +618,14 @@ class Account(Facebook):
                                 dialog_element = self.driver.find_element(
                                     By.XPATH, "//div[role='dialog']"
                                 )
-                                dialog_element.find_element(
-                                    By.XPATH,
-                                    "//span[contains(text(), 'You Can't Comment Right Now')]",
+                                heading_element = dialog_element.find_element(
+                                    By.XPATH, "//h2[dir='auto']"
                                 )
 
                                 logger.warning(
-                                    "You Can't Comment Right Now [Username: <b>{self.username!r}</b>]"
+                                    f"<yellow><b>{heading_element.text}</b></yellow>"
                                 )
+
                                 facebook_element.send_keys(Keys.ESCAPE)
 
                                 return False
