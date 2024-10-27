@@ -313,6 +313,43 @@ class Account(Facebook):
         self.driver.delete_all_cookies()
         self.driver.quit()
 
+    def scroll_into_view(self: Self, element: WebElement) -> None:
+        """
+        Scrolls a specified WebElement into view within the browser window.
+
+        This function leverages JavaScript to smoothly scroll the element into view.
+        It centers the element vertically and aligns it horizontally based on its
+        closest scrollable ancestor.
+
+        Parameters:
+        ----------
+        element : WebElement
+            The web element to be scrolled into view.
+
+        Returns:
+        -------
+        None
+            This function does not return any value.
+
+        Example:
+        -------
+        ```python
+        element = driver.find_element(By.ID, "targetElement")
+        scroll_into_view(self, element)
+        ```
+        """
+        self.driver.execute_script(
+            """
+            const element = arguments[0];
+            element.scrollIntoView({
+              behavior: 'smooth', // Adds smooth scrolling animation
+              block: 'center',    // Aligns the element to the center of the viewport
+              inline: 'nearest'   // Aligns horizontally (optional)
+            });
+            """,
+            element,
+        )
+
     @property
     def is_logged_in(self: Self) -> bool:
         """
@@ -433,6 +470,8 @@ class Account(Facebook):
 
             for like_button in like_buttons:
                 try:
+                    self.scroll_into_view(element=like_button)
+
                     like_button.click()
                     time.sleep(2.5)
 
@@ -506,6 +545,8 @@ class Account(Facebook):
 
                 for comment_textbox in comment_textbox_elements:
                     try:
+                        self.scroll_into_view(element=comment_textbox)
+
                         for i in range(int(count / 100 * 50)):
                             comment_textbox.send_keys(Keys.ESCAPE)
                             comment_textbox.send_keys(text := random.choice(comments))
@@ -597,7 +638,12 @@ class Account(Facebook):
         """
         if self.driver.current_url != page_url:
             self.driver.get(page_url)
-            time.sleep(5)
+            self.infinite_scroll(
+                element=None,
+                scroll_limit=5,
+                delay=2.5,
+                callback=None,
+            )
 
         try:
             # Find the "Share" button on the post
@@ -638,7 +684,7 @@ class Account(Facebook):
                 By.XPATH, "//div[@aria-label='Post']"
             )
             post_button.click()
-            time.sleep(5.5)
+            time.sleep(0.5)
 
             timeout: int = 10
             while timeout > 0:
@@ -651,26 +697,17 @@ class Account(Facebook):
                     )
 
                     return True
-                except Exception as error:
+                except Exception as _:
                     pass
+
                 time.sleep(1)
                 timeout -= 1
 
         except Exception as _:
-            pass
+            ...
 
         logger.error(
             f"User <b>{self.username!r}</b> - <r>Unable</r> to share the post."
-        )
-
-        self.driver.refresh()
-        time.sleep(5)
-
-        self.infinite_scroll(
-            element=None,
-            scroll_limit=5,
-            delay=2.5,
-            callback=None,
         )
 
         return False
@@ -697,12 +734,29 @@ class Account(Facebook):
             for group in groups:
                 for index in range(share_count):
                     try:
+                        logger.info(
+                            f"Preparing to share the latest post... (Attempt <c>{index}</c> of <c>{share_count}</c>)"
+                        )
                         if self.share(page_url, group):
                             # Increment share count in report
                             Facebook.report[f"{self.username}"]["share"] += 1
                     except ShareLimitException as error:
                         logger.error(f"<r>{error}</r>")
                         return
+
+        self.infinite_scroll(
+            delay=2.5,
+            callback=self.comment,
+            page_url=page_url,
+            count=comment_count,
+        )
+
+        self.infinite_scroll(
+            delay=2.5,
+            callback=self.like,
+            page_url=page_url,
+            count=like_count,
+        )
 
     def infinite_scroll(
         self: Self,
@@ -944,22 +998,23 @@ def main(
 
     threads: List[threading.Thread] = []
 
-    for pkl in os.listdir("pkl"):
-        threads.append(
-            threading.Thread(
-                target=start,
-                kwargs=dict(
-                    cookie_file=f"pkl/{pkl}",
-                    page_url=page_url,
-                    username=username,
-                    groups=groups,
-                    like_count=like_count,
-                    share_count=share_count,
-                    comment_count=comment_count,
-                    **ctx.parent.params if ctx.parent else {},
-                ),
+    if os.path.exists("pkl/"):
+        for pkl in os.listdir("pkl"):
+            threads.append(
+                threading.Thread(
+                    target=start,
+                    kwargs=dict(
+                        cookie_file=f"pkl/{pkl}",
+                        page_url=page_url,
+                        username=username,
+                        groups=groups,
+                        like_count=like_count,
+                        share_count=share_count,
+                        comment_count=comment_count,
+                        **ctx.parent.params if ctx.parent else {},
+                    ),
+                )
             )
-        )
 
     for thread in threads:
         thread.start()
