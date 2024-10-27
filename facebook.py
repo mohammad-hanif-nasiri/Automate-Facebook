@@ -726,9 +726,9 @@ class Account(Facebook):
             return
 
         self.driver.get(page_url)
-        time.sleep(5)
+        time.sleep(10)
 
-        self.infinite_scroll(scroll_limit=5)
+        self.infinite_scroll(scroll_limit=2)
 
         if groups:
             for group in groups:
