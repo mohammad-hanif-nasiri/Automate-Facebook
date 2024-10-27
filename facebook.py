@@ -581,8 +581,8 @@ class Account(Facebook):
                                 facebook_element.send_keys(Keys.ESCAPE)
 
                                 return False
-                            except Exception as error:
-                                console.print(error)
+                            except Exception as _:
+                                pass
 
                     except Exception as _:
                         logger.error(
@@ -644,6 +644,7 @@ class Account(Facebook):
                 delay=2.5,
                 callback=None,
             )
+            time.sleep(5)
 
         try:
             # Find the "Share" button on the post
@@ -684,10 +685,9 @@ class Account(Facebook):
                 By.XPATH, "//div[@aria-label='Post']"
             )
             post_button.click()
-            time.sleep(0.5)
 
-            timeout: int = 10
-            while timeout > 0:
+            timeout: int = 0
+            while timeout > 15:
                 try:
                     self.driver.find_element(
                         By.XPATH, "//span[contains(text(), 'Shared to your group.')]"
@@ -701,7 +701,7 @@ class Account(Facebook):
                     pass
 
                 time.sleep(1)
-                timeout -= 1
+                timeout += 1
 
         except Exception as _:
             ...
@@ -709,6 +709,9 @@ class Account(Facebook):
         logger.error(
             f"User <b>{self.username!r}</b> - <r>Unable</r> to share the post."
         )
+
+        self.driver.refresh()
+        self.infinite_scroll(scroll_limit=2)
 
         return False
 
