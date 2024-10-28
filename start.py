@@ -1,4 +1,6 @@
-from typing import Dict
+import subprocess
+import threading
+from typing import Dict, List
 
 users: Dict[str, Dict[str, str]] = {
     "aliabdullah.nasiri": {
@@ -19,6 +21,31 @@ users: Dict[str, Dict[str, str]] = {
     },
 }
 
+threads: List[threading.Thread] = []
 
 for user, options in users.items():
-    pass
+    threads.append(
+        threading.Thread(
+            target=subprocess.run,
+            args=(
+                ["python3", "facebook.py"]
+                + [
+                    "--headless",
+                    "--disable-gpu",
+                    "--disable-infobars",
+                    "--disable-extensions",
+                    "--start-maximized",
+                    "--block-notifications",
+                    "--no-sandbox",
+                ]
+                + ["main"]
+                + [" ".join(option) for option in options.items()],
+            ),
+        )
+    )
+
+for thread in threads:
+    thread.start()
+
+for thread in threads:
+    thread.join()
