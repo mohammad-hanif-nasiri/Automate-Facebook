@@ -1,0 +1,24 @@
+from typing import Dict
+
+users: Dict[str, Dict[str, str]] = {
+    "aliabdullah.nasiri": {
+        "--page-url": "https://www.facebook.com/CityComputerStore",
+        "--username": "aliabdullah.nasiri",
+        "--groups": "Math",
+        "--share-count": "150",
+        "--comment-count": "0",
+        "--like-count": "0",
+    },
+    "mohammad.hanif.nasiri.1967": {
+        "--page-url": "https://www.facebook.com/PaytakhtMobile",
+        "--username": "mohammad.hanif.nasiri.1967",
+        "--groups": "Math",
+        "--share-count": "150",
+        "--comment-count": "0",
+        "--like-count": "0",
+    },
+}
+
+
+for user, options in users.items():
+    pass
