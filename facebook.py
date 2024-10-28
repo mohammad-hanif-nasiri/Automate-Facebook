@@ -652,10 +652,7 @@ class Account(Facebook):
                 By.XPATH,
                 "//span[contains(text(), 'Share')]/ancestor::*[@role='button']",
             )
-            self.driver.execute_script(
-                "arguments[0].scrollIntoView({behavior: 'smooth',  block: 'center'});",
-                share_button,
-            )
+            self.scroll_into_view(share_button)
 
             share_button.click()
             time.sleep(2)
@@ -734,6 +731,7 @@ class Account(Facebook):
         self.infinite_scroll(scroll_limit=2)
 
         if groups:
+            finished: bool = False
             for group in groups:
                 for index in range(share_count):
                     try:
@@ -745,7 +743,12 @@ class Account(Facebook):
                             Facebook.report[f"{self.username}"]["share"] += 1
                     except ShareLimitException as error:
                         logger.error(f"<r>{error}</r>")
-                        return
+
+                        finished = True
+                        break
+
+                if finished:
+                    break
 
         self.infinite_scroll(
             delay=2.5,
