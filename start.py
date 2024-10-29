@@ -31,7 +31,7 @@ for user, options in users.items():
                     "--no-sandbox",
                 ]
                 + ["main"]
-                + [" ".join(option) for option in options.items()],
+                + " ".join([" ".join(option) for option in options.items()]).split(" "),
             ),
         )
     )
