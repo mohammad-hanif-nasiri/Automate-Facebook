@@ -342,9 +342,9 @@ class Account(Facebook):
             """
             const element = arguments[0];
             element.scrollIntoView({
-              behavior: 'smooth', // Adds smooth scrolling animation
-              block: 'center',    // Aligns the element to the center of the viewport
-              inline: 'nearest'   // Aligns horizontally (optional)
+              behavior: 'smooth',
+              block: 'center',
+              inline: 'nearest'
             });
             """,
             element,
@@ -417,6 +417,17 @@ class Account(Facebook):
         except Exception:
             logger.error("<r>Unable</r> to retrieve username!")
         return None
+
+    @property
+    def facebook_element(self: Self) -> WebElement:
+        """
+        Retrieves the Facebook element by its unique ID.
+
+        Returns:
+            WebElement: The web element located by its ID, "facebook",
+                        enabling interaction or further manipulation.
+        """
+        return self.driver.find_element(By.ID, "facebook")
 
     def like(self: Self, page_url: str, count: int = 50) -> Union[bool, None]:
         """
@@ -532,11 +543,9 @@ class Account(Facebook):
             self.driver.get(page_url)
             time.sleep(5)
 
-        facebook_element = self.driver.find_element(By.ID, "facebook")
-
         # Retrieve comments and prepare to post
         if comments := get_comments():
-            facebook_element.send_keys(Keys.ESCAPE)
+            self.facebook_element.send_keys(Keys.ESCAPE)
             try:
                 comment_textbox_elements: List[WebElement] = self.driver.find_elements(
                     By.XPATH,
@@ -578,7 +587,7 @@ class Account(Facebook):
                                     f"<yellow><b>{heading_element.text}</b></yellow>"
                                 )
 
-                                facebook_element.send_keys(Keys.ESCAPE)
+                                self.facebook_element.send_keys(Keys.ESCAPE)
 
                                 return False
                             except Exception as _:
@@ -597,57 +606,14 @@ class Account(Facebook):
         else:
             logger.error("<r>No</r> comments available to post.")
 
-    def share(self: Self, page_url: str, group: str) -> bool:
-        """
-        Shares a post from a specified Facebook page to a specific group a given number of times.
-
-        This function navigates to the specified page, locates the "Share" button on a post,
-        selects the option to share it to a group, and then posts it in the specified group.
-        The operation can be repeated a defined number of times, as indicated by the `count` parameter.
-
-        Parameters:
-        -----------
-        page_url : str
-            The URL of the Facebook page containing the post to be shared.
-
-        group : str
-            The name of the Facebook group to share the post with.
-
-        Returns:
-        --------
-        bool
-            Returns True if the post was successfully shared in the specified group, False otherwise.
-
-        Raises:
-        -------
-        NoSuchElementException
-            Raised if elements such as the "Share" button, "Share to a Group" option, or group search
-            input are not found on the page.
-
-        Example:
-        --------
-        >>> share_result = bot.share(
-        >>>     page_url="https://www.facebook.com/examplepage",
-        >>>     group="Example Group",
-        >>>     count=3
-        >>> )
-        >>> if share_result:
-        >>>     print("Post shared successfully.")
-        >>> else:
-        >>>     print("Failed to share the post.")
-        """
+    def share(self: Self, page_url: str, group: str, timeout: int = 5) -> bool:
         if self.driver.current_url != page_url:
             self.driver.get(page_url)
-            self.infinite_scroll(
-                element=None,
-                scroll_limit=5,
-                delay=2.5,
-                callback=None,
-            )
+            self.infinite_scroll(scroll_limit=5, delay=2.5)
             time.sleep(5)
 
         try:
-            # Find the "Share" button on the post
+            # Find the first "Share" button on the page
             share_button = self.driver.find_element(
                 By.XPATH,
                 "//span[contains(text(), 'Share')]/ancestor::*[@role='button']",
@@ -655,7 +621,7 @@ class Account(Facebook):
             self.scroll_into_view(share_button)
 
             share_button.click()
-            time.sleep(2)
+            time.sleep(2.5)
 
             # Select the "Share to a Group" option
             share_to_group_button = self.driver.find_element(
@@ -663,28 +629,27 @@ class Account(Facebook):
                 "//span[contains(text(), 'Group')]/ancestor::*[@role='button']",
             )
             share_to_group_button.click()
-            time.sleep(2)
+            time.sleep(2.5)
 
             search_input = self.driver.find_element(
                 By.XPATH, '//input[@placeholder="Search for groups"]'
             )
             search_input.send_keys(group)
-            time.sleep(2)
+            time.sleep(2.5)
 
             group_elem = self.driver.find_element(
                 By.XPATH,
                 f"//span[contains(text(), '{group}')]/ancestor::*[@role='button']",
             )
             group_elem.click()
-            time.sleep(2)
+            time.sleep(2.5)
 
             post_button = self.driver.find_element(
                 By.XPATH, "//div[@aria-label='Post']"
             )
             post_button.click()
 
-            timeout: int = 0
-            while timeout > 15:
+            for _ in range(10):
                 try:
                     self.driver.find_element(
                         By.XPATH, "//span[contains(text(), 'Shared to your group.')]"
@@ -698,17 +663,22 @@ class Account(Facebook):
                     pass
 
                 time.sleep(1)
-                timeout += 1
 
         except Exception as _:
-            ...
+            if timeout > 0:
+                logger.info(
+                    f"User {self.username!r} - Attempting to share the post to group {group!r}. "
+                    f"Retries remaining: {timeout}."
+                )
+
+                self.driver.refresh()
+                self.infinite_scroll(scroll_limit=5, delay=2.5)
+
+                return self.share(page_url, group, timeout - 1)
 
         logger.error(
             f"User <b>{self.username!r}</b> - <r>Unable</r> to share the post."
         )
-
-        self.driver.refresh()
-        self.infinite_scroll(scroll_limit=2)
 
         return False
 
@@ -829,7 +799,7 @@ class Account(Facebook):
         """
 
         if not element:
-            element = self.driver.find_element(By.ID, "facebook")
+            element = self.facebook_element
 
         last_height = self.driver.execute_script(
             "return arguments[0].scrollHeight", element
