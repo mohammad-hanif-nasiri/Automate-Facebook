@@ -9,7 +9,7 @@ users: Dict[str, Dict[str, str]] = {
         "--groups": "Math",
         "--share-count": "150",
         "--comment-count": "150",
-        "--like-count": "100",
+        "--like-count": "0",
     },
 }
 
