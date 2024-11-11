@@ -428,6 +428,183 @@ class Account(Facebook):
         """
         return self.driver.find_element(By.ID, "facebook")
 
+    def like(self: Self, page_url: str, count: int = 50) -> Union[bool, None]:
+        """
+        Likes a specified number of posts on a given Facebook page.
+
+        This method locates the "Like" buttons on the specified Facebook page and clicks
+        on them to like the posts. It continues to like posts until either the specified
+        count is reached or there are no more like buttons available.
+
+        Parameters:
+        -----------
+        page_url: str
+            The URL of the Facebook page containing the posts to like. This should be
+            a valid URL that the user has access to.
+
+        count: int
+            The number of posts to like. The method will attempt to like this many posts
+            on the specified page. If there are fewer available posts, it will like as many
+            as possible.
+
+        Returns:
+        --------
+        Union[bool, None]
+            Returns True if the specified number of likes is successfully performed,
+            or None if the action could not be completed due to an error.
+
+        Raises:
+        -------
+        WebDriverException
+            If there is an issue with the WebDriver while trying to interact with the
+            page elements.
+
+        Example:
+        ---------
+        >>> like_success = like(page_url="https://www.facebook.com/yourpage", count=5)
+        >>> if like_success:
+        >>>     print("Successfully liked the posts.")
+        """
+        if self.driver.current_url != page_url:
+            self.driver.get(page_url)
+            time.sleep(5)
+
+        try:
+            like_buttons: List[WebElement] = [
+                button
+                for button in self.driver.find_elements(
+                    By.XPATH,
+                    "//div[@aria-label='Like']//span[contains(@class, 'x3nfvp2')]//i/ancestor::div[@role='button']",
+                )
+            ]
+
+            for like_button in like_buttons:
+                try:
+                    self.scroll_into_view(element=like_button)
+
+                    like_button.click()
+                    time.sleep(2.5)
+
+                    logger.success(
+                        f"User <b>{self.username!r}</b> - <g>Successfully</g> post liked."
+                    )
+
+                    if Facebook.report[f"{self.username}"]["like"] >= count:
+                        logger.info(
+                            f"<b>Completed</b> the like operation for user: <b>{self.username!r}</b>."
+                        )
+                        return True
+
+                    # Increment like count in report
+                    Facebook.report[f"{self.username}"]["like"] += 1
+
+                except Exception as _:
+                    logger.error(
+                        f"User <b>{self.username!r}</b> - <r>Error</r> clicking like button."
+                    )
+
+        except Exception as _:
+            logger.error(
+                f"User {self.username!r} - <r>Failed</r> to like posts on {page_url!r}."
+            )
+
+    def comment(self: Self, page_url: str, count: int = 50) -> Union[None, bool]:
+        """
+        Posts comments on a specified number of posts on a Facebook page.
+
+        This method navigates to the provided Facebook page URL, locates comment buttons on posts,
+        and posts a random comment from a pre-defined list. It will continue to post comments until
+        reaching the specified count limit or encountering an error.
+
+        Parameters:
+        -----------
+        page_url: str
+            The URL of the Facebook page where comments will be posted.
+
+        count: int
+            The maximum number of comments to post. If the count is reached, the method stops.
+
+        Returns:
+        --------
+        bool
+            True if the comment process completed up to the specified count.
+            Returns None if an error occurs during the comment process.
+
+        Raises:
+        -------
+        WebDriverException
+            If there is an issue with the Selenium WebDriver while navigating, locating elements,
+            or interacting with the page.
+        """
+
+        if self.driver.current_url != page_url:
+            logger.info(f"Navigating to the Facebook page: {page_url}")
+            self.driver.get(page_url)
+            time.sleep(5)
+
+        # Retrieve comments and prepare to post
+        if comments := get_comments():
+            self.facebook_element.send_keys(Keys.ESCAPE)
+            try:
+                comment_textbox_elements: List[WebElement] = self.driver.find_elements(
+                    By.XPATH,
+                    '//div[@aria-label="Write a comment…"]',
+                )
+
+                for comment_textbox in comment_textbox_elements:
+                    try:
+                        self.scroll_into_view(element=comment_textbox)
+
+                        for i in range(int(count / 100 * 50)):
+                            comment_textbox.send_keys(Keys.ESCAPE)
+                            comment_textbox.send_keys(text := random.choice(comments))
+                            comment_textbox.send_keys(Keys.ENTER)
+                            time.sleep(2.5)
+
+                            logger.success(
+                                f"User <b>{self.username!r}</b> - <g>Successfully</g> posted comment {i+1}/{count}: <b>{text!r}</b>"
+                            )
+
+                            if Facebook.report[f"{self.username}"]["comment"] >= count:
+                                logger.info(
+                                    f"User <b>{self.username!r}</b> - <b>Completed</b> commenting on <b>{int(count / 100 * 50)}</b> posts for user."
+                                )
+                                return True
+
+                            # Increment comment count in report
+                            Facebook.report[f"{self.username}"]["comment"] += 1
+
+                            try:
+                                dialog_element = self.driver.find_element(
+                                    By.XPATH, "//div[role='dialog']"
+                                )
+                                heading_element = dialog_element.find_element(
+                                    By.XPATH, "//h2[dir='auto']"
+                                )
+
+                                logger.warning(
+                                    f"<yellow><b>{heading_element.text}</b></yellow>"
+                                )
+
+                                self.facebook_element.send_keys(Keys.ESCAPE)
+
+                                return False
+                            except Exception as _:
+                                pass
+
+                    except Exception as _:
+                        logger.error(
+                            "User <b>{self.username!r}</b> - <r>Failed</r> to post a comment."
+                        )
+
+            except Exception as _:
+                logger.error(
+                    "User <b>{self.username!r}</b> - <r>Failed</r> to locate or interact with comment buttons."
+                )
+
+        else:
+            logger.error("<r>No</r> comments available to post.")
+
     def share(self: Self, page_url: str, group: str, timeout: int = 5) -> bool:
         if self.driver.current_url != page_url:
             self.driver.get(page_url)
@@ -541,6 +718,15 @@ class Account(Facebook):
 
                 if finished:
                     break
+
+        if like_count > 0:
+            self.infinite_scroll(
+                delay=2.5,
+                scroll_limit=500,
+                callback=self.like,
+                page_url=page_url,
+                count=like_count,
+            )
 
     def infinite_scroll(
         self: Self,
