@@ -8,7 +8,7 @@ users: Dict[str, Dict[str, str]] = {
         "--username": "aliabdullah.nasiri",
         "--groups": "Math",
         "--share-count": "150",
-        "--comment-count": "0",
+        "--comment-count": "100",
         "--like-count": "0",
     },
 }
