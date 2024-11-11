@@ -594,12 +594,12 @@ class Account(Facebook):
 
                     except Exception as _:
                         logger.error(
-                            "User <b>{self.username!r}</b> - <r>Failed</r> to post a comment."
+                            f"User <b>{self.username!r}</b> - <r>Failed</r> to post a comment."
                         )
 
             except Exception as _:
                 logger.error(
-                    "User <b>{self.username!r}</b> - <r>Failed</r> to locate or interact with comment buttons."
+                    f"User <b>{self.username!r}</b> - <r>Failed</r> to locate or interact with comment buttons."
                 )
 
         else:
