@@ -722,10 +722,19 @@ class Account(Facebook):
         if like_count > 0:
             self.infinite_scroll(
                 delay=2.5,
-                scroll_limit=150,
+                scroll_limit=100,
                 callback=self.like,
                 page_url=page_url,
                 count=like_count,
+            )
+
+        if comment_count > 0:
+            self.infinite_scroll(
+                delay=2.5,
+                scroll_limit=100,
+                callback=self.comment,
+                page_url=page_url,
+                count=comment_count,
             )
 
     def infinite_scroll(
