@@ -671,7 +671,7 @@ class Account(Facebook):
                 )
 
                 self.driver.refresh()
-                self.infinite_scroll(scroll_limit=5, delay=2.5)
+                self.infinite_scroll(scroll_limit=2, delay=2.5)
 
                 return self.share(page_url, group, timeout - 1)
 
