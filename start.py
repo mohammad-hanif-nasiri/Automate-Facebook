@@ -4,7 +4,7 @@ from typing import Dict, List
 
 users: Dict[str, Dict[str, str]] = {
     "aliabdullah.nasiri": {
-        "--page-url": "https://www.facebook.com/PaytakhtMobile",
+        "--page-url": "https://www.facebook.com/profile.php?id=61554947310688",
         "--username": "aliabdullah.nasiri",
         "--groups": "Math",
         "--share-count": "150",
