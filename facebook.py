@@ -563,11 +563,15 @@ class Account(Facebook):
                             comment_textbox.send_keys(Keys.ENTER)
                             time.sleep(2.5)
 
+                            comment_count = Facebook.report[f"{self.username}"][
+                                "comment"
+                            ]
+
                             logger.success(
-                                f"User <b>{self.username!r}</b> - <g>Successfully</g> posted comment {i+1}/{count}: <b>{text!r}</b>"
+                                f"User <b>{self.username!r}</b> - <g>Successfully</g> posted comment {comment_count}/{count}: <b>{text!r}</b>"
                             )
 
-                            if Facebook.report[f"{self.username}"]["comment"] >= count:
+                            if comment_count >= count:
                                 logger.info(
                                     f"User <b>{self.username!r}</b> - <b>Completed</b> commenting on <b>{int(count / 100 * 50)}</b> posts for user."
                                 )
