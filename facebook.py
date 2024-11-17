@@ -591,7 +591,7 @@ class Account(Facebook):
 
                                 return False
                             except Exception as _:
-                                pass
+                                self.comment(page_url, count)
 
                     except Exception as _:
                         logger.error(
