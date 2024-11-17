@@ -503,6 +503,7 @@ class Account(Facebook):
                     logger.error(
                         f"User <b>{self.username!r}</b> - <r>Error</r> clicking like button."
                     )
+                    self.like(page_url, count)
 
         except Exception as _:
             logger.error(
@@ -723,7 +724,7 @@ class Account(Facebook):
         if like_count > 0:
             self.infinite_scroll(
                 delay=2.5,
-                scroll_limit=100,
+                # scroll_limit=100,
                 callback=self.like,
                 page_url=page_url,
                 count=like_count,
@@ -732,7 +733,7 @@ class Account(Facebook):
         if comment_count > 0:
             self.infinite_scroll(
                 delay=2.5,
-                scroll_limit=100,
+                # scroll_limit=100,
                 callback=self.comment,
                 page_url=page_url,
                 count=comment_count,
