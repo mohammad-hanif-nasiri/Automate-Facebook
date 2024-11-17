@@ -11,6 +11,14 @@ users: Dict[str, Dict[str, str]] = {
         "--comment-count": "100",
         "--like-count": "0",
     },
+    "hanif.nasiri.1967": {
+        "--page-url": "https://www.facebook.com/profile.php?id=100063642170837",
+        "--username": "hanif.nasiri.1967",
+        "--groups": "Math",
+        "--share-count": "150",
+        "--comment-count": "100",
+        "--like-count": "0",
+    },
 }
 
 threads: List[threading.Thread] = []
