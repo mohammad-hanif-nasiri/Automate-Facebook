@@ -348,6 +348,7 @@ class Account(Facebook):
 
         for _ in range(10):
             self.facebook_element.send_keys(Keys.UP)
+            time.sleep(0.256)
 
     @property
     def is_logged_in(self: Self) -> bool:
