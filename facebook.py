@@ -25,7 +25,9 @@ from exceptions import ShareLimitException
 class Facebook:
 
     report: Dict[str, Dict[str, Any]] = {}
-    driver_path: str = ChromeDriverManager().install()
+    driver_path: str = (
+        "/home/aliabdullah/.wdm/drivers/chromedriver/linux64/129.0.6668.100/chromedriver-linux64/chromedriver"
+    )
 
     @staticmethod
     def save_cookies(driver: webdriver.Chrome) -> None:
@@ -212,6 +214,8 @@ class Account(Facebook):
             - disable_extensions (bool): Disables browser extensions if True.
             - start_maximized (bool): Starts browser maximized if True.
             - no_sandbox (bool): Disables sandbox mode if True.
+            - incognito (bool): Open in incognito mode.
+            - tor (bool): Use Tor anonymity network.
             - block_notifications (bool): Blocks browser notifications if True.
 
         Returns:
@@ -237,6 +241,12 @@ class Account(Facebook):
 
         if kwargs.get("no_sandbox", False):
             self.options.add_argument("--no-sandbox")
+
+        if kwargs.get("incognito", False):
+            self.options.add_argument("--incognito")
+
+        if kwargs.get("tor", False):
+            self.options.add_argument("--proxy-server=socks4://127.0.0.1:9050")
 
         if kwargs.get("block_notifications", False):
             self.options.add_experimental_option(
@@ -338,17 +348,20 @@ class Account(Facebook):
         scroll_into_view(self, element)
         ```
         """
-        X = element.location.get("x")
-        Y = element.location.get("y")
-
         self.driver.execute_script(
-            f"window.scrollTo({X}, {Y}); ",
+            """
+            const element = arguments[0];
+
+            element.scrollIntoView({
+              behavior: 'smooth',
+              block: 'center',
+              inline: 'nearest'
+            });
+            """,
             element,
         )
 
-        for _ in range(10):
-            self.facebook_element.send_keys(Keys.UP)
-            time.sleep(0.256)
+        time.sleep(0.5)
 
     @property
     def is_logged_in(self: Self) -> bool:
@@ -414,8 +427,10 @@ class Account(Facebook):
                 )
                 self._username = username
                 return username
+
         except Exception:
             logger.error("<r>Unable</r> to retrieve username!")
+
         return None
 
     @property
@@ -429,192 +444,17 @@ class Account(Facebook):
         """
         return self.driver.find_element(By.ID, "facebook")
 
-    def like(self: Self, page_url: str, count: int = 50) -> Union[bool, None]:
-        """
-        Likes a specified number of posts on a given Facebook page.
+    def get_last_post_url(
+        self: Self, page_url: str, timeout: int = 5
+    ) -> Union[str, None]:
+        self.driver.get(page_url)
+        self.infinite_scroll(scroll_limit=2, delay=2.5)
+        time.sleep(5)
 
-        This method locates the "Like" buttons on the specified Facebook page and clicks
-        on them to like the posts. It continues to like posts until either the specified
-        count is reached or there are no more like buttons available.
-
-        Parameters:
-        -----------
-        page_url: str
-            The URL of the Facebook page containing the posts to like. This should be
-            a valid URL that the user has access to.
-
-        count: int
-            The number of posts to like. The method will attempt to like this many posts
-            on the specified page. If there are fewer available posts, it will like as many
-            as possible.
-
-        Returns:
-        --------
-        Union[bool, None]
-            Returns True if the specified number of likes is successfully performed,
-            or None if the action could not be completed due to an error.
-
-        Raises:
-        -------
-        WebDriverException
-            If there is an issue with the WebDriver while trying to interact with the
-            page elements.
-
-        Example:
-        ---------
-        >>> like_success = like(page_url="https://www.facebook.com/yourpage", count=5)
-        >>> if like_success:
-        >>>     print("Successfully liked the posts.")
-        """
-        if self.driver.current_url != page_url:
-            self.driver.get(page_url)
-            time.sleep(5)
-
-        try:
-            like_buttons: List[WebElement] = [
-                button
-                for button in self.driver.find_elements(
-                    By.XPATH,
-                    "//div[@aria-label='Like']//span[contains(@class, 'x3nfvp2')]//i/ancestor::div[@role='button']",
-                )
-            ]
-
-            for like_button in like_buttons:
-                try:
-                    self.scroll_into_view(element=like_button)
-
-                    like_button.click()
-                    time.sleep(2.5)
-
-                    logger.success(
-                        f"User <b>{self.username!r}</b> - <g>Successfully</g> post liked."
-                    )
-
-                    if Facebook.report[f"{self.username}"]["like"] >= count:
-                        logger.info(
-                            f"<b>Completed</b> the like operation for user: <b>{self.username!r}</b>."
-                        )
-                        return True
-
-                    # Increment like count in report
-                    Facebook.report[f"{self.username}"]["like"] += 1
-
-                except Exception as _:
-                    logger.error(
-                        f"User <b>{self.username!r}</b> - <r>Error</r> clicking like button."
-                    )
-                    self.like(page_url, count)
-
-        except Exception as _:
-            logger.error(
-                f"User {self.username!r} - <r>Failed</r> to like posts on {page_url!r}."
-            )
-
-    def comment(self: Self, page_url: str, count: int = 50) -> Union[None, bool]:
-        """
-        Posts comments on a specified number of posts on a Facebook page.
-
-        This method navigates to the provided Facebook page URL, locates comment buttons on posts,
-        and posts a random comment from a pre-defined list. It will continue to post comments until
-        reaching the specified count limit or encountering an error.
-
-        Parameters:
-        -----------
-        page_url: str
-            The URL of the Facebook page where comments will be posted.
-
-        count: int
-            The maximum number of comments to post. If the count is reached, the method stops.
-
-        Returns:
-        --------
-        bool
-            True if the comment process completed up to the specified count.
-            Returns None if an error occurs during the comment process.
-
-        Raises:
-        -------
-        WebDriverException
-            If there is an issue with the Selenium WebDriver while navigating, locating elements,
-            or interacting with the page.
-        """
-
-        if self.driver.current_url != page_url:
-            logger.info(f"Navigating to the Facebook page: {page_url}")
-            self.driver.get(page_url)
-            time.sleep(5)
-
-        # Retrieve comments and prepare to post
-        if comments := get_comments():
-            self.facebook_element.send_keys(Keys.ESCAPE)
-            try:
-                comment_textbox_elements: List[WebElement] = self.driver.find_elements(
-                    By.XPATH,
-                    '//div[@aria-label="Write a comment…"]',
-                )
-
-                for comment_textbox in comment_textbox_elements:
-                    try:
-                        self.scroll_into_view(element=comment_textbox)
-
-                        for i in range(int(count / 100 * 50)):
-                            comment_textbox.send_keys(Keys.ESCAPE)
-                            comment_textbox.send_keys(text := random.choice(comments))
-                            comment_textbox.send_keys(Keys.ENTER)
-                            time.sleep(2.5)
-
-                            comment_count = Facebook.report[f"{self.username}"][
-                                "comment"
-                            ]
-
-                            logger.success(
-                                f"User <b>{self.username!r}</b> - <g>Successfully</g> posted comment {comment_count}/{count}: <b>{text!r}</b>"
-                            )
-
-                            if comment_count >= count:
-                                logger.info(
-                                    f"User <b>{self.username!r}</b> - <b>Completed</b> commenting on <b>{int(count / 100 * 50)}</b> posts for user."
-                                )
-                                return True
-
-                            # Increment comment count in report
-                            Facebook.report[f"{self.username}"]["comment"] += 1
-
-                            try:
-                                dialog_element = self.driver.find_element(
-                                    By.XPATH, "//div[role='dialog']"
-                                )
-                                heading_element = dialog_element.find_element(
-                                    By.XPATH, "//h2[dir='auto']"
-                                )
-
-                                logger.warning(
-                                    f"<yellow><b>{heading_element.text}</b></yellow>"
-                                )
-
-                                self.facebook_element.send_keys(Keys.ESCAPE)
-
-                                return False
-                            except Exception as _:
-                                self.comment(page_url, count)
-
-                    except Exception as _:
-                        logger.error(
-                            f"User <b>{self.username!r}</b> - <r>Failed</r> to post a comment."
-                        )
-
-            except Exception as _:
-                logger.error(
-                    f"User <b>{self.username!r}</b> - <r>Failed</r> to locate or interact with comment buttons."
-                )
-
-        else:
-            logger.error("<r>No</r> comments available to post.")
-
-    def share(self: Self, page_url: str, group: str, timeout: int = 5) -> bool:
-        if self.driver.current_url != page_url:
-            self.driver.get(page_url)
-            self.infinite_scroll(scroll_limit=5, delay=2.5)
+    def share(self: Self, post_url: str, group: str, timeout: int = 5) -> bool:
+        if self.driver.current_url != post_url:
+            self.driver.get(post_url)
+            self.infinite_scroll(scroll_limit=2, delay=2.5)
             time.sleep(5)
 
         try:
@@ -679,13 +519,87 @@ class Account(Facebook):
                 self.driver.refresh()
                 self.infinite_scroll(scroll_limit=2, delay=2.5)
 
-                return self.share(page_url, group, timeout - 1)
+                return self.share(post_url, group, timeout - 1)
 
         logger.error(
             f"User <b>{self.username!r}</b> - <r>Unable</r> to share the post."
         )
 
         return False
+
+    def comment(self: Self, post_url: str, count: int = 50) -> Union[None, bool]:
+        if self.driver.current_url != post_url:
+            self.driver.get(post_url)
+            time.sleep(5)
+
+            self.infinite_scroll(scroll_limit=2, delay=2.5)
+
+        # Retrieve comments and prepare to post
+        if comments := get_comments():
+            self.facebook_element.send_keys(Keys.ESCAPE)
+            try:
+                comment_textbox_elements: List[WebElement] = self.driver.find_elements(
+                    By.XPATH,
+                    '//div[@aria-label="Write a comment…"]',
+                )
+
+                for comment_textbox in comment_textbox_elements:
+                    try:
+                        self.scroll_into_view(element=comment_textbox)
+
+                        for _ in range(count):
+                            comment_textbox.send_keys(Keys.ESCAPE)
+                            comment_textbox.send_keys(text := random.choice(comments))
+                            comment_textbox.send_keys(Keys.ENTER)
+                            time.sleep(2.5)
+
+                            comment_count = Facebook.report[f"{self.username}"][
+                                "comment"
+                            ]
+
+                            logger.success(
+                                f"User <b>{self.username!r}</b> - <g>Successfully</g> posted comment {comment_count}/{count}: <b>{text!r}</b>"
+                            )
+
+                            if comment_count >= count:
+                                logger.info(
+                                    f"User <b>{self.username!r}</b> - <b>Completed</b> commenting on <b>{int(count / 100 * 50)}</b> posts for user."
+                                )
+                                return True
+
+                            # Increment comment count in report
+                            Facebook.report[f"{self.username}"]["comment"] += 1
+
+                            try:
+                                dialog_element = self.driver.find_element(
+                                    By.XPATH, "//div[role='dialog']"
+                                )
+                                heading_element = dialog_element.find_element(
+                                    By.XPATH, "//h2[dir='auto']"
+                                )
+
+                                logger.warning(
+                                    f"<yellow><b>{heading_element.text}</b></yellow>"
+                                )
+
+                                self.facebook_element.send_keys(Keys.ESCAPE)
+
+                                return False
+                            except Exception as _:
+                                self.comment(post_url, count)
+
+                    except Exception as _:
+                        logger.error(
+                            f"User <b>{self.username!r}</b> - <r>Failed</r> to post a comment."
+                        )
+
+            except Exception as _:
+                logger.error(
+                    f"User <b>{self.username!r}</b> - <r>Failed</r> to locate or interact with comment buttons."
+                )
+
+        else:
+            logger.error("<r>No</r> comments available to post.")
 
     def start(
         self: Self,
@@ -705,43 +619,31 @@ class Account(Facebook):
 
         self.infinite_scroll(scroll_limit=2)
 
-        if groups:
-            finished: bool = False
-            for group in groups:
-                for index in range(share_count):
-                    try:
-                        logger.info(
-                            f"Preparing to share the latest post... (Attempt <c>{index}</c> of <c>{share_count}</c>)"
-                        )
-                        if self.share(page_url, group):
-                            # Increment share count in report
-                            Facebook.report[f"{self.username}"]["share"] += 1
-                    except ShareLimitException as error:
-                        logger.error(f"<r>{error}</r>")
+        post_url = self.get_last_post_url(page_url)
 
-                        finished = True
+        if post_url:
+            if groups:
+                finished: bool = False
+                for group in groups:
+                    for index in range(share_count):
+                        try:
+                            logger.info(
+                                f"Preparing to share the latest post... (Attempt <c>{index}</c> of <c>{share_count}</c>)"
+                            )
+                            if self.share(post_url, group):
+                                # Increment share count in report
+                                Facebook.report[f"{self.username}"]["share"] += 1
+                        except ShareLimitException as error:
+                            logger.error(f"<r>{error}</r>")
+
+                            finished = True
+                            break
+
+                    if finished:
                         break
 
-                if finished:
-                    break
-
-        if like_count > 0:
-            self.infinite_scroll(
-                delay=2.5,
-                # scroll_limit=100,
-                callback=self.like,
-                page_url=page_url,
-                count=like_count,
-            )
-
-        if comment_count > 0:
-            self.infinite_scroll(
-                delay=2.5,
-                # scroll_limit=100,
-                callback=self.comment,
-                page_url=page_url,
-                count=comment_count,
-            )
+            if comment_count > 0:
+                self.comment(post_url, comment_count)
 
     def infinite_scroll(
         self: Self,
@@ -837,7 +739,7 @@ class Account(Facebook):
                 if (
                     callback(*args, **kwargs) is not None
                 ):  # Call the provided callback function
-                    return
+                    break
 
             # Increment the scroll count and check against the limit
             count += 1
@@ -907,6 +809,16 @@ def start(
     is_flag=True,
     help="Disable the sandbox for all running processes. This is useful when running Chrome in environments that do not support sandboxing, such as certain CI/CD systems or containerized environments.",
 )
+@click.option(
+    "--incognito",
+    is_flag=True,
+    help="Open in incognito mode.",
+)
+@click.option(
+    "--tor",
+    is_flag=True,
+    help="Use Tor anonymity network.",
+)
 def cli(
     headless: bool,
     disable_gpu: bool,
@@ -915,6 +827,8 @@ def cli(
     start_maximized: bool,
     block_notifications: bool,
     no_sandbox: bool,
+    incognito: bool,
+    tor: bool,
 ):
     # Log the values of each parameter
     logger.info(f"Headless mode: {headless}")
@@ -924,6 +838,8 @@ def cli(
     logger.info(f"Start maximized: {start_maximized}")
     logger.info(f"Block notifications: {block_notifications}")
     logger.info(f"Sandbox: {no_sandbox}")
+    logger.info(f"Incognito: {incognito}")
+    logger.info(f"Tor: {tor}")
 
 
 @cli.command()
@@ -1051,37 +967,38 @@ def login(
     """
     options: Options = Options()
 
-    if ctx.params.get("headless", False):
-        options.add_argument("--headless")
+    if ctx.parent:
+        if ctx.parent.params.get("headless", False):
+            options.add_argument("--headless")
 
-    if ctx.params.get("disable_gpu", False):
-        options.add_argument("--disable-gpu")
+        if ctx.parent.params.get("disable_gpu", False):
+            options.add_argument("--disable-gpu")
 
-    if ctx.params.get("disable_infobars", False):
-        options.add_argument("--disable-infobars")
+        if ctx.parent.params.get("disable_infobars", False):
+            options.add_argument("--disable-infobars")
 
-    if ctx.params.get("disable_extensions", False):
-        options.add_argument("--disable-extensions")
+        if ctx.parent.params.get("disable_extensions", False):
+            options.add_argument("--disable-extensions")
 
-    if ctx.params.get("start_maximized", False):
-        options.add_argument("start-maximized")
+        if ctx.parent.params.get("start_maximized", False):
+            options.add_argument("start-maximized")
 
-    if ctx.params.get("block_notifications", False):
-        options.add_experimental_option(
-            "prefs",
-            {
-                "profile.default_content_setting_values.notifications": 1,
-            },
-        )
+        if ctx.parent.params.get("incognito", False):
+            options.add_argument("--incognito")
 
-    service: Service = Service(
-        ChromeDriverManager().install(),
-    )
+        if ctx.parent.params.get("tor", False):
+            options.add_argument("--proxy-server=socks4://127.0.0.1:9050")
 
-    driver: webdriver.Chrome = webdriver.Chrome(
-        service=service,
-        options=options,
-    )
+        if ctx.parent.params.get("block_notifications", False):
+            options.add_experimental_option(
+                "prefs",
+                {
+                    "profile.default_content_setting_values.notifications": 1,
+                },
+            )
+
+    service: Service = Service(Facebook.driver_path)
+    driver: webdriver.Chrome = webdriver.Chrome(service=service, options=options)
 
     Facebook.login(driver, username=username, password=password)
 
