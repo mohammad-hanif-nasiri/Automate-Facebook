@@ -25,9 +25,7 @@ from exceptions import ShareLimitException
 class Facebook:
 
     report: Dict[str, Dict[str, Any]] = {}
-    driver_path: str = (
-        "/home/aliabdullah/.wdm/drivers/chromedriver/linux64/129.0.6668.100/chromedriver-linux64/chromedriver"
-    )
+    driver_path: str = ChromeDriverManager().install()
 
     @staticmethod
     def save_cookies(driver: webdriver.Chrome) -> None:
@@ -444,12 +442,55 @@ class Account(Facebook):
         """
         return self.driver.find_element(By.ID, "facebook")
 
-    def get_last_post_url(
-        self: Self, page_url: str, timeout: int = 5
-    ) -> Union[str, None]:
+    def get_last_post_url(self: Self, page_url: str) -> Union[str, None]:
         self.driver.get(page_url)
         self.infinite_scroll(scroll_limit=2, delay=2.5)
         time.sleep(5)
+
+        self.driver.execute_script(
+            """
+            const facebookElement = document.querySelector('#facebook');
+
+            facebookElement.addEventListener("copy", (event) => {
+                let value = event.target.value;
+
+                let postLinkElement = document.createElement("post-link");
+                postLinkElement.innerHTML = value;
+
+                facebookElement.append(postLinkElement);
+            });
+            """
+        )
+
+        try:
+            # Find the first "Share" button on the page
+            share_button = self.driver.find_element(
+                By.XPATH,
+                "//span[contains(text(), 'Share')]/ancestor::*[@role='button']",
+            )
+            self.scroll_into_view(share_button)
+            share_button.click()
+            time.sleep(2.5)
+
+            # Select the "Share to a Group" option
+            share_to_group_button = self.driver.find_element(
+                By.XPATH,
+                "//span[contains(text(), 'Copy link')]/ancestor::*[@role='button']",
+            )
+            share_to_group_button.click()
+            time.sleep(2.5)
+
+            return self.driver.find_element(
+                By.TAG_NAME,
+                "post-link",
+            ).text
+
+        except Exception as err:
+            console.log(err, style="cyan italic bold")
+
+        logger.error(
+            f"User <b>{self.username!r}</b> - <r>Unable</r> to get the last post link."
+        )
 
     def share(self: Self, post_url: str, group: str, timeout: int = 5) -> bool:
         if self.driver.current_url != post_url:
@@ -614,13 +655,11 @@ class Account(Facebook):
         if username and username != self.username:
             return
 
-        self.driver.get(page_url)
-        time.sleep(10)
-
-        self.infinite_scroll(scroll_limit=2)
-
         post_url = self.get_last_post_url(page_url)
 
+        console.print(post_url)
+
+        return
         if post_url:
             if groups:
                 finished: bool = False
