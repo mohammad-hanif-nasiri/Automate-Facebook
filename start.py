@@ -37,6 +37,7 @@ for user, options in users.items():
                     "--start-maximized",
                     "--block-notifications",
                     "--no-sandbox",
+                    "--incognito",
                 ]
                 + ["main"]
                 + " ".join([" ".join(option) for option in options.items()]).split(" "),
