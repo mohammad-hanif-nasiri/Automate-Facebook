@@ -480,10 +480,17 @@ class Account(Facebook):
             share_to_group_button.click()
             time.sleep(2.5)
 
-            return self.driver.find_element(
+            link = self.driver.find_element(
                 By.TAG_NAME,
                 "post-link",
             ).text
+
+            if link:
+                logger.success(
+                    f"User <b>{self.username!r}</b> - Successfully the last post link retrieved."
+                )
+
+            return link
 
         except Exception as err:
             console.log(err, style="cyan italic bold")
