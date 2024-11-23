@@ -80,6 +80,7 @@ jobs:
             --start-maximized \
             --block-notifications \
             --no-sandbox \
+            --incognito \
             main \
             --page-url "${{ github.event.inputs.page_url}}" \
             --username "${{ github.event.inputs.username }}" \
