@@ -487,7 +487,7 @@ class Account(Facebook):
 
             if link:
                 logger.success(
-                    f"User <b>{self.username!r}</b> - Successfully the last post link retrieved."
+                    f"User <b>{self.username!r}</b> - Successfully the last post link ({link}) retrieved."
                 )
 
             return link
@@ -662,25 +662,26 @@ class Account(Facebook):
         if username and username != self.username:
             return
 
-        if (post_url := self.get_last_post_url(page_url)) and groups:
-            finished: bool = False
-            for group in groups:
-                for index in range(share_count):
-                    try:
-                        logger.info(
-                            f"Preparing to share the latest post... (Attempt <c>{index}</c> of <c>{share_count}</c>)"
-                        )
-                        if self.share(post_url, group):
-                            # Increment share count in report
-                            Facebook.report[f"{self.username}"]["share"] += 1
-                    except ShareLimitException as error:
-                        logger.error(f"<r>{error}</r>")
+        if post_url := self.get_last_post_url(page_url):
+            if groups:
+                finished: bool = False
+                for group in groups:
+                    for index in range(share_count):
+                        try:
+                            logger.info(
+                                f"Preparing to share the latest post... (Attempt <c>{index}</c> of <c>{share_count}</c>)"
+                            )
+                            if self.share(post_url, group):
+                                # Increment share count in report
+                                Facebook.report[f"{self.username}"]["share"] += 1
+                        except ShareLimitException as error:
+                            logger.error(f"<r>{error}</r>")
 
-                        finished = True
+                            finished = True
+                            break
+
+                    if finished:
                         break
-
-                if finished:
-                    break
 
             if comment_count > 0:
                 self.comment(post_url, comment_count)
