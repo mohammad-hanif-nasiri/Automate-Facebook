@@ -577,6 +577,33 @@ class Account(Facebook):
             console.print(err, style="cyan bold italic")
 
     def comment(self: Self, post_url: str, count: int = 50) -> Union[None, bool]:
+        """
+        Posts comments on a specified number of posts on a Facebook page.
+
+        This method navigates to the provided Facebook page URL, locates comment buttons on posts,
+        and posts a random comment from a pre-defined list. It will continue to post comments until
+        reaching the specified count limit or encountering an error.
+
+        Parameters:
+        -----------
+        page_url: str
+            The URL of the Facebook page where comments will be posted.
+
+        count: int
+            The maximum number of comments to post. If the count is reached, the method stops.
+
+        Returns:
+        --------
+        bool
+            True if the comment process completed up to the specified count.
+            Returns None if an error occurs during the comment process.
+
+        Raises:
+        -------
+        WebDriverException
+            If there is an issue with the Selenium WebDriver while navigating, locating elements,
+            or interacting with the page.
+        """
         if self.driver.current_url != post_url:
             self.driver.get(post_url)
             time.sleep(5)
@@ -598,7 +625,7 @@ class Account(Facebook):
                     time.sleep(random.random())
 
                     textbox.send_keys(Keys.ENTER)
-                    time.sleep(2 + random.randint(1, 4))
+                    time.sleep(2 + random.random())
 
                     # CommentLimitException
 
@@ -731,7 +758,7 @@ class Account(Facebook):
         if like_count > 0:
             self.infinite_scroll(
                 delay=2.5,
-                scroll_limit=32,
+                scroll_limit=10,
                 callback=self.like,
                 page_url=page_url,
                 count=like_count,
