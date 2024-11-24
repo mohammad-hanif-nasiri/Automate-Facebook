@@ -19,6 +19,22 @@ users: Dict[str, Dict[str, str]] = {
         "--comment-count": "100",
         "--like-count": "0",
     },
+    "ali.nasiri.20050727": {
+        "--page-url": "https://www.facebook.com/PaytakhtMobile",
+        "--username": "ali.nasiri.20050727",
+        "--groups": "Math",
+        "--share-count": "150",
+        "--comment-count": "100",
+        "--like-count": "0",
+    },
+    "milad.noori.7860": {
+        "--page-url": "https://www.facebook.com/CityComputerStore",
+        "--username": "milad.noori.7860",
+        "--groups": "Math",
+        "--share-count": "150",
+        "--comment-count": "100",
+        "--like-count": "0",
+    },
 }
 
 threads: List[threading.Thread] = []
