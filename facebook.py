@@ -19,7 +19,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from console import console
 from functions import send_email, get_comments
 from logger import logger
-from exceptions import ShareLimitException
+from exceptions import ShareLimitException, CommentLimitException
 
 
 class Facebook:
@@ -571,6 +571,8 @@ class Account(Facebook):
 
                         time.sleep(1)
 
+                    # ShareLimitException
+
         except Exception as err:
             console.print(err, style="cyan bold italic")
 
@@ -597,6 +599,8 @@ class Account(Facebook):
 
                     textbox.send_keys(Keys.ENTER)
                     time.sleep(2 + random.randint(1, 4))
+
+                    # CommentLimitException
 
                     comment_count = Facebook.report[f"{self.username}"]["comment"]
 
