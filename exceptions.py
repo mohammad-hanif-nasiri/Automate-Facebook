@@ -4,3 +4,7 @@ class FBException(Exception):
 
 class ShareLimitException(FBException):
     pass
+
+
+class CommentLimitException(FBException):
+    pass
