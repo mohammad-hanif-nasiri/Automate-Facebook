@@ -19,7 +19,6 @@ from webdriver_manager.chrome import ChromeDriverManager
 from console import console
 from functions import send_email, get_comments
 from logger import logger
-from exceptions import ShareLimitException, CommentLimitException
 
 
 class Facebook:
@@ -503,13 +502,15 @@ class Account(Facebook):
 
     def share(self: Self, post_url: str, groups: List[str], count: int) -> None:
         self.driver.get(post_url)
-        self.infinite_scroll(scroll_limit=2, delay=2.5)
         time.sleep(5)
 
         try:
             for group in groups:
                 for index in range(count // len(groups)):
                     if Facebook.report[f"{self.username}"]["share"] >= count:
+                        logger.success(
+                            f"User <b>{self.username!r}</b> - <g>Successfully</g> the sharing process completed!"
+                        )
                         break
 
                     logger.info(
@@ -571,7 +572,19 @@ class Account(Facebook):
 
                         time.sleep(1)
 
-                    # ShareLimitException
+                    try:
+                        self.driver.find_element(
+                            By.XPATH,
+                            "//div[@role='dialog']//span[contains(text(), 'MSG')]",
+                        )
+
+                        logger.warning(
+                            b"User <b>{self.username!r}</b> - You <r>can not</r> <b>share</b> the post right now!"
+                        )
+
+                        return
+                    except Exception as _:
+                        pass
 
         except Exception as err:
             console.print(err, style="cyan bold italic")
@@ -586,8 +599,8 @@ class Account(Facebook):
 
         Parameters:
         -----------
-        page_url: str
-            The URL of the Facebook page where comments will be posted.
+        post_url: str
+            The URL of the Facebook post where comments will be posted.
 
         count: int
             The maximum number of comments to post. If the count is reached, the method stops.
@@ -608,9 +621,7 @@ class Account(Facebook):
             self.driver.get(post_url)
             time.sleep(5)
 
-            self.infinite_scroll(scroll_limit=2, delay=2.5)
-
-        # Retrieve comments and prepare to post
+        # Retrieve comments random comments
         if comments := get_comments():
             try:
                 textbox: WebElement = self.driver.find_element(
@@ -627,7 +638,19 @@ class Account(Facebook):
                     textbox.send_keys(Keys.ENTER)
                     time.sleep(2 + random.random())
 
-                    # CommentLimitException
+                    try:
+                        self.driver.find_element(
+                            By.XPATH,
+                            "//div[@role='dialog']//span[contains(text(), 'MSG')]",
+                        )
+
+                        logger.warning(
+                            b"User <b>{self.username!r}</b> - You <r>can not</r> write <b>comments</b> right now!"
+                        )
+
+                        return False
+                    except Exception as _:
+                        pass
 
                     comment_count = Facebook.report[f"{self.username}"]["comment"]
 
