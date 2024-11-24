@@ -359,7 +359,9 @@ class Account(Facebook):
             element,
         )
 
-        time.sleep(2.5)
+        time.sleep(1)
+
+        console.print(self.report, style="bold italic")
 
     @property
     def is_logged_in(self: Self) -> bool:
@@ -490,7 +492,7 @@ class Account(Facebook):
                     f"User <b>{self.username!r}</b> - Successfully the last post link ({link}) retrieved."
                 )
 
-            return link
+                return link
 
         except Exception as err:
             console.log(err, style="cyan italic bold")
@@ -499,9 +501,7 @@ class Account(Facebook):
             f"User <b>{self.username!r}</b> - <r>Unable</r> to get the last post link."
         )
 
-    def share(
-        self: Self, post_url: str, groups: List[str], count: int, timeout: int = 5
-    ) -> None:
+    def share(self: Self, post_url: str, groups: List[str], count: int) -> None:
         self.driver.get(post_url)
         self.infinite_scroll(scroll_limit=2, delay=2.5)
         time.sleep(5)
@@ -571,14 +571,8 @@ class Account(Facebook):
 
                         time.sleep(1)
 
-        except Exception as _:
-            if timeout > 0:
-                logger.info(
-                    f"User {self.username!r} - Attempting to share the post to group."
-                    f"Retries remaining: {timeout}."
-                )
-
-                return self.share(post_url, groups, count, timeout - 1)
+        except Exception as err:
+            console.print(err, style="cyan bold italic")
 
     def comment(self: Self, post_url: str, count: int = 50) -> Union[None, bool]:
         if self.driver.current_url != post_url:
@@ -627,6 +621,89 @@ class Account(Facebook):
         else:
             logger.error("<r>No</r> comments available to post.")
 
+    def like(self: Self, page_url: str, count: int) -> Union[bool, None]:
+        """
+        Likes a specified number of posts on a given Facebook page.
+
+        This method locates the "Like" buttons on the specified Facebook page and clicks
+        on them to like the posts. It continues to like posts until either the specified
+        count is reached or there are no more like buttons available.
+
+        Parameters:
+        -----------
+        page_url: str
+            The URL of the Facebook page containing the posts to like. This should be
+            a valid URL that the user has access to.
+
+        count: int
+            The number of posts to like. The method will attempt to like this many posts
+            on the specified page. If there are fewer available posts, it will like as many
+            as possible.
+
+        Returns:
+        --------
+        Union[bool, None]
+            Returns True if the specified number of likes is successfully performed,
+            or None if the action could not be completed due to an error.
+
+        Raises:
+        -------
+        WebDriverException
+            If there is an issue with the WebDriver while trying to interact with the
+            page elements.
+
+        Example:
+        ---------
+        >>> like_success = like(page_url="https://www.facebook.com/yourpage", count=5)
+        >>> if like_success:
+        >>>     print("Successfully liked the posts.")
+        """
+        if self.driver.current_url != page_url:
+            self.driver.get(page_url)
+            time.sleep(5)
+
+        try:
+            like_buttons: List[WebElement] = [
+                button
+                for button in self.driver.find_elements(
+                    By.XPATH,
+                    "//div[@aria-label='Like']//span[contains(@class, 'x3nfvp2')]//i/ancestor::div[@role='button']",
+                )
+            ]
+
+            for like_button in like_buttons:
+                try:
+                    self.scroll_into_view(element=like_button)
+
+                    like_button.click()
+                    time.sleep(2.5)
+
+                    logger.success(
+                        f"User <b>{self.username!r}</b> - <g>Successfully</g> post liked."
+                    )
+
+                    if Facebook.report[f"{self.username}"]["like"] >= count:
+                        logger.info(
+                            f"<b>Completed</b> the like operation for user: <b>{self.username!r}</b>."
+                        )
+                        return True
+
+                    # Increment like count in report
+                    Facebook.report[f"{self.username}"]["like"] += 1
+
+                except Exception as err:
+                    logger.error(
+                        f"User <b>{self.username!r}</b> - <r>Error</r> clicking like button."
+                    )
+                    console.print(err, style="cyan bold italic")
+
+                    self.like(page_url, count)
+
+        except Exception as _:
+            logger.error(
+                f"User {self.username!r} - <r>Failed</r> to like posts on {page_url!r}."
+            )
+
     def start(
         self: Self,
         *,
@@ -648,7 +725,13 @@ class Account(Facebook):
                 self.comment(post_url, comment_count)
 
         if like_count > 0:
-            pass
+            self.infinite_scroll(
+                delay=2.5,
+                scroll_limit=32,
+                callback=self.like,
+                page_url=page_url,
+                count=like_count,
+            )
 
     def infinite_scroll(
         self: Self,
@@ -921,7 +1004,6 @@ def main(
                     ),
                 )
             )
-            break
 
     for thread in threads:
         thread.start()
@@ -934,9 +1016,9 @@ def main(
         rows: List[List[Any]] = []
 
         for index, (username, data) in enumerate(Facebook.report.items()):
-            like = data.get("like")
             comment = data.get("comment")
             share = data.get("share")
+            like = data.get("like")
 
             row = [index + 1, username, like, comment, share]
             rows.append(row)
