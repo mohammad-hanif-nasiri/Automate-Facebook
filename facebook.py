@@ -420,7 +420,7 @@ class Account(Facebook):
             link = self.driver.find_element(
                 By.XPATH, '//div[@aria-label="Shortcuts"]//a'
             )
-            if href := link.get_attribute("href"):
+            if href := link.get_dom_attribute("href"):
                 username = href.split("/").pop()
                 logger.info(
                     f"Successfully retrieved the user <b>{username!r}</b> information."
