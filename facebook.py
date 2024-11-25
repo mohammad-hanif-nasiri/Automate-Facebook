@@ -17,7 +17,7 @@ from selenium.webdriver.remote.webelement import WebElement
 from webdriver_manager.chrome import ChromeDriverManager
 
 from console import console
-from functions import send_email, get_comments
+from functions import get_comments, send_email
 from logger import logger
 
 
@@ -447,11 +447,34 @@ class Account(Facebook):
     def get_points(self: Self, page_url: str, timeout: int = 5) -> Union[str, None]:
         pass
 
-    def get_screenshot(self: Self, post_url: str) -> str: ...
+    def get_screenshot(
+        self: Self,
+        url: str,
+        callback_fun: Union[None, Callable] = None,
+        *args,
+        **kwargs,
+    ) -> bytes:
+        self.driver.get(url)
+        time.sleep(5)
 
-    def before_share(self: Self, post_url: str) -> None: ...
+        if callback_fun:
+            callback_fun(*args, **kwargs)
 
-    def after_share(self: Self, post_url: str) -> None: ...
+        return self.driver.get_screenshot_as_png()
+
+    def get_screenshot_as_file(
+        self: Self,
+        url: str,
+        callback_fun: Union[None, Callable] = None,
+        *args,
+        **kwargs,
+    ) -> str:
+        with open(path := f"/tmp/{uuid.uuid4()}.png", mode="wb") as file:
+            file.write(self.get_screenshot(url, callback_fun, *args, **kwargs))
+
+        return path
+
+    def report_share(self: Self, page_url: str, post_url: str, msg: str) -> None: ...
 
     def get_last_post_url(
         self: Self, page_url: str, timeout: int = 5
