@@ -609,16 +609,20 @@ class Account(Facebook):
                         time.sleep(1)
 
                     try:
-                        self.driver.find_element(
+                        spans = self.driver.find_elements(
                             By.XPATH,
-                            "//span[contains(text(), 'You Can't Use This Feature Right Now')]",
+                            "//div[@role='dialog']//span",
                         )
 
-                        logger.warning(
-                            b"User <b>{self.username!r}</b> - You <r>can not</r> <b>share</b> the post right now!"
-                        )
+                        for span in spans:
+                            if "You Can't Use This Feature Right Now" in span.text:
+                                logger.warning(
+                                    f"User <b>{self.username!r}</b> - You"
+                                    " <r>can not</r> <b>share</b> the post right now!"
+                                )
 
-                        return
+                                return
+
                     except Exception as _:
                         pass
 
@@ -669,16 +673,18 @@ class Account(Facebook):
                     time.sleep(2 + random.random())
 
                     try:
-                        self.driver.find_element(
+                        spans = self.driver.find_elements(
                             By.XPATH,
-                            "//span[contains(text(), 'You Can't Use This Feature Right Now')]",
+                            "//div[@role='dialog']//span",
                         )
 
-                        logger.warning(
-                            b"User <b>{self.username!r}</b> - You <r>can not</r> write <b>comments</b> right now!"
-                        )
+                        for span in spans:
+                            if "You Can't Use This Feature Right Now" in span.text:
+                                logger.warning(
+                                    f"User <b>{self.username!r}</b> - You <r>can not</r> write <b>comments</b> right now!"
+                                )
+                                return
 
-                        return
                     except Exception as _:
                         ...
 
