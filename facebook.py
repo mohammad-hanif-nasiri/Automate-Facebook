@@ -575,7 +575,7 @@ class Account(Facebook):
                     try:
                         self.driver.find_element(
                             By.XPATH,
-                            "//div[@role='dialog']//span[contains(text(), 'MSG')]",
+                            "//div[@role='dialog']//span[contains(text(), 'You Can't Use This Feature Right Now')]",
                         )
 
                         logger.warning(
@@ -641,7 +641,7 @@ class Account(Facebook):
                     try:
                         self.driver.find_element(
                             By.XPATH,
-                            "//div[@role='dialog']//span[contains(text(), 'MSG')]",
+                            "//div[@role='dialog']//span[contains(text(), 'You Can't Use This Feature Right Now')]",
                         )
 
                         logger.warning(
