@@ -447,6 +447,12 @@ class Account(Facebook):
     def get_points(self: Self, page_url: str, timeout: int = 5) -> Union[str, None]:
         pass
 
+    def get_screenshot(self: Self, post_url: str) -> str: ...
+
+    def before_share(self: Self, post_url: str) -> None: ...
+
+    def after_share(self: Self, post_url: str) -> None: ...
+
     def get_last_post_url(
         self: Self, page_url: str, timeout: int = 5
     ) -> Union[str, None]:
