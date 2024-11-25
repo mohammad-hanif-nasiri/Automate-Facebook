@@ -290,6 +290,7 @@ class Account(Facebook):
                     "share": 0,
                     "like": 0,
                     "comment": 0,
+                    "points": 0,
                 },
             )
 
@@ -443,7 +444,12 @@ class Account(Facebook):
         """
         return self.driver.find_element(By.ID, "facebook")
 
-    def get_last_post_url(self: Self, page_url: str) -> Union[str, None]:
+    def get_points(self: Self, page_url: str, timeout: int = 5) -> Union[str, None]:
+        pass
+
+    def get_last_post_url(
+        self: Self, page_url: str, timeout: int = 5
+    ) -> Union[str, None]:
         self.driver.get(page_url)
         self.infinite_scroll(scroll_limit=2, delay=2.5)
         time.sleep(5)
@@ -471,15 +477,14 @@ class Account(Facebook):
             )
             self.scroll_into_view(share_button)
             share_button.click()
-            time.sleep(2.5)
+            time.sleep(3.5)
 
-            # Select the "Share to a Group" option
-            share_to_group_button = self.driver.find_element(
+            copy_link_button = self.driver.find_element(
                 By.XPATH,
                 "//span[contains(text(), 'Copy link')]/ancestor::*[@role='button']",
             )
-            share_to_group_button.click()
-            time.sleep(2.5)
+            copy_link_button.click()
+            time.sleep(3.5)
 
             link = self.driver.find_element(
                 By.TAG_NAME,
@@ -493,12 +498,14 @@ class Account(Facebook):
 
                 return link
 
-        except Exception as err:
-            console.log(err, style="cyan italic bold")
+        except Exception as _:
+            ...
 
         logger.error(
             f"User <b>{self.username!r}</b> - <r>Unable</r> to get the last post link."
         )
+
+        return self.get_last_post_url(page_url, timeout - 1) if timeout > 0 else None
 
     def share(self: Self, post_url: str, groups: List[str], count: int) -> None:
         self.driver.get(post_url)
@@ -575,7 +582,7 @@ class Account(Facebook):
                     try:
                         self.driver.find_element(
                             By.XPATH,
-                            "//div[@role='dialog']//span[contains(text(), 'You Can't Use This Feature Right Now')]",
+                            "//span[contains(text(), 'You Can't Use This Feature Right Now')]",
                         )
 
                         logger.warning(
@@ -589,7 +596,7 @@ class Account(Facebook):
         except Exception as err:
             console.print(err, style="cyan bold italic")
 
-    def comment(self: Self, post_url: str, count: int = 50) -> Union[None, bool]:
+    def comment(self: Self, post_url: str, count: int = 50) -> None:
         """
         Posts comments on a specified number of posts on a Facebook page.
 
@@ -607,15 +614,9 @@ class Account(Facebook):
 
         Returns:
         --------
-        bool
-            True if the comment process completed up to the specified count.
-            Returns None if an error occurs during the comment process.
+        None
+            This function does not return any value.
 
-        Raises:
-        -------
-        WebDriverException
-            If there is an issue with the Selenium WebDriver while navigating, locating elements,
-            or interacting with the page.
         """
         if self.driver.current_url != post_url:
             self.driver.get(post_url)
@@ -641,16 +642,16 @@ class Account(Facebook):
                     try:
                         self.driver.find_element(
                             By.XPATH,
-                            "//div[@role='dialog']//span[contains(text(), 'You Can't Use This Feature Right Now')]",
+                            "//span[contains(text(), 'You Can't Use This Feature Right Now')]",
                         )
 
                         logger.warning(
                             b"User <b>{self.username!r}</b> - You <r>can not</r> write <b>comments</b> right now!"
                         )
 
-                        return False
+                        return
                     except Exception as _:
-                        pass
+                        ...
 
                     comment_count = Facebook.report[f"{self.username}"]["comment"]
 
@@ -662,101 +663,18 @@ class Account(Facebook):
                         logger.info(
                             f"User <b>{self.username!r}</b> - <b>Completed</b> commenting process."
                         )
-                        return True
+                        return
 
                     # Increment comment count in report
                     Facebook.report[f"{self.username}"]["comment"] += 1
 
             except Exception as _:
                 logger.error(
-                    f"User <b>{self.username!r}</b> - <r>Failed</r> to locate or interact with comment buttons."
+                    f"User <b>{self.username!r}</b> - <r>Failed</r> to locate or interact with comment textbox."
                 )
 
         else:
             logger.error("<r>No</r> comments available to post.")
-
-    def like(self: Self, page_url: str, count: int) -> Union[bool, None]:
-        """
-        Likes a specified number of posts on a given Facebook page.
-
-        This method locates the "Like" buttons on the specified Facebook page and clicks
-        on them to like the posts. It continues to like posts until either the specified
-        count is reached or there are no more like buttons available.
-
-        Parameters:
-        -----------
-        page_url: str
-            The URL of the Facebook page containing the posts to like. This should be
-            a valid URL that the user has access to.
-
-        count: int
-            The number of posts to like. The method will attempt to like this many posts
-            on the specified page. If there are fewer available posts, it will like as many
-            as possible.
-
-        Returns:
-        --------
-        Union[bool, None]
-            Returns True if the specified number of likes is successfully performed,
-            or None if the action could not be completed due to an error.
-
-        Raises:
-        -------
-        WebDriverException
-            If there is an issue with the WebDriver while trying to interact with the
-            page elements.
-
-        Example:
-        ---------
-        >>> like_success = like(page_url="https://www.facebook.com/yourpage", count=5)
-        >>> if like_success:
-        >>>     print("Successfully liked the posts.")
-        """
-        if self.driver.current_url != page_url:
-            self.driver.get(page_url)
-            time.sleep(5)
-
-        try:
-            like_buttons: List[WebElement] = [
-                button
-                for button in self.driver.find_elements(
-                    By.XPATH,
-                    "//div[@aria-label='Like']//span[contains(@class, 'x3nfvp2')]//i/ancestor::div[@role='button']",
-                )
-            ]
-
-            for like_button in like_buttons:
-                try:
-                    self.scroll_into_view(element=like_button)
-
-                    like_button.click()
-                    time.sleep(2.5)
-
-                    logger.success(
-                        f"User <b>{self.username!r}</b> - <g>Successfully</g> post liked."
-                    )
-
-                    if Facebook.report[f"{self.username}"]["like"] >= count:
-                        logger.info(
-                            f"<b>Completed</b> the like operation for user: <b>{self.username!r}</b>."
-                        )
-                        return True
-
-                    # Increment like count in report
-                    Facebook.report[f"{self.username}"]["like"] += 1
-
-                except Exception as err:
-                    logger.error(
-                        f"User <b>{self.username!r}</b> - <r>Error</r> clicking like button."
-                    )
-                    console.print(err, style="cyan bold italic")
-
-                    self.like(page_url, count)
-
-        except Exception as _:
-            logger.error(
-                f"User {self.username!r} - <r>Failed</r> to like posts on {page_url!r}."
-            )
 
     def start(
         self: Self,
@@ -768,6 +686,8 @@ class Account(Facebook):
         comment_count: int = 50,
         share_count: int = 5,
     ):
+        self.report[f"{self.username}"]["points"] = self.get_points(page_url, timeout=5)
+
         if username and username != self.username:
             return
 
@@ -777,15 +697,6 @@ class Account(Facebook):
 
             if comment_count > 0:
                 self.comment(post_url, comment_count)
-
-        # if like_count > 0:
-        #     self.infinite_scroll(
-        #         delay=2.5,
-        #         scroll_limit=10,
-        #         callback=self.like,
-        #         page_url=page_url,
-        #         count=like_count,
-        #     )
 
     def infinite_scroll(
         self: Self,
@@ -1066,15 +977,24 @@ def main(
         thread.join()
 
     if Facebook.report:
-        cols: List[str] = ["#", "Username", "Like", "Comment", "Share"]
+        cols: List[str] = [
+            "#",
+            "Username",
+            "Like",
+            "Comment",
+            "Share",
+            "Page URL",
+            "Points",
+        ]
         rows: List[List[Any]] = []
 
         for index, (username, data) in enumerate(Facebook.report.items()):
             comment = data.get("comment")
             share = data.get("share")
             like = data.get("like")
+            points = data.get("points")
 
-            row = [index + 1, username, like, comment, share]
+            row = [index + 1, username, like, comment, share, page_url, points]
             rows.append(row)
 
         send_email("Automate - Facebook", cols=cols, rows=rows)
