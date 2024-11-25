@@ -528,7 +528,7 @@ class Account(Facebook):
                 return link
 
         except Exception as _:
-            ...
+            pass
 
         logger.error(
             f"User <b>{self.username!r}</b> - <r>Unable</r> to get the last post link."
@@ -686,7 +686,7 @@ class Account(Facebook):
                                 return
 
                     except Exception as _:
-                        ...
+                        pass
 
                     comment_count = Facebook.report[f"{self.username}"]["comment"]
 
@@ -727,11 +727,14 @@ class Account(Facebook):
             return
 
         if post_url := self.get_last_post_url(page_url):
-            if groups:
+            if share_count > 0 and groups:
                 self.share(post_url, groups, share_count)
 
             if comment_count > 0:
                 self.comment(post_url, comment_count)
+
+        if like_count > 0:
+            pass
 
     def infinite_scroll(
         self: Self,
@@ -1004,6 +1007,7 @@ def main(
                     ),
                 )
             )
+            break
 
     for thread in threads:
         thread.start()
