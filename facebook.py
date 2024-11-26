@@ -1007,7 +1007,6 @@ def main(
                     ),
                 )
             )
-            break
 
     for thread in threads:
         thread.start()
