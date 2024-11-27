@@ -17,14 +17,14 @@ from selenium.webdriver.remote.webelement import WebElement
 from webdriver_manager.chrome import ChromeDriverManager
 
 from console import console
-from functions import get_comments, send_email
+from functions import driver_path, get_comments, send_email
 from logger import logger
 
 
 class Facebook:
 
     report: Dict[str, Dict[str, Any]] = {}
-    driver_path: str = ChromeDriverManager().install()
+    driver_path: str = driver_path
 
     @staticmethod
     def save_cookies(driver: webdriver.Chrome) -> None:
