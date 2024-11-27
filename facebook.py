@@ -536,7 +536,9 @@ class Account(Facebook):
 
         return self.get_last_post_url(page_url, timeout - 1) if timeout > 0 else None
 
-    def share(self: Self, post_url: str, groups: List[str], count: int) -> None:
+    def share(
+        self: Self, post_url: str, groups: List[str], count: int, timeout: int = 5
+    ) -> None:
         self.driver.get(post_url)
         time.sleep(5)
 
@@ -547,7 +549,7 @@ class Account(Facebook):
                         logger.success(
                             f"User <b>{self.username!r}</b> - <g>Successfully</g> the sharing process completed!"
                         )
-                        break
+                        return
 
                     logger.info(
                         f"Preparing to share the last post... (Attempt <c>{index+1}</c> of <c>{count}</c>)"
@@ -626,8 +628,8 @@ class Account(Facebook):
                     except Exception as _:
                         pass
 
-        except Exception as err:
-            console.print(err, style="cyan bold italic")
+        except Exception as _:
+            return self.share(post_url, groups, count, timeout - 1)
 
     def comment(self: Self, post_url: str, count: int = 50) -> None:
         """
