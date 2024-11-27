@@ -8,8 +8,11 @@ import requests
 from jinja2 import Environment, FileSystemLoader
 from stem import Signal
 from stem.control import Controller
+from webdriver_manager.chrome import ChromeDriverManager
 
 from logger import logger
+
+driver_path: str = ChromeDriverManager().install()
 
 
 def get_ip(proxies: Union[Dict[str, str], None] = None) -> Union[str, None]:
