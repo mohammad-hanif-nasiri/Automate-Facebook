@@ -74,6 +74,7 @@ class Facebook:
         # Load cookies from the .pkl file
         with open(cookie_file, "rb") as f:
             cookies = pickle.load(f)
+            logger.success(f"Cookie file successfully loaded (<b>{cookie_file!r}</b>)!")
             for cookie in cookies:
                 driver.add_cookie(cookie)
 
