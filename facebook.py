@@ -1,12 +1,39 @@
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 import click
 
+from functions import send_email
 from logger import logger
 
 
 class Facebook:
     report: Dict[str, Dict[str, Any]] = {}
+
+    @staticmethod
+    def send_report():
+        if Facebook.report:
+            cols: List[str] = [
+                "#",
+                "Username",
+                "Like",
+                "Comment",
+                "Share",
+                "Page URL",
+                "Points",
+            ]
+            rows: List[List[Any]] = []
+
+            for index, (username, data) in enumerate(Facebook.report.items()):
+                comment = data.get("comment")
+                share = data.get("share")
+                like = data.get("like")
+                page_url = data.get("page_url")
+                points = data.get("points")
+
+                row = [index + 1, username, like, comment, share, page_url, points]
+                rows.append(row)
+
+            send_email("Automate - Facebook", cols=cols, rows=rows)
 
 
 @click.group()
