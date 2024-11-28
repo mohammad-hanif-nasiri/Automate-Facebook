@@ -22,7 +22,6 @@ class Facebook:
             "Like",
             "Comment",
             "Share",
-            "Page URL",
             "Points",
         ]
 
