@@ -72,7 +72,7 @@ jobs:
       - name: Execute Facebook Bot for Manual Trigger
         if: ${{ github.event_name == 'workflow_dispatch' }}
         run: |
-          python facebook.py \
+          python account.py \
             --headless \
             --disable-gpu \
             --disable-infobars \
