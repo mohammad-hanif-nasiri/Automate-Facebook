@@ -1,6 +1,6 @@
 import time
-from typing import Self, Union
 import uuid
+from typing import Self, Union
 
 import click
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
