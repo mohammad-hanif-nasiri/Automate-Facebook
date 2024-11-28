@@ -266,7 +266,6 @@ class Account(Facebook, Chrome):
             # Find the first "Share" button on the page
             share_button = self.driver.find_element(
                 By.XPATH,
-                # "//span[contains(text(), 'Share')]/ancestor::*[@role='button']",
                 "//div[@aria-label='Send this to friends or post it on your profile.'][@role='button']",
             )
             self.scroll_into_view(share_button)
