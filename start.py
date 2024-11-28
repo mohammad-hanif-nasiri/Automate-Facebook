@@ -56,6 +56,7 @@ for user, options in users.items():
                             block_notifications=True,
                             no_sandbox=True,
                             incognito=True,
+                            tor=False,
                         ),
                     ),
                 )
