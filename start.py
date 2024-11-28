@@ -1,65 +1,65 @@
-import subprocess
+import os
+import re
 import threading
-from typing import Dict, List
+from typing import Any, Dict, List
 
-users: Dict[str, Dict[str, str]] = {
+import account
+
+users: Dict[str, Dict[str, Any]] = {
     "aliabdullah.nasiri": {
-        "--page-url": "https://www.facebook.com/profile.php?id=61554947310688",
-        "--username": "aliabdullah.nasiri",
-        "--groups": "Math",
-        "--share-count": "150",
-        "--comment-count": "100",
-        "--like-count": "0",
+        "page_url": "https://www.facebook.com/profile.php?id=61554947310688",
+        "groups": "Math",
+        "share_count": 150,
+        "comment_count": 100,
+        "like_count": 0,
     },
     "hanif.nasiri.1967": {
-        "--page-url": "https://www.facebook.com/profile.php?id=100063642170837",
-        "--username": "hanif.nasiri.1967",
-        "--groups": "Math",
-        "--share-count": "150",
-        "--comment-count": "100",
-        "--like-count": "0",
+        "page_url": "https://www.facebook.com/profile.php?id=100063642170837",
+        "groups": "Math",
+        "share_count": 150,
+        "comment_count": 100,
+        "like_count": 0,
     },
     "ali.nasiri.20050727": {
-        "--page-url": "https://www.facebook.com/PaytakhtMobile",
-        "--username": "ali.nasiri.20050727",
-        "--groups": "Math",
-        "--share-count": "150",
-        "--comment-count": "100",
-        "--like-count": "0",
+        "page_url": "https://www.facebook.com/PaytakhtMobile",
+        "groups": "Math",
+        "share_count": 150,
+        "comment_count": 100,
+        "like_count": 0,
     },
     "mohammad.hanif.nasiri.1967": {
-        "--page-url": "https://www.facebook.com/CityComputerStore",
-        "--username": "mohammad.hanif.nasiri.1967",
-        "--groups": "Math",
-        "--share-count": "150",
-        "--comment-count": "100",
-        "--like-count": "0",
+        "page_url": "https://www.facebook.com/CityComputerStore",
+        "groups": "Math",
+        "share_count": 150,
+        "comment_count": 100,
+        "like_count": 0,
     },
 }
 
 threads: List[threading.Thread] = []
 
 for user, options in users.items():
-    threads.append(
-        threading.Thread(
-            target=subprocess.run,
-            args=(
-                ["python3", "account.py"]
-                + [
-                    "--headless",
-                    "--disable-gpu",
-                    "--disable-infobars",
-                    "--disable-extensions",
-                    "--start-maximized",
-                    "--block-notifications",
-                    "--no-sandbox",
-                    "--incognito",
-                ]
-                + ["main"]
-                + " ".join([" ".join(option) for option in options.items()]).split(" "),
-            ),
-        )
-    )
+    for file in os.listdir("pkl/"):
+        if re.match(f"^{user}.*", file):
+            threads.append(
+                threading.Thread(
+                    target=account.start,
+                    kwargs=dict(
+                        cookie_file=f"pkl/{file}",
+                        **options,
+                        kwargs=dict(
+                            headless=True,
+                            disable_gpu=True,
+                            disable_infobars=True,
+                            disable_extensions=True,
+                            start_maximized=True,
+                            block_notifications=True,
+                            no_sandbox=True,
+                            incognito=True,
+                        ),
+                    ),
+                )
+            )
 
 for thread in threads:
     thread.start()
