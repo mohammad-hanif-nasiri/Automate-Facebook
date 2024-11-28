@@ -331,14 +331,15 @@ class Account(Facebook, Chrome):
         try:
             for group in groups:
                 for index in range(count // len(groups)):
-                    if Facebook.report[f"{self.username}"]["share"] >= count:
+                    share_count = Facebook.report[f"{self.username}"]["share"]
+                    if share_count >= count:
                         logger.success(
                             f"User <b>{self.username!r}</b> - <g>Successfully</g> the sharing process completed!"
                         )
                         return
 
                     logger.info(
-                        f"Preparing to share the last post... (Attempt <c>{index+1}</c> of <c>{count}</c>)"
+                        f"User <b>{self.username!r}</b> - Preparing to share the last post... (Attempt <c>{share_count+1}</c> of <c>{count}</c>)"
                     )
                     # Find the first "Share" button on the page
                     share_button = self.driver.find_element(
