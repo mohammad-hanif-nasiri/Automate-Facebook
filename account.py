@@ -123,7 +123,7 @@ class Account(Facebook, Chrome):
 
         time.sleep(1)
 
-        console.print(self.report, style="bold italic")
+        Facebook.print_report()
 
     @property
     def is_logged_in(self: Self) -> bool:
