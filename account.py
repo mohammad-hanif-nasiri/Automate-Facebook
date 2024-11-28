@@ -423,28 +423,7 @@ class Account(Facebook, Chrome):
                     timeout - 1,
                 )
 
-    def comment(self: Self, post_url: str, count: int = 50) -> None:
-        """
-        Posts comments on a specified number of posts on a Facebook page.
-
-        This method navigates to the provided Facebook page URL, locates comment buttons on posts,
-        and posts a random comment from a pre-defined list. It will continue to post comments until
-        reaching the specified count limit or encountering an error.
-
-        Parameters:
-        -----------
-        post_url: str
-            The URL of the Facebook post where comments will be posted.
-
-        count: int
-            The maximum number of comments to post. If the count is reached, the method stops.
-
-        Returns:
-        --------
-        None
-            This function does not return any value.
-
-        """
+    def comment(self: Self, post_url: str, count: int = 50, timeout: int = 5) -> None:
         if self.driver.current_url != post_url:
             self.driver.get(post_url)
             time.sleep(5)
@@ -501,6 +480,8 @@ class Account(Facebook, Chrome):
                 logger.error(
                     f"User <b>{self.username!r}</b> - <r>Failed</r> to locate or interact with comment textbox."
                 )
+                if timeout > 0:
+                    return self.comment(post_url, count, timeout - 1)
 
         else:
             logger.error("<r>No</r> comments available to post.")
