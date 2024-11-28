@@ -7,9 +7,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 
 class Chrome:
-    path: Union[str, None] = (
-        "/home/aliabdullah/.wdm/drivers/chromedriver/linux64/129.0.6668.100/chromedriver-linux64/chromedriver"
-    )
+    path: Union[str, None] = ChromeDriverManager().install()
 
     def __init__(self: Self, **kwargs) -> None:
 
