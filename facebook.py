@@ -4,10 +4,52 @@ import click
 
 from functions import send_email
 from logger import logger
+from console import console
+
+from rich.table import Table
 
 
 class Facebook:
     report: Dict[str, Dict[str, Any]] = {}
+
+    @staticmethod
+    def print_report() -> None:
+        table: Table = Table(style="cyan bold")
+
+        cols: List[str] = [
+            "#",
+            "Username",
+            "Like",
+            "Comment",
+            "Share",
+            "Page URL",
+            "Points",
+        ]
+
+        for col in cols:
+            table.add_column(col)
+
+        rows: List[List[Any]] = []
+
+        for index, (username, data) in enumerate(Facebook.report.items()):
+            comment = data.get("comment")
+            share = data.get("share")
+            like = data.get("like")
+            points = data.get("points")
+
+            row: List[Any] = []
+
+            row.append(index + 1)
+            row.append(username)
+            row.append(like)
+            row.append(comment)
+            row.append(share)
+            row.append(points)
+
+        for row in rows:
+            table.add_row(*row)
+
+        console.print(table)
 
     @staticmethod
     def send_report():
