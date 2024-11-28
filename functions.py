@@ -1,3 +1,4 @@
+import pickle
 import random
 import smtplib
 from email.mime.multipart import MIMEMultipart
@@ -6,13 +7,11 @@ from typing import Any, Dict, List, Union
 
 import requests
 from jinja2 import Environment, FileSystemLoader
+from selenium import webdriver
 from stem import Signal
 from stem.control import Controller
-from webdriver_manager.chrome import ChromeDriverManager
 
 from logger import logger
-
-driver_path: str = ChromeDriverManager().install()
 
 
 def get_ip(proxies: Union[Dict[str, str], None] = None) -> Union[str, None]:
@@ -24,7 +23,7 @@ def get_ip(proxies: Union[Dict[str, str], None] = None) -> Union[str, None]:
 
 def renew_ip(proxies: Union[Dict[str, str], None] = None) -> Union[str, None]:
     current_ip = get_ip(proxies)
-    with Controller.from_port(port=9051) as controller:
+    with Controller.from_port(port="9051") as controller:
         controller.authenticate(password="Ali.Nasiri#88771234")
         controller.signal(Signal.NEWNYM)
 
@@ -96,3 +95,59 @@ def get_comments() -> Union[List[str], None]:
     random.shuffle(comments)
 
     return comments
+
+
+def save_cookies(driver: webdriver.Chrome, filename: str) -> None:
+    """
+    Static method to save cookies from the current browser session after a successful login.
+
+    Parameters:
+    -----------
+    driver : webdriver.Chrome
+        The Selenium Chrome WebDriver instance from which cookies will be saved.
+
+    Returns:
+    --------
+    None :
+        Saves the cookies to a `.pkl` file in the 'pkl' directory with a unique filename.
+    """
+    # Save cookies after successful login
+    pickle.dump(
+        driver.get_cookies(),
+        open(f"pkl/{filename}.pkl", "wb"),
+    )
+
+
+def load_cookies(driver: webdriver.Chrome, cookie_file: str) -> None:
+    """
+    Load cookies from a specified .pkl file into the Selenium WebDriver.
+
+    Parameters:
+    -----------
+    driver : webdriver.Chrome
+        The Selenium Chrome WebDriver instance into which cookies will be loaded.
+    cookie_file : str
+        The path to the .pkl file containing the cookies to be loaded.
+
+    Returns:
+    --------
+    None
+    """
+    # Info: Starting cookie management process
+    logger.info("Starting the process to load and add cookies (file: {cookie_file}).")
+
+    # Remove all current cookies
+    driver.delete_all_cookies()
+    logger.info("All existing cookies have been deleted from the driver.")
+
+    # Load cookies from the .pkl file
+    with open(cookie_file, "rb") as f:
+        cookies = pickle.load(f)
+        logger.success(f"Cookie file successfully loaded (<b>{cookie_file!r}</b>)!")
+        for cookie in cookies:
+            driver.add_cookie(cookie)
+
+    # Success: Cookies have been loaded and added
+    logger.success(
+        "Cookies have been <g>successfully</g> loaded from the file and added to the driver."
+    )
