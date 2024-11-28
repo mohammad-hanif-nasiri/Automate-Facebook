@@ -242,8 +242,8 @@ class Account(Facebook, Chrome):
         self: Self, page_url: str, timeout: int = 5
     ) -> Union[str, None]:
         self.driver.get(page_url)
-        self.infinite_scroll(scroll_limit=2, delay=2.5)
-        time.sleep(5)
+        self.infinite_scroll(scroll_limit=5, delay=5)
+        time.sleep(10)
 
         self.driver.execute_script(
             """
@@ -268,14 +268,14 @@ class Account(Facebook, Chrome):
             )
             self.scroll_into_view(share_button)
             share_button.click()
-            time.sleep(3.5)
+            time.sleep(5)
 
             copy_link_button = self.driver.find_element(
                 By.XPATH,
                 "//span[contains(text(), 'Copy link')]/ancestor::*[@role='button']",
             )
             copy_link_button.click()
-            time.sleep(3.5)
+            time.sleep(5)
 
             link = self.driver.find_element(
                 By.TAG_NAME,
