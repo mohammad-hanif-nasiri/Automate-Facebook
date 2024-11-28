@@ -46,6 +46,8 @@ class Facebook:
             row.append(share)
             row.append(points)
 
+            rows.append(list(map(str, row)))
+
         for row in rows:
             table.add_row(*row)
 
