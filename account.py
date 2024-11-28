@@ -322,7 +322,9 @@ class Account(Facebook, Chrome):
 
         return self.get_last_post_url(page_url, timeout - 1) if timeout > 0 else None
 
-    def share(self: Self, post_url: str, groups: List[str], count: int) -> None:
+    def share(
+        self: Self, post_url: str, groups: List[str], count: int, timeout: int = 5
+    ) -> None:
         self.driver.get(post_url)
         time.sleep(5)
 
@@ -412,8 +414,14 @@ class Account(Facebook, Chrome):
                     except Exception as _:
                         pass
 
-        except Exception as err:
-            console.print(err, style="red bold italic")
+        except Exception as _:
+            if timeout > 0:
+                return self.share(
+                    post_url,
+                    groups,
+                    count,
+                    timeout - 1,
+                )
 
     def comment(self: Self, post_url: str, count: int = 50) -> None:
         """
