@@ -44,7 +44,7 @@ for user, options in users.items():
         threading.Thread(
             target=subprocess.run,
             args=(
-                ["python3", "facebook.py"]
+                ["python3", "account.py"]
                 + [
                     "--headless",
                     "--disable-gpu",
