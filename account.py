@@ -263,21 +263,32 @@ class Account(Facebook, Chrome):
         )
 
         try:
-            # Find the first "Share" button on the page
-            share_button = self.driver.find_element(
-                By.XPATH,
-                "//div[@aria-label='Send this to friends or post it on your profile.'][@role='button']",
-            )
-            self.scroll_into_view(share_button)
-            share_button.click()
-            time.sleep(5)
+            try:
+                copy_button = self.driver.find_element(
+                    By.XPATH,
+                    "//span[contains(text(), 'Copy')]/ancestor::*[@role='button']",
+                )
+                self.scroll_into_view(copy_button)
+                copy_button.click()
+                time.sleep(5)
 
-            copy_link_button = self.driver.find_element(
-                By.XPATH,
-                "//span[contains(text(), 'Copy link')]/ancestor::*[@role='button']",
-            )
-            copy_link_button.click()
-            time.sleep(5)
+            except Exception as _:
+                # Find the first "Share" button on the page
+                share_button = self.driver.find_element(
+                    By.XPATH,
+                    # "//span[contains(text(), 'Share')]/ancestor::*[@role='button']",
+                    "//div[@aria-label='Send this to friends or post it on your profile.'][@role='button']",
+                )
+                self.scroll_into_view(share_button)
+                share_button.click()
+                time.sleep(5)
+
+                copy_link_button = self.driver.find_element(
+                    By.XPATH,
+                    "//div[@role='dialog']//span[contains(text(), 'Copy link')]/ancestor::*[@role='button']",
+                )
+                copy_link_button.click()
+                time.sleep(5)
 
             link = self.driver.find_element(
                 By.TAG_NAME,
