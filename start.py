@@ -4,6 +4,7 @@ import threading
 from typing import Any, Dict, List
 
 import account
+from facebook import Facebook
 
 users: Dict[str, Dict[str, Any]] = {
     "aliabdullah.nasiri": {
@@ -67,3 +68,5 @@ for thread in threads:
 
 for thread in threads:
     thread.join()
+
+Facebook.send_report()
