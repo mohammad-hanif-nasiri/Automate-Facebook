@@ -80,6 +80,30 @@ class Account(Facebook, Chrome):
         --------
         None
         """
+        if Facebook.report:
+            cols: List[str] = [
+                "#",
+                "Username",
+                "Like",
+                "Comment",
+                "Share",
+                "Page URL",
+                "Points",
+            ]
+            rows: List[List[Any]] = []
+
+            for index, (username, data) in enumerate(Facebook.report.items()):
+                comment = data.get("comment")
+                share = data.get("share")
+                like = data.get("like")
+                page_url = data.get("page_url")
+                points = data.get("points")
+
+                row = [index + 1, username, like, comment, share, page_url, points]
+                rows.append(row)
+
+            send_email("Automate - Facebook", cols=cols, rows=rows)
+
         self.driver.delete_all_cookies()
         self.driver.quit()
 
@@ -483,6 +507,7 @@ class Account(Facebook, Chrome):
         comment_count: int = 50,
         share_count: int = 5,
     ):
+        self.report[f"{self.username}"]["page_url"] = page_url
         self.report[f"{self.username}"]["points"] = self.get_points(page_url, timeout=5)
 
         if username and username != self.username:
@@ -697,29 +722,6 @@ def main(
 
     for thread in threads:
         thread.join()
-
-    if Facebook.report:
-        cols: List[str] = [
-            "#",
-            "Username",
-            "Like",
-            "Comment",
-            "Share",
-            "Page URL",
-            "Points",
-        ]
-        rows: List[List[Any]] = []
-
-        for index, (username, data) in enumerate(Facebook.report.items()):
-            comment = data.get("comment")
-            share = data.get("share")
-            like = data.get("like")
-            points = data.get("points")
-
-            row = [index + 1, username, like, comment, share, page_url, points]
-            rows.append(row)
-
-        send_email("Automate - Facebook", cols=cols, rows=rows)
 
 
 if __name__ == "__main__":
