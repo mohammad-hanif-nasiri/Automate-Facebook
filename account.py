@@ -401,9 +401,8 @@ class Account(Facebook, Chrome):
                 )
 
     def comment(self: Self, post_url: str, count: int = 50, timeout: int = 5) -> None:
-        if self.driver.current_url != post_url:
-            self.driver.get(post_url)
-            time.sleep(5)
+        self.driver.get(post_url)
+        time.sleep(5)
 
         # Retrieve comments random comments
         if comments := get_comments():
