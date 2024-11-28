@@ -1,6 +1,7 @@
 import os
 import pickle
 import random
+import re
 import threading
 import time
 import uuid
@@ -241,9 +242,10 @@ class Account(Facebook, Chrome):
     def get_last_post_url(
         self: Self, page_url: str, timeout: int = 5
     ) -> Union[str, None]:
-        self.driver.get(page_url)
-        self.infinite_scroll(scroll_limit=5, delay=5)
-        time.sleep(10)
+        if self.driver.current_url != page_url:
+            self.driver.get(page_url)
+            self.infinite_scroll(scroll_limit=2, delay=2.5)
+            time.sleep(5)
 
         self.driver.execute_script(
             """
@@ -264,7 +266,8 @@ class Account(Facebook, Chrome):
             # Find the first "Share" button on the page
             share_button = self.driver.find_element(
                 By.XPATH,
-                "//span[contains(text(), 'Share')]/ancestor::*[@role='button']",
+                # "//span[contains(text(), 'Share')]/ancestor::*[@role='button']",
+                "//div[@aria-label='Send this to friends or post it on your profile.'][@role='button']",
             )
             self.scroll_into_view(share_button)
             share_button.click()
@@ -289,8 +292,8 @@ class Account(Facebook, Chrome):
 
                 return link
 
-        except Exception as _:
-            pass
+        except Exception as err:
+            console.print(err, style="red bold")
 
         logger.error(
             f"User <b>{self.username!r}</b> - <r>Unable</r> to get the last post link."
@@ -666,6 +669,9 @@ def main(
 
     if os.path.exists("pkl/"):
         for pkl in os.listdir("pkl"):
+            if username and not re.match(f"^{username}.*", pkl):
+                continue
+
             threads.append(
                 threading.Thread(
                     target=start,
