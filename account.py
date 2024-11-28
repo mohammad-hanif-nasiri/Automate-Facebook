@@ -80,30 +80,6 @@ class Account(Facebook, Chrome):
         --------
         None
         """
-        if Facebook.report:
-            cols: List[str] = [
-                "#",
-                "Username",
-                "Like",
-                "Comment",
-                "Share",
-                "Page URL",
-                "Points",
-            ]
-            rows: List[List[Any]] = []
-
-            for index, (username, data) in enumerate(Facebook.report.items()):
-                comment = data.get("comment")
-                share = data.get("share")
-                like = data.get("like")
-                page_url = data.get("page_url")
-                points = data.get("points")
-
-                row = [index + 1, username, like, comment, share, page_url, points]
-                rows.append(row)
-
-            send_email("Automate - Facebook", cols=cols, rows=rows)
-
         self.driver.delete_all_cookies()
         self.driver.quit()
 
@@ -712,6 +688,8 @@ def main(
 
     for thread in threads:
         thread.join()
+
+    Facebook.send_report()
 
 
 if __name__ == "__main__":
