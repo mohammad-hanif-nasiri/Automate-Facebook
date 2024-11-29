@@ -459,6 +459,7 @@ class Account(Facebook, Chrome):
                     time.sleep(random.random())
 
                     textbox.send_keys(Keys.ENTER)
+                    time.sleep(1.5)
 
                     while True:
                         try:
@@ -470,14 +471,26 @@ class Account(Facebook, Chrome):
                             continue
 
                         except Exception as _:
-                            logger.success(
-                                f"User <b>{self.username!r}</b> - <g>Successfully</g> posted comment {comment_count+1}/{count}: <b>{text!r}</b>"
-                            )
+                            try:
+                                self.driver.find_element(
+                                    By.XPATH,
+                                    "//span[contains(text(), 'Unable to post comment.')]",
+                                )
 
-                            # Increment comment count in report
-                            Facebook.report[f"{self.username}"]["comment"] += 1
+                                logger.warning(
+                                    f"User <b>{self.username!r}</b> - You <r>can not</r> write <b>comments</b> right now!"
+                                )
+                                return
 
-                            break
+                            except Exception as _:
+                                logger.success(
+                                    f"User <b>{self.username!r}</b> - <g>Successfully</g> posted comment {comment_count+1}/{count}: <b>{text!r}</b>"
+                                )
+
+                                # Increment comment count in report
+                                Facebook.report[f"{self.username}"]["comment"] += 1
+
+                                break
 
                     try:
                         spans = self.driver.find_elements(
@@ -486,7 +499,11 @@ class Account(Facebook, Chrome):
                         )
 
                         for span in spans:
-                            if "You Can't Use This Feature Right Now" in span.text:
+                            if (
+                                "You Can't Use This Feature Right Now" in span.text
+                                or "You can't use this feature at the moment"
+                                in span.text
+                            ):
                                 logger.warning(
                                     f"User <b>{self.username!r}</b> - You <r>can not</r> write <b>comments</b> right now!"
                                 )
