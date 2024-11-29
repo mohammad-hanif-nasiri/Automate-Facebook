@@ -5,7 +5,7 @@ import re
 import threading
 import time
 import uuid
-from typing import Any, Callable, List, Self, Union
+from typing import Callable, List, Self, Union
 
 import click
 from selenium.webdriver.common.by import By
@@ -15,7 +15,7 @@ from selenium.webdriver.remote.webelement import WebElement
 from chrome import Chrome
 from console import console
 from facebook import Facebook, cli
-from functions import get_comments, send_email
+from functions import get_comments
 from logger import logger
 
 
