@@ -48,7 +48,7 @@ def start(username: str):
 threads: List[threading.Thread] = []
 
 for user, options in users.items():
-    threads.append(threading.Thread(target=account.start, args=(user,)))
+    threads.append(threading.Thread(target=start, args=(user,)))
 
 for thread in threads:
     thread.start()
