@@ -72,6 +72,5 @@ for thread in threads:
     thread.start()
     thread.join()
 
-    break
 
 Facebook.send_report()
