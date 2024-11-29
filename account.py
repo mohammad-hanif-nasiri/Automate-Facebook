@@ -315,7 +315,7 @@ class Account(Facebook, Chrome):
 
         try:
             for group in groups:
-                for index in range(count // len(groups)):
+                for _ in range(count // len(groups)):
                     share_count = Facebook.report[f"{self.username}"]["share"]
                     if share_count >= count:
                         logger.success(
@@ -408,7 +408,8 @@ class Account(Facebook, Chrome):
                     except Exception as _:
                         pass
 
-        except Exception as _:
+        except Exception as err:
+            console.print(err, style="red bold italic")
             if timeout > 0:
                 return self.share(
                     post_url,
