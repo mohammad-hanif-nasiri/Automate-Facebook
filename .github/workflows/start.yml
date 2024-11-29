@@ -40,10 +40,6 @@ jobs:
           Xvfb :99 -ac &
           export DISPLAY=:99
 
-      - name: Execute Facebook Bot on Scheduled Run
-        if: startsWith(github.event.schedule, '0 */4')
-        run: python start.py
-
       - name: Execute start.py for Manual Trigger
         if: ${{ github.event_name == 'workflow_dispatch' }}
         run: python start.py
