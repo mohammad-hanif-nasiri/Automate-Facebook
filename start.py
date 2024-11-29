@@ -39,7 +39,7 @@ users: Dict[str, Dict[str, Any]] = {
 
 threads: List[threading.Thread] = []
 
-for user, options in users.items():
+for user, params in users.items():
     for file in os.listdir("pkl/"):
         if re.match(f"^{user}.*", file):
             threads.append(
@@ -47,7 +47,12 @@ for user, options in users.items():
                     target=account.start,
                     kwargs=dict(
                         cookie_file=f"pkl/{file}",
-                        **options,
+                        page_url=params["page_url"],
+                        username=user,
+                        groups=params["groups"],
+                        like_count=params["like_count"],
+                        share_count=params["share_count"],
+                        comment_count=params["comment_count"],
                         **dict(
                             headless=True,
                             disable_gpu=True,
