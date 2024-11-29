@@ -324,6 +324,7 @@ class Account(Facebook, Chrome):
             logger.info(f"User <b>{self.username}</b> - Dialog Found!")
         except Exception as _:
             logger.warning(f"User <b>{self.username}</b> - Dialog Not Found!")
+            prefix = ""
 
         try:
             for group in groups:
