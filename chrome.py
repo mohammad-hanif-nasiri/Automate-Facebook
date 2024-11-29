@@ -7,6 +7,8 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 
 class Chrome:
+    path: str = ChromeDriverManager().install()
+
     def __init__(self: Self, **kwargs) -> None:
 
         self.options: Options = Options()
@@ -43,7 +45,7 @@ class Chrome:
                 },
             )
 
-        self.service: Service = Service(ChromeDriverManager().install())
+        self.service: Service = Service(Chrome.path)
 
         self.driver: webdriver.Chrome = webdriver.Chrome(
             service=self.service,
