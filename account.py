@@ -427,7 +427,7 @@ class Account(Facebook, Chrome):
                 prefix: str = "//div[@role='dialog']"
 
                 try:
-                    self.driver.find_element(prefix)
+                    self.driver.find_element(By.XPATH, prefix)
                 except Exception as _:
                     prefix = ""
 
