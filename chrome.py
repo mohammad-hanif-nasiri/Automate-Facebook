@@ -1,3 +1,4 @@
+import os
 from typing import Self, Union
 
 from selenium import webdriver
@@ -9,9 +10,11 @@ from webdriver_manager.chrome import ChromeDriverManager
 class Chrome:
     path: Union[str, None] = None
 
-    def __init__(self: Self, **kwargs) -> None:
+    def __init__(self: Self, path: Union[str, None] = None, **kwargs) -> None:
 
-        if Chrome.path is None:
+        if path is not None and os.path.exists(path):
+            Chrome.path = path
+        elif Chrome.path is None:
             Chrome.path = ChromeDriverManager().install()
 
         self.options: Options = Options()
