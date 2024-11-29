@@ -318,7 +318,7 @@ class Account(Facebook, Chrome):
         try:
             self.driver.find_element(
                 By.XPATH,
-                "//div[@role='dialog']//span[contains(text(), 'Share')][@role='button']",
+                "//div[@role='dialog']//span[contains(text(), 'Share')]",
             )
             prefix = "//div[@role='dialog']"
         except Exception as _:
