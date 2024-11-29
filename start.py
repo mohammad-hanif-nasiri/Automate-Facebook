@@ -3,6 +3,8 @@ import re
 import threading
 from typing import Any, Dict, List
 
+from webdriver_manager.chrome import ChromeDriverManager
+
 import account
 from facebook import Facebook
 
@@ -37,6 +39,8 @@ users: Dict[str, Dict[str, Any]] = {
     },
 }
 
+driver_path: str = ChromeDriverManager().install()
+
 threads: List[threading.Thread] = []
 
 for user, options in users.items():
@@ -49,6 +53,7 @@ for user, options in users.items():
                         cookie_file=f"pkl/{file}",
                         **options,
                         kwargs=dict(
+                            path=driver_path,
                             headless=True,
                             disable_gpu=True,
                             disable_infobars=True,
