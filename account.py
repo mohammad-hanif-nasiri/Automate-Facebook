@@ -425,11 +425,37 @@ class Account(Facebook, Chrome):
                 textbox.click()
 
                 for _ in range(count):
+                    comment_count = Facebook.report[f"{self.username}"]["comment"]
+
+                    if comment_count >= count:
+                        logger.info(
+                            f"User <b>{self.username!r}</b> - <b>Completed</b> commenting process."
+                        )
+                        return
+
                     textbox.send_keys(text := random.choice(comments))
                     time.sleep(random.random())
 
                     textbox.send_keys(Keys.ENTER)
-                    time.sleep(2 + random.random())
+
+                    while True:
+                        try:
+                            self.driver.find_element(
+                                By.XPATH,
+                                "//span[contains(text(), 'Posting...')]",
+                            )
+                            time.sleep(0.512)
+                            continue
+
+                        except Exception as _:
+                            logger.success(
+                                f"User <b>{self.username!r}</b> - <g>Successfully</g> posted comment {comment_count+1}/{count}: <b>{text!r}</b>"
+                            )
+
+                            # Increment comment count in report
+                            Facebook.report[f"{self.username}"]["comment"] += 1
+
+                            break
 
                     try:
                         spans = self.driver.find_elements(
@@ -446,21 +472,6 @@ class Account(Facebook, Chrome):
 
                     except Exception as _:
                         pass
-
-                    comment_count = Facebook.report[f"{self.username}"]["comment"]
-
-                    logger.success(
-                        f"User <b>{self.username!r}</b> - <g>Successfully</g> posted comment {comment_count+1}/{count}: <b>{text!r}</b>"
-                    )
-
-                    if comment_count >= count:
-                        logger.info(
-                            f"User <b>{self.username!r}</b> - <b>Completed</b> commenting process."
-                        )
-                        return
-
-                    # Increment comment count in report
-                    Facebook.report[f"{self.username}"]["comment"] += 1
 
             except Exception as _:
                 logger.error(
