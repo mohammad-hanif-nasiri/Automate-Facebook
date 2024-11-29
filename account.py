@@ -438,8 +438,10 @@ class Account(Facebook, Chrome):
                         "//div[@role='dialog']//div[@aria-label='Write a comment…']",
                     )
                     prefix = "//div[@role='dialog']"
+                    logger.info(f"User <b>{self.username}</b> - Dialog Found!")
                 except Exception as _:
-                    pass
+                    logger.warning(f"User <b>{self.username}</b> - Dialog Not Found!")
+                    prefix = ""
 
                 textbox: WebElement = self.driver.find_element(
                     By.XPATH,
