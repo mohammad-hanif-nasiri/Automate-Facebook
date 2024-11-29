@@ -70,7 +70,8 @@ for user, params in users.items():
 
 for thread in threads:
     thread.start()
-    thread.join()
 
+for thread in threads:
+    thread.join()
 
 Facebook.send_report()
