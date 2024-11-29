@@ -1,9 +1,7 @@
 import threading
 from typing import Any, Dict, List
 
-import account
 from chrome import Chrome
-from facebook import Facebook
 from logger import logger
 
 users: Dict[str, Dict[str, Any]] = {
@@ -52,8 +50,4 @@ for user, options in users.items():
 
 for thread in threads:
     thread.start()
-
-for thread in threads:
     thread.join()
-
-Facebook.send_report()
