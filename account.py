@@ -173,9 +173,8 @@ class Account(Facebook, Chrome):
         if hasattr(self, "_username"):
             return self._username
 
-        if self.driver.current_url != (url := "https://facebook.com"):
-            self.driver.get(url)
-            time.sleep(5)
+        self.driver.get("https://facebook.com")
+        time.sleep(5)
 
         try:
             link = self.driver.find_element(
