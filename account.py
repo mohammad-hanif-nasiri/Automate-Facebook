@@ -124,8 +124,6 @@ class Account(Facebook, Chrome):
 
         time.sleep(1)
 
-        Facebook.print_report()
-
     @property
     def is_logged_in(self: Self) -> bool:
         """
@@ -502,6 +500,8 @@ class Account(Facebook, Chrome):
         if like_count > 0:
             pass
 
+        Facebook.print_report()
+
     def infinite_scroll(
         self: Self,
         element: Union[WebElement, None] = None,
@@ -698,6 +698,8 @@ def main(
                     ),
                 )
             )
+
+    console.print(threads)
 
     for thread in threads:
         thread.start()
