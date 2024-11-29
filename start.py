@@ -22,11 +22,4 @@ users: Dict[str, Dict[str, Any]] = {
         "comment_count": 100,
         "like_count": 0,
     },
-    "mohammad.hanif.nasiri.1967": {
-        "page_url": "https://www.facebook.com/CityComputerStore",
-        "groups": "Math",
-        "share_count": 150,
-        "comment_count": 100,
-        "like_count": 0,
-    },
 }
