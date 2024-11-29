@@ -321,8 +321,9 @@ class Account(Facebook, Chrome):
                 "//div[@role='dialog']//span[contains(text(), 'Share')]",
             )
             prefix = "//div[@role='dialog']"
+            logger.info(f"User <b>{self.username}</b> - Dialog Found!")
         except Exception as _:
-            pass
+            logger.warning(f"User <b>{self.username}</b> - Dialog Not Found!")
 
         try:
             for group in groups:
