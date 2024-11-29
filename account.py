@@ -326,11 +326,18 @@ class Account(Facebook, Chrome):
                     logger.info(
                         f"User <b>{self.username!r}</b> - Preparing to share the last post... (Attempt <c>{share_count+1}</c> of <c>{count}</c>)"
                     )
+
+                    prefix: str = "//div[@role='dialog']"
+
+                    try:
+                        self.driver.find_element(prefix)
+                    except Exception as _:
+                        prefix = ""
+
                     # Find the first "Share" button on the page
                     share_button = self.driver.find_element(
                         By.XPATH,
-                        # "//div[@role='dialog']//span[contains(text(), 'Share')]/ancestor::*[@role='button']",
-                        "//div[@role='dialog']//div[@aria-label='Send this to friends or post it on your profile.'][@role='button']",
+                        f"{prefix}//div[@aria-label='Send this to friends or post it on your profile.'][@role='button']",
                     )
                     self.scroll_into_view(share_button)
 
@@ -340,27 +347,27 @@ class Account(Facebook, Chrome):
                     # Select the "Share to a Group" option
                     share_to_group_button = self.driver.find_element(
                         By.XPATH,
-                        "//div[@role='dialog']//span[contains(text(), 'Group')]/ancestor::*[@role='button']",
+                        f"{prefix}//span[contains(text(), 'Group')]/ancestor::*[@role='button']",
                     )
                     share_to_group_button.click()
                     time.sleep(2.5)
 
                     search_input = self.driver.find_element(
                         By.XPATH,
-                        '//div[@role="dialog"]//input[@placeholder="Search for groups"]',
+                        f'{prefix}//input[@placeholder="Search for groups"]',
                     )
                     search_input.send_keys(group)
                     time.sleep(2.5)
 
                     group_elem = self.driver.find_element(
                         By.XPATH,
-                        f"//div[@role='dialog']//span[contains(text(), '{group}')]/ancestor::*[@role='button']",
+                        f"{prefix}//span[contains(text(), '{group}')]/ancestor::*[@role='button']",
                     )
                     group_elem.click()
                     time.sleep(2.5)
 
                     post_button = self.driver.find_element(
-                        By.XPATH, "//div[@role='dialog']//div[@aria-label='Post']"
+                        By.XPATH, f"{prefix}//div[@aria-label='Post']"
                     )
                     post_button.click()
 
@@ -417,9 +424,16 @@ class Account(Facebook, Chrome):
         # Retrieve comments random comments
         if comments := get_comments():
             try:
+                prefix: str = "//div[@role='dialog']"
+
+                try:
+                    self.driver.find_element(prefix)
+                except Exception as _:
+                    prefix = ""
+
                 textbox: WebElement = self.driver.find_element(
                     By.XPATH,
-                    '//div[@role="dialog"]//div[@aria-label="Write a comment…"]',
+                    f'{prefix}//div[@aria-label="Write a comment…"]',
                 )
 
                 textbox.click()
