@@ -1,15 +1,11 @@
-from typing import Self, Union
-
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 
-from console import console
-
 
 class Chrome:
-    def __init__(self: Self, timeout: int = 5, **kwargs) -> None:
+    def __init__(self: Self, **kwargs) -> None:
 
         self.options: Options = Options()
 
@@ -45,15 +41,9 @@ class Chrome:
                 },
             )
 
-        try:
-            self.service: Service = Service(ChromeDriverManager().install())
+        self.service: Service = Service(ChromeDriverManager().install())
 
-            self.driver: webdriver.Chrome = webdriver.Chrome(
-                service=self.service,
-                options=self.options,
-            )
-        except Exception as err:
-            console.print(err, style="red bold italic")
-
-            if timeout > 0:
-                return self.__init__(timeout - 1)
+        self.driver: webdriver.Chrome = webdriver.Chrome(
+            service=self.service,
+            options=self.options,
+        )
