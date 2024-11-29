@@ -1,15 +1,10 @@
-import os
-import re
 import threading
 from typing import Any, Dict, List
-
-from webdriver_manager.chrome import ChromeDriverManager
 
 import account
 from chrome import Chrome
 from facebook import Facebook
-
-Chrome.path = ChromeDriverManager().install()
+from logger import logger
 
 users: Dict[str, Dict[str, Any]] = {
     "aliabdullah.nasiri": {
@@ -42,31 +37,18 @@ users: Dict[str, Dict[str, Any]] = {
     },
 }
 
+
+def start(username: str):
+    chrome = Chrome()
+
+    chrome.driver.get("https://facebook.com")
+    logger.info(f"User <b>{username}</b> - {chrome.driver.title}")
+
+
 threads: List[threading.Thread] = []
 
 for user, options in users.items():
-    for file in os.listdir("pkl/"):
-        if re.match(f"^{user}.*", file):
-            threads.append(
-                threading.Thread(
-                    target=account.start,
-                    kwargs=dict(
-                        cookie_file=f"pkl/{file}",
-                        **options,
-                        kwargs=dict(
-                            headless=True,
-                            disable_gpu=True,
-                            disable_infobars=True,
-                            disable_extensions=True,
-                            start_maximized=True,
-                            block_notifications=True,
-                            no_sandbox=True,
-                            incognito=True,
-                            tor=False,
-                        ),
-                    ),
-                )
-            )
+    threads.append(threading.Thread(target=account.start, args=(user,)))
 
 for thread in threads:
     thread.start()
