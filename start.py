@@ -47,12 +47,7 @@ for user, params in users.items():
                     target=account.start,
                     kwargs=dict(
                         cookie_file=f"pkl/{file}",
-                        page_url=params["page_url"],
-                        username=user,
-                        groups=params["groups"],
-                        like_count=params["like_count"],
-                        share_count=params["share_count"],
-                        comment_count=params["comment_count"],
+                        **params,
                         **dict(
                             headless=True,
                             disable_gpu=True,
