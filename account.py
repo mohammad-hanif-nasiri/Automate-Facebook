@@ -680,8 +680,8 @@ def main(
 
     if os.path.exists("pkl/"):
         for pkl in os.listdir("pkl"):
-            # if username and not re.match(f"^{username}.*", pkl):
-            #     continue
+            if username and not re.match(f"^{username}.*", pkl):
+                continue
 
             threads.append(
                 threading.Thread(
