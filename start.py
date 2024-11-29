@@ -1,8 +1,4 @@
-import threading
-from typing import Any, Dict, List
-
-from chrome import Chrome
-from logger import logger
+from typing import Any, Dict
 
 users: Dict[str, Dict[str, Any]] = {
     "aliabdullah.nasiri": {
@@ -34,20 +30,3 @@ users: Dict[str, Dict[str, Any]] = {
         "like_count": 0,
     },
 }
-
-
-def start(username: str):
-    chrome = Chrome()
-
-    chrome.driver.get("https://facebook.com")
-    logger.info(f"User <b>{username}</b> - {chrome.driver.title}")
-
-
-threads: List[threading.Thread] = []
-
-for user, options in users.items():
-    threads.append(threading.Thread(target=start, args=(user,)))
-
-for thread in threads:
-    thread.start()
-    thread.join()
