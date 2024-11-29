@@ -11,7 +11,7 @@ class Chrome:
 
     def __init__(self: Self, **kwargs) -> None:
 
-        if not Chrome.path:
+        if Chrome.path is None:
             Chrome.path = ChromeDriverManager().install()
 
         self.options: Options = Options()
