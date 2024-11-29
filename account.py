@@ -313,12 +313,16 @@ class Account(Facebook, Chrome):
         self.driver.get(post_url)
         time.sleep(5)
 
-        prefix: str = "//div[@role='dialog']"
+        prefix: str = ""
 
         try:
-            self.driver.find_element(By.XPATH, prefix)
+            self.driver.find_element(
+                By.XPATH,
+                "//div[@role='dialog']//span[contains(text(), 'Share')][@role='button']",
+            )
+            prefix = "//div[@role='dialog']"
         except Exception as _:
-            prefix = ""
+            pass
 
         try:
             for group in groups:
@@ -424,12 +428,16 @@ class Account(Facebook, Chrome):
         # Retrieve comments random comments
         if comments := get_comments():
             try:
-                prefix: str = "//div[@role='dialog']"
+                prefix: str = ""
 
                 try:
-                    self.driver.find_element(By.XPATH, prefix)
+                    self.driver.find_element(
+                        By.XPATH,
+                        "//div[@role='dialog']//div[@aria-label='Write a comment…']",
+                    )
+                    prefix = "//div[@role='dialog']"
                 except Exception as _:
-                    prefix = ""
+                    pass
 
                 textbox: WebElement = self.driver.find_element(
                     By.XPATH,
