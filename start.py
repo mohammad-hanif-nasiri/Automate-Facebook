@@ -3,8 +3,13 @@ import re
 import threading
 from typing import Any, Dict, List
 
+from webdriver_manager.chrome import ChromeDriverManager
+
 import account
+from chrome import Chrome
 from facebook import Facebook
+
+Chrome.path = ChromeDriverManager().install()
 
 users: Dict[str, Dict[str, Any]] = {
     "aliabdullah.nasiri": {
