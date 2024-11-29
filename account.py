@@ -313,6 +313,13 @@ class Account(Facebook, Chrome):
         self.driver.get(post_url)
         time.sleep(5)
 
+        prefix: str = "//div[@role='dialog']"
+
+        try:
+            self.driver.find_element(prefix)
+        except Exception as _:
+            prefix = ""
+
         try:
             for group in groups:
                 for _ in range(count // len(groups)):
@@ -327,20 +334,12 @@ class Account(Facebook, Chrome):
                         f"User <b>{self.username!r}</b> - Preparing to share the last post... (Attempt <c>{share_count+1}</c> of <c>{count}</c>)"
                     )
 
-                    prefix: str = "//div[@role='dialog']"
-
-                    try:
-                        self.driver.find_element(prefix)
-                    except Exception as _:
-                        prefix = ""
-
                     # Find the first "Share" button on the page
                     share_button = self.driver.find_element(
                         By.XPATH,
-                        f"{prefix}//div[@aria-label='Send this to friends or post it on your profile.'][@role='button']",
+                        f"{prefix}//span[contains(text(), 'Share')]/ancestor::*[@role='button']",
                     )
                     self.scroll_into_view(share_button)
-
                     share_button.click()
                     time.sleep(2.5)
 
