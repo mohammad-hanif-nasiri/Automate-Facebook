@@ -484,8 +484,10 @@ class Account(Facebook, Chrome):
         comment_count: int = 50,
         share_count: int = 5,
     ):
-        self.report[f"{self.username}"]["page_url"] = page_url
-        self.report[f"{self.username}"]["points"] = self.get_points(page_url, timeout=5)
+        Facebook.report[f"{self.username}"]["page_url"] = page_url
+        Facebook.report[f"{self.username}"]["points"] = self.get_points(
+            page_url, timeout=5
+        )
 
         if username and username != self.username:
             return
