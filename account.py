@@ -413,8 +413,14 @@ class Account(Facebook, Chrome):
                     except Exception as _:
                         pass
 
-        except Exception as err:
-            console.print(err, style="red bold italic")
+        except Exception as _:
+            logger.error(
+                f"User {self.username} - An <r>error</r> occurred during sharing the post!"
+            )
+            logger.info(
+                f"User <b>{self.username!r}</b> - <b>Retrying</b> to share the post."
+            )
+
             if timeout > 0:
                 return self.share(
                     post_url,
