@@ -241,9 +241,22 @@ class Account(Facebook, Chrome):
     def report_share(self: Self, post_url: str, message: str) -> None:
         def callback_func(*args, **kwargs):
             try:
+                prefix: str = ""
+
+                try:
+                    self.driver.find_element(
+                        By.XPATH,
+                        "//div[@role='dialog']//span[contains(text(), 'Share')]",
+                    )
+                    prefix = "//div[@role='dialog']"
+                    logger.info(f"User <b>{self.username}</b> - Dialog Found!")
+                except Exception as _:
+                    logger.warning(f"User <b>{self.username}</b> - Dialog Not Found!")
+                    prefix = ""
+
                 share_button = self.driver.find_element(
                     By.XPATH,
-                    "//span[contains(text(), 'Share')]/ancestor::*[@role='button']",
+                    f"{prefix}//span[contains(text(), 'Share')]/ancestor::*[@role='button']",
                 )
                 self.scroll_into_view(share_button)
                 time.sleep(5)
