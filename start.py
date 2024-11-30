@@ -34,27 +34,7 @@ threads: List[threading.Thread] = []
 
 for user, params in users.items():
     for file in os.listdir("pkl/"):
-        if re.match(f"^{user}.*", file):
-            threads.append(
-                threading.Thread(
-                    target=account.start,
-                    kwargs=dict(
-                        cookie_file=f"pkl/{file}",
-                        **params,
-                        **dict(
-                            headless=True,
-                            disable_gpu=True,
-                            disable_infobars=True,
-                            disable_extensions=True,
-                            start_maximized=True,
-                            block_notifications=True,
-                            no_sandbox=True,
-                            incognito=True,
-                            tor=False,
-                        ),
-                    ),
-                )
-            )
+        pass
 
 for thread in threads:
     thread.start()
