@@ -247,10 +247,12 @@ class Account(Facebook, Chrome):
                 )
                 self.scroll_into_view(share_button)
 
+                time.sleep(5)
+
             except Exception as err:
                 console.print(err, style="red bold italic")
 
-        photo = self.get_screenshot(post_url, callback)
+        photo = self.get_screenshot(post_url, callback_fun=callback)
 
         asyncio.run(self.telegram_bot.send_photo(photo, message))
 
@@ -572,7 +574,7 @@ class Account(Facebook, Chrome):
             # Before Share And Comment
             self.report_share(
                 post_url,
-                f"Before <b>sharing</b> or posting <b>comments</b>, please visit: <b><blue>{post_url}</blue></b>",
+                f"Before sharing or posting comments, please visit: {post_url}",
             )
 
             if share_count > 0 and groups:
