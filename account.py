@@ -14,9 +14,11 @@ from selenium.webdriver.remote.webelement import WebElement
 
 from chrome import Chrome
 from console import console
+from const import TELEGRAM_BOT_API_TOKEN
 from facebook import Facebook, cli
 from functions import get_comments
 from logger import logger
+from telegram_bot import TelegramBot
 
 
 class Account(Facebook, Chrome):
@@ -24,6 +26,7 @@ class Account(Facebook, Chrome):
         super().__init__(**kwargs)
 
         self.cookie_file: str = cookie_file
+        self.telegram_bot: TelegramBot = TelegramBot(TELEGRAM_BOT_API_TOKEN)
 
     def __enter__(self: Self) -> Union[Self, None]:
         """
