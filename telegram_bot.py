@@ -12,7 +12,9 @@ class TelegramBot:
 
     def __init__(self, token: str):
         self.bot: Bot = Bot(token)
+
         self.token: str = token
+        self.updates: Union[Tuple[Update, ...], None] = None
 
     async def send_message(self: Self, text: str) -> None:
         logger.info("Attempting to send message to all chat IDs.")  # Start of method
@@ -61,8 +63,12 @@ class TelegramBot:
     async def get_updates(
         self: Self, timeout: int = 5
     ) -> Union[Tuple[Update, ...], None]:
+
+        if self.updates:
+            return self.updates
+
         try:
-            updates = await self.bot.get_updates()
+            updates = self.updates = await self.bot.get_updates()
             logger.success("<g>Successfully</g> updates retrieved.")
 
             return updates
