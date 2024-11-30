@@ -71,6 +71,7 @@ class TelegramBot:
             logger.error("<r>Failed</r> to get updates!")
 
             if timeout > 0:
+                await asyncio.sleep(5 + random.random())
                 return await self.get_updates(timeout - 1)
 
     @property
