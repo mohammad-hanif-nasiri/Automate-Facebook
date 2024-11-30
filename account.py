@@ -759,8 +759,6 @@ def main(
                 )
             )
 
-    console.print(threads)
-
     for thread in threads:
         thread.start()
 
