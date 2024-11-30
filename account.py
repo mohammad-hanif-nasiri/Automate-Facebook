@@ -590,7 +590,7 @@ class Account(Facebook, Chrome):
             # Before Share And Comment
             self.report_share(
                 post_url,
-                f"Before sharing or posting comments, please visit: {post_url}",
+                f"User {self.username} - Before sharing or posting comments, please visit: {post_url}.",
             )
 
             if share_count > 0 and groups:
@@ -598,6 +598,18 @@ class Account(Facebook, Chrome):
 
             if comment_count > 0:
                 self.comment(post_url, comment_count)
+
+            # After Share And Comment
+            self.report_share(
+                post_url,
+                f"User {self.username} - After sharing or posting comments, please visit: {post_url}."
+                "\nPage URL: {}\nLike: {}\nComment: {}\nShare: {}".format(
+                    page_url,
+                    Facebook.report[f"{self.username}"]["like"],
+                    Facebook.report[f"{self.username}"]["comment"],
+                    Facebook.report[f"{self.username}"]["share"],
+                ),
+            )
 
         if like_count > 0:
             pass
