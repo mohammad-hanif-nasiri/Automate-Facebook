@@ -1,0 +1,1 @@
+TELEGRAM_BOT_API_TOKEN: str = "AAHh6kj2ezKKkWW-eLJqVxPZalI6B6flgyM"
