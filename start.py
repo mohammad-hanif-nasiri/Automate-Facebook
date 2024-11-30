@@ -8,31 +8,24 @@ from facebook import Facebook
 
 users: Dict[str, Dict[str, Any]] = {
     "aliabdullah.nasiri": {
-        "page_url": "https://www.facebook.com/profile.php?id=61554947310688",
+        "page_url": "https://www.facebook.com/CityComputerStore",
         "groups": "Math",
-        "share_count": 5,
-        "comment_count": 5,
+        "share_count": 200,
+        "comment_count": 250,
         "like_count": 0,
     },
     "hanif.nasiri.1967": {
         "page_url": "https://www.facebook.com/profile.php?id=100063642170837",
         "groups": "Math",
-        "share_count": 5,
-        "comment_count": 5,
+        "share_count": 150,
+        "comment_count": 200,
         "like_count": 0,
     },
     "ali.nasiri.20050727": {
         "page_url": "https://www.facebook.com/PaytakhtMobile",
         "groups": "Math",
-        "share_count": 5,
-        "comment_count": 5,
-        "like_count": 0,
-    },
-    "mohammad.hanif.nasiri.1967": {
-        "page_url": "https://www.facebook.com/CityComputerStore",
-        "groups": "Math",
-        "share_count": 5,
-        "comment_count": 5,
+        "share_count": 200,
+        "comment_count": 150,
         "like_count": 0,
     },
 }
