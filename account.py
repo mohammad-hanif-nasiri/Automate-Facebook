@@ -1,3 +1,4 @@
+import asyncio
 import os
 import pickle
 import random
@@ -237,7 +238,21 @@ class Account(Facebook, Chrome):
 
         return path
 
-    def report_share(self: Self, page_url: str, post_url: str, msg: str) -> None: ...
+    def report_share(self: Self, post_url: str, message: str) -> None:
+        def callback(*args, **kwargs):
+            try:
+                share_button = self.driver.find_element(
+                    By.XPATH,
+                    "//span[contains(text(), 'Share')]/ancestor::*[@role='button']",
+                )
+                self.scroll_into_view(share_button)
+
+            except Exception as err:
+                console.print(err, style="red bold italic")
+
+        photo = self.get_screenshot(post_url, callback)
+
+        asyncio.run(self.telegram_bot.send_photo(photo, message))
 
     def get_last_post_url(
         self: Self, page_url: str, timeout: int = 5
@@ -554,6 +569,12 @@ class Account(Facebook, Chrome):
             return
 
         if post_url := self.get_last_post_url(page_url):
+            # Before Share And Comment
+            self.report_share(
+                post_url,
+                f"Before <b>sharing</b> or posting <b>comments</b>, please visit: <b><blue>{post_url}</blue></b>",
+            )
+
             if share_count > 0 and groups:
                 self.share(post_url, groups, share_count)
 
