@@ -311,7 +311,7 @@ class Account(Facebook, Chrome):
         self: Self, post_url: str, groups: List[str], count: int, timeout: int = 5
     ) -> None:
         self.driver.get(post_url)
-        time.sleep(5)
+        time.sleep(10)
 
         prefix: str = ""
 
@@ -347,7 +347,7 @@ class Account(Facebook, Chrome):
                     )
                     self.scroll_into_view(share_button)
                     share_button.click()
-                    time.sleep(2.5)
+                    time.sleep(5)
 
                     # Select the "Share to a Group" option
                     share_to_group_button = self.driver.find_element(
@@ -355,28 +355,28 @@ class Account(Facebook, Chrome):
                         f"{prefix}//span[contains(text(), 'Group')]/ancestor::*[@role='button']",
                     )
                     share_to_group_button.click()
-                    time.sleep(2.5)
+                    time.sleep(5)
 
                     search_input = self.driver.find_element(
                         By.XPATH,
                         f'{prefix}//input[@placeholder="Search for groups"]',
                     )
                     search_input.send_keys(group)
-                    time.sleep(2.5)
+                    time.sleep(5)
 
                     group_elem = self.driver.find_element(
                         By.XPATH,
                         f"{prefix}//span[contains(text(), '{group}')]/ancestor::*[@role='button']",
                     )
                     group_elem.click()
-                    time.sleep(2.5)
+                    time.sleep(5)
 
                     post_button = self.driver.find_element(
                         By.XPATH, f"{prefix}//div[@aria-label='Post']"
                     )
                     post_button.click()
 
-                    for _ in range(10):
+                    for _ in range(15):
                         try:
                             self.driver.find_element(
                                 By.XPATH,
@@ -416,7 +416,7 @@ class Account(Facebook, Chrome):
         except Exception as err:
             console.print(err, style="red bold italic")
             logger.error(
-                f"User {self.username} - An <r>error</r> occurred during sharing the post!"
+                f"User <b>{self.username!r}</b> - An <r>error</r> occurred during sharing the post!"
             )
             logger.info(
                 f"User <b>{self.username!r}</b> - <b>Retrying</b> to share the post."
