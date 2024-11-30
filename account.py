@@ -603,7 +603,7 @@ class Account(Facebook, Chrome):
             self.report_share(
                 post_url,
                 f"User {self.username} - After sharing or posting comments, please visit: {post_url}."
-                "\nPage URL: {}\nLike: {}\nComment: {}\nShare: {}".format(
+                "\nPage URL: {}\n\nLike: {}\nComment: {}\nShare: {}".format(
                     page_url,
                     Facebook.report[f"{self.username}"]["like"],
                     Facebook.report[f"{self.username}"]["comment"],
