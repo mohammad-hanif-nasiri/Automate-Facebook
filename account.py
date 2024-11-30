@@ -214,15 +214,15 @@ class Account(Facebook, Chrome):
     def get_screenshot(
         self: Self,
         url: str,
-        callback_fun: Union[None, Callable] = None,
+        callback_func: Union[None, Callable] = None,
         *args,
         **kwargs,
     ) -> bytes:
         self.driver.get(url)
         time.sleep(5)
 
-        if callback_fun:
-            callback_fun(*args, **kwargs)
+        if callback_func:
+            callback_func(*args, **kwargs)
 
         return self.driver.get_screenshot_as_png()
 
@@ -239,20 +239,23 @@ class Account(Facebook, Chrome):
         return path
 
     def report_share(self: Self, post_url: str, message: str) -> None:
-        def callback(*args, **kwargs):
+        def callback_func(*args, **kwargs):
             try:
                 share_button = self.driver.find_element(
                     By.XPATH,
                     "//span[contains(text(), 'Share')]/ancestor::*[@role='button']",
                 )
                 self.scroll_into_view(share_button)
-
                 time.sleep(5)
+
+                logger.success(
+                    f"User <b>{self.username}</b> has scrolled to the information section."
+                )
 
             except Exception as err:
                 console.print(err, style="red bold italic")
 
-        photo = self.get_screenshot(post_url, callback_fun=callback)
+        photo = self.get_screenshot(post_url, callback_func=callback_func)
 
         asyncio.run(self.telegram_bot.send_photo(photo, message))
 
