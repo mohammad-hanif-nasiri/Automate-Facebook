@@ -1,9 +1,7 @@
 import os
-import re
 import threading
 from typing import Any, Dict, List
 
-import account
 from facebook import Facebook
 
 users: Dict[str, Dict[str, Any]] = {
