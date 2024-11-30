@@ -413,7 +413,8 @@ class Account(Facebook, Chrome):
                     except Exception as _:
                         pass
 
-        except Exception as _:
+        except Exception as err:
+            console.print(err, style="red bold italic")
             logger.error(
                 f"User {self.username} - An <r>error</r> occurred during sharing the post!"
             )
