@@ -9,3 +9,4 @@ pydantic
 jinja2
 numerize
 fake_useragent
+python-telegram-bot
