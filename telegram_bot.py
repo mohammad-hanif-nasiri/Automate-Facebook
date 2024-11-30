@@ -11,7 +11,6 @@ from logger import logger
 class TelegramBot:
 
     def __init__(self, token: str):
-        self.bot: Bot = Bot(token)
 
         self.token: str = token
         self.updates: Union[Tuple[Update, ...], None] = None
@@ -91,6 +90,11 @@ class TelegramBot:
                     ids.add(update.message.chat_id)
 
         return ids
+
+    @property
+    def bot(self: Self):
+        """The bot property."""
+        return Bot(self.token)
 
 
 def main(): ...
