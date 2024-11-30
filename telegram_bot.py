@@ -42,7 +42,9 @@ class TelegramBot:
 
         for chat_id in await self.chat_ids:
             try:
-                logger.info(f"MSG")  # Info about specific chat_id
+                logger.info(
+                    f"<b>Sending</b> photo to chat_id: <c>{chat_id}</c>"
+                )  # Info about specific chat_id
                 await self.bot.send_photo(chat_id, photo, caption)
                 logger.success(
                     f"<b>Photo</b> sent <g>successfully</g> to chat_id: <c>{chat_id}</c>"
