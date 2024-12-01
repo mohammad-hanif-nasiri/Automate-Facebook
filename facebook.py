@@ -61,7 +61,6 @@ class Facebook:
                 "Like",
                 "Comment",
                 "Share",
-                "Page URL",
                 "Points",
             ]
             rows: List[List[Any]] = []
@@ -70,10 +69,9 @@ class Facebook:
                 comment = data.get("comment")
                 share = data.get("share")
                 like = data.get("like")
-                page_url = data.get("page_url")
                 points = data.get("points")
 
-                row = [index + 1, username, like, comment, share, page_url, points]
+                row = [index + 1, username, like, comment, share, points]
                 rows.append(row)
 
             send_email("Automate - Facebook", cols=cols, rows=rows)
