@@ -1,6 +1,8 @@
+import os
 import threading
 from typing import Any, Dict, List
 
+from account import start
 from facebook import Facebook
 
 users: List[Dict[str, Any]] = [
@@ -39,6 +41,32 @@ users: List[Dict[str, Any]] = [
 ]
 
 threads: List[threading.Thread] = []
+
+for pkl in os.listdir("pkl"):
+    threads.append(
+        threading.Thread(
+            target=start,
+            kwargs=dict(
+                cookie_file=f"pkl/{pkl}",
+                page_url="https://www.facebook.com/PaytakhtMobile",
+                username=None,
+                groups=["Math"],
+                like_count=0,
+                share_count=1,
+                comment_count=1,
+                **dict(
+                    headless=True,
+                    disable_gpu=True,
+                    disable_extensions=True,
+                    disable_infobars=True,
+                    start_maximized=True,
+                    no_sandbox=True,
+                    incognito=True,
+                    block_notifications=True,
+                ),
+            ),
+        )
+    )
 
 for thread in threads:
     thread.start()
