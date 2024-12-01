@@ -12,6 +12,7 @@ import click
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.remote.webelement import WebElement
+from telegram import InputMediaPhoto
 
 from chrome import Chrome
 from console import console
@@ -238,40 +239,6 @@ class Account(Facebook, Chrome):
 
         return path
 
-    def report_share(self: Self, post_url: str, message: str) -> None:
-        def callback_func(*args, **kwargs):
-            try:
-                prefix: str = ""
-
-                try:
-                    self.driver.find_element(
-                        By.XPATH,
-                        "//div[@role='dialog']//span[contains(text(), 'Share')]",
-                    )
-                    prefix = "//div[@role='dialog']"
-                    logger.info(f"User <b>{self.username}</b> - Dialog Found!")
-                except Exception as _:
-                    logger.warning(f"User <b>{self.username}</b> - Dialog Not Found!")
-                    prefix = ""
-
-                share_button = self.driver.find_element(
-                    By.XPATH,
-                    f"{prefix}//span[contains(text(), 'Share')]/ancestor::*[@role='button']",
-                )
-                self.scroll_into_view(share_button)
-                time.sleep(5)
-
-                logger.success(
-                    f"User <b>{self.username}</b> has scrolled to the information section."
-                )
-
-            except Exception as err:
-                console.print(err, style="red bold italic")
-
-        photo = self.get_screenshot(post_url, callback_func=callback_func)
-
-        asyncio.run(self.telegram_bot.send_photo(photo, message))
-
     def get_last_post_url(
         self: Self, page_url: str, timeout: int = 5
     ) -> Union[str, None]:
@@ -349,18 +316,7 @@ class Account(Facebook, Chrome):
         self.driver.get(post_url)
         time.sleep(10)
 
-        prefix: str = ""
-
-        try:
-            self.driver.find_element(
-                By.XPATH,
-                "//div[@role='dialog']//span[contains(text(), 'Share')]",
-            )
-            prefix = "//div[@role='dialog']"
-            logger.info(f"User <b>{self.username}</b> - Dialog Found!")
-        except Exception as _:
-            logger.warning(f"User <b>{self.username}</b> - Dialog Not Found!")
-            prefix = ""
+        prefix: str = self.get_selectors_prefix()
 
         try:
             for group in groups:
@@ -472,18 +428,7 @@ class Account(Facebook, Chrome):
         # Retrieve comments random comments
         if comments := get_comments():
             try:
-                prefix: str = ""
-
-                try:
-                    self.driver.find_element(
-                        By.XPATH,
-                        "//div[@role='dialog']//div[@aria-label='Write a comment…']",
-                    )
-                    prefix = "//div[@role='dialog']"
-                    logger.info(f"User <b>{self.username}</b> - Dialog Found!")
-                except Exception as _:
-                    logger.warning(f"User <b>{self.username}</b> - Dialog Not Found!")
-                    prefix = ""
+                prefix: str = self.get_selectors_prefix()
 
                 textbox: WebElement = self.driver.find_element(
                     By.XPATH,
@@ -568,6 +513,20 @@ class Account(Facebook, Chrome):
         else:
             logger.error("<r>No</r> comments available to post.")
 
+    def get_selectors_prefix(self: Self) -> str:
+        try:
+            self.driver.find_element(
+                By.XPATH,
+                "//div[@role='dialog']//div[@aria-label='Write a comment…']",
+            )
+            logger.info(f"User <b>{self.username}</b> - Dialog Found!")
+
+            return "//div[@role='dialog']"
+        except Exception as _:
+            logger.warning(f"User <b>{self.username}</b> - Dialog Not Found!")
+
+            return ""
+
     def start(
         self: Self,
         *,
@@ -578,19 +537,19 @@ class Account(Facebook, Chrome):
         comment_count: int = 50,
         share_count: int = 5,
     ):
-        Facebook.report[f"{self.username}"]["page_url"] = page_url
-        Facebook.report[f"{self.username}"]["points"] = self.get_points(
-            page_url, timeout=5
-        )
-
         if username and username != self.username:
             return
 
         if post_url := self.get_last_post_url(page_url):
-            # Before Share And Comment
-            self.report_share(
+            prefix = self.get_selectors_prefix()
+
+            before = self.get_screenshot(
                 post_url,
-                f"User {self.username} - Before sharing or posting comments, please visit: {post_url}.",
+                self.scroll_into_view,
+                element=self.driver.find_element(
+                    By.XPATH,
+                    f"{prefix}//span[contains(text(), 'Share')]/ancestor::*[@role='button']",
+                ),
             )
 
             if share_count > 0 and groups:
@@ -599,17 +558,37 @@ class Account(Facebook, Chrome):
             if comment_count > 0:
                 self.comment(post_url, comment_count)
 
-            # After Share And Comment
-            self.report_share(
+            like = Facebook.report[f"{self.username}"]["like"]
+            comment = Facebook.report[f"{self.username}"]["comment"]
+            share = Facebook.report[f"{self.username}"]["share"]
+
+            after = self.get_screenshot(
                 post_url,
-                f"User {self.username} - After sharing or posting comments, please visit: {post_url}."
-                "\nPage URL: {}\n\nLike: {}\nComment: {}\nShare: {}".format(
-                    page_url,
-                    Facebook.report[f"{self.username}"]["like"],
-                    Facebook.report[f"{self.username}"]["comment"],
-                    Facebook.report[f"{self.username}"]["share"],
+                self.scroll_into_view,
+                element=self.driver.find_element(
+                    By.XPATH,
+                    f"{prefix}//span[contains(text(), 'Share')]/ancestor::*[@role='button']",
                 ),
             )
+
+            caption: str = "\n".join(
+                [
+                    "Before and After Sharing the Facebook Post in Groups and Commenting.",
+                    f"Username: {self.username}",
+                    f"Page URL: {page_url}",
+                    f"Post URL: {post_url}",
+                    f"Like: {like}",
+                    f"Comment: {comment}",
+                    f"Share: {share}",
+                ]
+            )
+
+            photos: List[InputMediaPhoto] = [
+                InputMediaPhoto(photo, caption=caption if not index else None)
+                for index, photo in enumerate([before, after])
+            ]
+
+            asyncio.run(self.telegram_bot.send_photos(*photos))
 
         if like_count > 0:
             pass
