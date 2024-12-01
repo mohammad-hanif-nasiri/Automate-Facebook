@@ -11,20 +11,6 @@ jobs:
       - name: Checkout Repository Code
         uses: actions/checkout@v2
 
-      - name: Install Tor and Proxychains4 for Anonymized Requests
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y tor proxychains4
-
-      - name: Configure Tor with Control Port and Password
-        run: |
-          echo "ControlPort 9051" | sudo tee -a /etc/tor/torrc
-          echo "HashedControlPassword 16:F6619F3AC6F73A1C603AF765CD9850B6D0FC6F0E2E56FA0A32A255B191" | sudo tee -a /etc/tor/torrc
-          echo "CookieAuthentication 0" | sudo tee -a /etc/tor/torrc
-
-      - name: Start Tor Service
-        run: sudo service tor start
-
       - name: Set Up Python Environment
         uses: actions/setup-python@v4
         with:
