@@ -14,11 +14,11 @@ from stem import Signal
 from stem.control import Controller
 
 from const import (
-    EMAIL_DEST,
     GMAIL_PASSWORD,
     GMAIL_USERNAME,
     TOR_CONTROL_PORT,
     TOR_PASSWORD,
+    EMAIL_DEST,
 )
 from logger import logger
 
