@@ -314,7 +314,7 @@ class Account(Facebook, Chrome):
         self: Self, post_url: str, groups: List[str], count: int, timeout: int = 5
     ) -> None:
         self.driver.get(post_url)
-        time.sleep(10)
+        time.sleep(5)
 
         prefix: str = self.get_selectors_prefix()
 
@@ -339,7 +339,7 @@ class Account(Facebook, Chrome):
                     )
                     self.scroll_into_view(share_button)
                     share_button.click()
-                    time.sleep(5)
+                    time.sleep(2.5)
 
                     # Select the "Share to a Group" option
                     share_to_group_button = self.driver.find_element(
@@ -347,21 +347,21 @@ class Account(Facebook, Chrome):
                         f"{prefix}//span[contains(text(), 'Group')]/ancestor::*[@role='button']",
                     )
                     share_to_group_button.click()
-                    time.sleep(5)
+                    time.sleep(2.5)
 
                     search_input = self.driver.find_element(
                         By.XPATH,
                         f'{prefix}//input[@placeholder="Search for groups"]',
                     )
                     search_input.send_keys(group)
-                    time.sleep(5)
+                    time.sleep(2.5)
 
                     group_elem = self.driver.find_element(
                         By.XPATH,
                         f"{prefix}//span[contains(text(), '{group}')]/ancestor::*[@role='button']",
                     )
                     group_elem.click()
-                    time.sleep(5)
+                    time.sleep(2.5)
 
                     post_button = self.driver.find_element(
                         By.XPATH, f"{prefix}//div[@aria-label='Post']"
@@ -432,7 +432,7 @@ class Account(Facebook, Chrome):
 
                 textbox: WebElement = self.driver.find_element(
                     By.XPATH,
-                    f'{prefix}//div[@aria-label="Write a comment…"]',
+                    f'{prefix}//div[@aria-label="Write a comment…" or contains(@aria-label, "Comment as")]',
                 )
 
                 textbox.click()
