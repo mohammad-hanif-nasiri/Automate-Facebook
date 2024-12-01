@@ -432,7 +432,7 @@ class Account(Facebook, Chrome):
 
                 textbox: WebElement = self.driver.find_element(
                     By.XPATH,
-                    f'{prefix}//div[@aria-label="Write a comment…" or contains(@aria-label, "Comment as")]',
+                    f'{prefix}//div[@aria-label="Write a comment…" or contains(@aria-label, "Comment as") and @role="textbox"]',
                 )
 
                 textbox.click()
@@ -450,7 +450,6 @@ class Account(Facebook, Chrome):
                     time.sleep(random.random())
 
                     textbox.send_keys(Keys.ENTER)
-                    time.sleep(1.5)
 
                     while True:
                         try:
