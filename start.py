@@ -10,7 +10,7 @@ users: List[Dict[str, Any]] = [
     {
         "page_url": "https://www.facebook.com/CityComputerStore",
         "username": "aliabdullah.nasiri",
-        "groups": "Math",
+        "groups": ["Math"],
         "share_count": 1,
         "comment_count": 1,
         "like_count": 0,
@@ -18,7 +18,7 @@ users: List[Dict[str, Any]] = [
     {
         "page_url": "https://www.facebook.com/profile.php?id=61554947310688",
         "username": "aliabdullah.nasiri",
-        "groups": "Math",
+        "groups": ["Math"],
         "share_count": 1,
         "comment_count": 1,
         "like_count": 0,
@@ -26,7 +26,7 @@ users: List[Dict[str, Any]] = [
     {
         "page_url": "https://www.facebook.com/profile.php?id=100063642170837",
         "username": "hanif.nasiri.1967",
-        "groups": "Math",
+        "groups": ["Math"],
         "share_count": 1,
         "comment_count": 1,
         "like_count": 0,
@@ -34,7 +34,7 @@ users: List[Dict[str, Any]] = [
     {
         "page_url": "https://www.facebook.com/PaytakhtMobile",
         "username": "ali.nasiri.20050727",
-        "groups": "Math",
+        "groups": ["Math"],
         "share_count": 1,
         "comment_count": 1,
         "like_count": 0,
