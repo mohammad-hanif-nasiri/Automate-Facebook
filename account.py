@@ -482,6 +482,8 @@ class Account(Facebook, Chrome):
 
                                 break
 
+                    time.sleep(1.5 + random.random())
+
                     try:
                         spans = self.driver.find_elements(
                             By.XPATH,
