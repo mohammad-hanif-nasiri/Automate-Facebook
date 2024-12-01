@@ -3,6 +3,7 @@ import random
 from typing import Self, Set, Tuple, Union
 
 from telegram import Bot, PhotoSize, Update
+from telegram._files.inputmedia import InputMediaPhoto
 from telegram._utils.types import FileInput
 
 from logger import logger
@@ -21,16 +22,16 @@ class TelegramBot:
         for chat_id in await self.chat_ids:
             try:
                 logger.info(
-                    f"Sending message to chat_id: {chat_id}"
+                    f"Sending message to chat ID: {chat_id}"
                 )  # Info about specific chat_id
                 await self.bot.send_message(chat_id, text)  # Send the message
                 logger.success(
-                    f"<b>Message</b> sent <g>successfully</g> to chat_id: <c>{chat_id}</c>"
+                    f"<b>Message</b> sent <g>successfully</g> to chat ID: <c>{chat_id}</c>"
                 )  # Success
                 await asyncio.sleep(2.5 + random.random())  # Throttle the requests
             except Exception as err:
                 logger.error(
-                    f"<r><b>Failed</b></r> to send message to chat_id: <c>{chat_id}</c>. Error: <r><b>{err}</b></r>"
+                    f"<r><b>Failed</b></r> to send message to chat ID: <c>{chat_id}</c>. Error: <r><b>{err}</b></r>"
                 )  # Log error
                 logger.error(
                     "<y>Skipping</y> this chat ID and continuing with the next."
@@ -44,16 +45,40 @@ class TelegramBot:
         for chat_id in await self.chat_ids:
             try:
                 logger.info(
-                    f"<b>Sending</b> photo to chat_id: <c>{chat_id}</c>"
+                    f"<b>Sending</b> photo to chat ID: <c>{chat_id}</c>"
                 )  # Info about specific chat_id
                 await self.bot.send_photo(chat_id, photo, caption)
                 logger.success(
-                    f"<b>Photo</b> sent <g>successfully</g> to chat_id: <c>{chat_id}</c>"
+                    f"<b>Photo</b> sent <g>successfully</g> to chat ID: <c>{chat_id}</c>"
                 )  # Success
                 await asyncio.sleep(2.5 + random.random())  # Throttle the requests
             except Exception as err:
                 logger.error(
-                    f"<r><b>Failed</b></r> to send <b>photo</b> to chat_id: <c>{chat_id}</c>. Error: <r><b>{err}</b></r>"
+                    f"<r><b>Failed</b></r> to send <b>photo</b> to chat ID: <c>{chat_id}</c>. Error: <r><b>{err}</b></r>"
+                )  # Log error
+                logger.error(
+                    "<y>Skipping</y> this chat ID and continuing with the next."
+                )  # Info about fallback
+
+    async def send_photos(self: Self, *photos: InputMediaPhoto) -> None:
+        logger.info("Attempting to send all photos to all chat IDs.")
+
+        for chat_id in await self.chat_ids:
+            try:
+
+                logger.info(
+                    f"<b>Sending</b> photos to chat ID: <c>{chat_id}</c>"
+                )  # info about specific chat_id
+
+                await self.bot.send_media_group(chat_id, photos)
+
+                logger.success(
+                    f"<b>Photos</b> sent <g>successfully</g> to chat ID: <c>{chat_id}</c>"
+                )  # Success
+                await asyncio.sleep(2.5 + random.random())  # Throttle the requests
+            except Exception as err:
+                logger.error(
+                    f"<r><b>Failed</b></r> to send <b>photos</b> to chat ID: <c>{chat_id}</c>. Error: <r><b>{err}</b></r>"
                 )  # Log error
                 logger.error(
                     "<y>Skipping</y> this chat ID and continuing with the next."
