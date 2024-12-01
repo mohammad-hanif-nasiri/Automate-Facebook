@@ -16,9 +16,13 @@ from telegram import InputMediaPhoto
 
 from chrome import Chrome
 from console import console
-from const import TELEGRAM_BOT_API_TOKEN
+from const import (
+    TELEGRAM_BOT_API_TOKEN,
+    FONARTO_XT_PATH,
+    FONARTO_REGULAR_PATH,
+)
 from facebook import Facebook, cli
-from functions import get_comments
+from functions import get_comments, download_file, edit_image
 from logger import logger
 from telegram_bot import TelegramBot
 
@@ -573,7 +577,14 @@ class Account(Facebook, Chrome):
                 )
                 time.sleep(2.5)
 
-            before = self.get_screenshot(post_url, func)
+            before = edit_image(
+                self.get_screenshot(post_url, func),
+                text="Before",
+                font_path=FONARTO_XT_PATH,
+                size=128,
+                position=(50, 25),
+                text_color=(255, 0, 0),
+            )
 
             if share_count > 0 and groups:
                 self.share(post_url, groups, share_count)
@@ -585,7 +596,14 @@ class Account(Facebook, Chrome):
             comment = Facebook.report[f"{self.username}"]["comment"]
             share = Facebook.report[f"{self.username}"]["share"]
 
-            after = self.get_screenshot(post_url, func)
+            after = edit_image(
+                self.get_screenshot(post_url, func),
+                text="After",
+                font_path=FONARTO_XT_PATH,
+                size=128,
+                position=(50, 25),
+                text_color=(255, 0, 0),
+            )
 
             caption: str = "\n".join(
                 [
