@@ -513,7 +513,12 @@ class Account(Facebook, Chrome):
         else:
             logger.error("<r>No</r> comments available to post.")
 
-    def get_selectors_prefix(self: Self) -> str:
+    def get_selectors_prefix(self: Self, post_url: Union[str, None] = None) -> str:
+
+        if post_url and self.driver.current_url != post_url:
+            self.driver.get(post_url)
+            time.sleep(5)
+
         try:
             self.driver.find_element(
                 By.XPATH,
