@@ -316,7 +316,7 @@ class Account(Facebook, Chrome):
         self.driver.get(post_url)
         time.sleep(10)
 
-        prefix: str = self.get_selectors_prefix(post_url)
+        prefix: str = self.get_selectors_prefix()
 
         try:
             for group in groups:
@@ -428,7 +428,7 @@ class Account(Facebook, Chrome):
         # Retrieve comments random comments
         if comments := get_comments():
             try:
-                prefix: str = self.get_selectors_prefix(post_url)
+                prefix: str = self.get_selectors_prefix()
 
                 textbox: WebElement = self.driver.find_element(
                     By.XPATH,
@@ -515,14 +515,14 @@ class Account(Facebook, Chrome):
 
     def get_selectors_prefix(self: Self, post_url: Union[str, None] = None) -> str:
 
-        if post_url:
+        if post_url is not None:
             self.driver.get(post_url)
             time.sleep(5)
 
         try:
             self.driver.find_element(
                 By.XPATH,
-                "//div[@role='dialog']//div[@aria-label='Write a comment…']",
+                "//div[@role='dialog']//span[contains(text(), 'Share')]/ancestor::*[@role='button']",
             )
             logger.info(f"User <b>{self.username}</b> - Dialog Found!")
 
@@ -546,10 +546,20 @@ class Account(Facebook, Chrome):
             return
 
         if post_url := self.get_last_post_url(page_url):
-            prefix = self.get_selectors_prefix(post_url)
-            print(prefix)
+            prefix: str = self.get_selectors_prefix(post_url)
 
-            before = self.get_screenshot(post_url)
+            def func():
+                share_button = self.driver.find_element(
+                    By.XPATH,
+                    f"{prefix}//span[contains(text(), 'Share')]/ancestor::*[@role='button']",
+                )
+                self.scroll_into_view(share_button)
+                logger.success(
+                    f"User <b>{self.username}</b> has scrolled to the information section."
+                )
+                time.sleep(2.5)
+
+            before = self.get_screenshot(post_url, func)
 
             if share_count > 0 and groups:
                 self.share(post_url, groups, share_count)
@@ -561,7 +571,7 @@ class Account(Facebook, Chrome):
             comment = Facebook.report[f"{self.username}"]["comment"]
             share = Facebook.report[f"{self.username}"]["share"]
 
-            after = self.get_screenshot(post_url)
+            after = self.get_screenshot(post_url, func)
 
             caption: str = "\n".join(
                 [
