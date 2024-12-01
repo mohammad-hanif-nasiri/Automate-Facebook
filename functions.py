@@ -3,10 +3,12 @@ import random
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from typing import Any, Dict, List, Union
+from io import BytesIO
+from typing import Any, Dict, List, Literal, Tuple, Union
 
 import requests
 from jinja2 import Environment, FileSystemLoader
+from PIL import Image, ImageDraw, ImageFont
 from selenium import webdriver
 from stem import Signal
 from stem.control import Controller
@@ -151,3 +153,67 @@ def load_cookies(driver: webdriver.Chrome, cookie_file: str) -> None:
     logger.success(
         "Cookies have been <g>successfully</g> loaded from the file and added to the driver."
     )
+
+
+def download_file(url, save_path):
+    """
+    Download a file from the specified URL and save it to the given path.
+
+    Parameters:
+    - url (str): The URL of the file to download.
+    - save_path (str): The local path where the file should be saved.
+    """
+    try:
+        # Send a GET request to the server
+        response = requests.get(url, stream=True)
+
+        # Check if the request was successful (status code 200)
+        if response.status_code == 200:
+            # Open the file in write-binary mode and save the content
+            with open(save_path, "wb") as file:
+                for chunk in response.iter_content(
+                    chunk_size=1024
+                ):  # Download in chunks
+                    if chunk:
+                        file.write(chunk)
+            logger.success(f"File downloaded successfully and saved to {save_path}")
+        else:
+            logger.error(
+                f"Failed to download the file. Status code: {response.status_code}"
+            )
+
+    except requests.exceptions.RequestException as e:
+        logger.error(f"An error occurred: {e}")
+
+
+def edit_image(
+    image: bytes,
+    text: str,
+    font_path: str,
+    size: int,
+    position: Tuple[int, int],
+    text_color: Tuple[int, int, int],
+    format: Literal["PNG", "JPEG"] = "PNG",
+) -> bytes:
+    # Open the image
+    img = Image.open(BytesIO(image))
+
+    # Create an ImageDraw object to draw on the image
+    draw = ImageDraw.Draw(img)
+
+    # Define the font (using a custom bold font at 128px size)
+    font = ImageFont.truetype(font_path, size=size)
+
+    # Add text to the image
+    draw.text(position, text, font=font, fill=text_color)
+
+    # Create a BytesIO object to hold the binary data
+    img_bytes = BytesIO()
+
+    # Save the image to the BytesIO object in a specific format (e.g., PNG, JPEG)
+    img.save(img_bytes, format=format)
+
+    # Get the binary data from the BytesIO object
+    img_bytes = img_bytes.getvalue()
+
+    return img_bytes
