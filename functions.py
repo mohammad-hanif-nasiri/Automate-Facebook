@@ -13,6 +13,13 @@ from selenium import webdriver
 from stem import Signal
 from stem.control import Controller
 
+from const import (
+    EMAIL_DEST,
+    GMAIL_PASSWORD,
+    GMAIL_USERNAME,
+    TOR_CONTROL_PORT,
+    TOR_PASSWORD,
+)
 from logger import logger
 
 
@@ -25,8 +32,8 @@ def get_ip(proxies: Union[Dict[str, str], None] = None) -> Union[str, None]:
 
 def renew_ip(proxies: Union[Dict[str, str], None] = None) -> Union[str, None]:
     current_ip = get_ip(proxies)
-    with Controller.from_port(port="9051") as controller:
-        controller.authenticate(password="Ali.Nasiri#88771234")
+    with Controller.from_port(port=TOR_CONTROL_PORT) as controller:
+        controller.authenticate(password=TOR_PASSWORD)
         controller.signal(Signal.NEWNYM)
 
     new_ip = get_ip(proxies)
@@ -51,7 +58,7 @@ def send_email(
     subject: str,
     cols: List[str],
     rows: List[List[Any]],
-    dest: str = "nasiri.waliabdullah@gmail.com",
+    dest: str = EMAIL_DEST,
 ) -> bool:
     try:
         # Set up the Jinja2 environment
@@ -63,7 +70,7 @@ def send_email(
 
         # Create the email message
         msg = MIMEMultipart()
-        msg["From"] = "nasiri.aliabdullah@gmail.com"
+        msg["From"] = GMAIL_USERNAME
         msg["To"] = dest
         msg["Subject"] = subject
 
@@ -73,7 +80,7 @@ def send_email(
         # Set up the SMTP server
         s = smtplib.SMTP("smtp.gmail.com", 587)
         s.starttls()
-        s.login("nasiri.aliabdullah@gmail.com", "uvos gywy jnjx rrok")
+        s.login(GMAIL_USERNAME, GMAIL_PASSWORD)
 
         # Send the email
         s.send_message(msg)
