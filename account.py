@@ -216,14 +216,14 @@ class Account(Facebook, Chrome):
         self: Self,
         url: str,
         callback_func: Union[None, Callable] = None,
-        *args,
+        /,
         **kwargs,
     ) -> bytes:
         self.driver.get(url)
         time.sleep(5)
 
         if callback_func:
-            callback_func(*args, **kwargs)
+            callback_func(**kwargs)
 
         return self.driver.get_screenshot_as_png()
 
@@ -316,7 +316,7 @@ class Account(Facebook, Chrome):
         self.driver.get(post_url)
         time.sleep(10)
 
-        prefix: str = self.get_selectors_prefix()
+        prefix: str = self.get_selectors_prefix(post_url)
 
         try:
             for group in groups:
@@ -428,7 +428,7 @@ class Account(Facebook, Chrome):
         # Retrieve comments random comments
         if comments := get_comments():
             try:
-                prefix: str = self.get_selectors_prefix()
+                prefix: str = self.get_selectors_prefix(post_url)
 
                 textbox: WebElement = self.driver.find_element(
                     By.XPATH,
@@ -515,7 +515,7 @@ class Account(Facebook, Chrome):
 
     def get_selectors_prefix(self: Self, post_url: Union[str, None] = None) -> str:
 
-        if post_url and self.driver.current_url != post_url:
+        if post_url:
             self.driver.get(post_url)
             time.sleep(5)
 
@@ -547,15 +547,9 @@ class Account(Facebook, Chrome):
 
         if post_url := self.get_last_post_url(page_url):
             prefix = self.get_selectors_prefix(post_url)
+            print(prefix)
 
-            before = self.get_screenshot(
-                post_url,
-                self.scroll_into_view,
-                element=self.driver.find_element(
-                    By.XPATH,
-                    f"{prefix}//span[contains(text(), 'Share')]/ancestor::*[@role='button']",
-                ),
-            )
+            before = self.get_screenshot(post_url)
 
             if share_count > 0 and groups:
                 self.share(post_url, groups, share_count)
@@ -567,14 +561,7 @@ class Account(Facebook, Chrome):
             comment = Facebook.report[f"{self.username}"]["comment"]
             share = Facebook.report[f"{self.username}"]["share"]
 
-            after = self.get_screenshot(
-                post_url,
-                self.scroll_into_view,
-                element=self.driver.find_element(
-                    By.XPATH,
-                    f"{prefix}//span[contains(text(), 'Share')]/ancestor::*[@role='button']",
-                ),
-            )
+            after = self.get_screenshot(post_url)
 
             caption: str = "\n".join(
                 [
