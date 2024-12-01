@@ -69,6 +69,7 @@ for index, user in enumerate(users):
                         no_sandbox=True,
                         incognito=True,
                         block_notifications=True,
+                        tor=True,
                     ),
                 ),
             )
