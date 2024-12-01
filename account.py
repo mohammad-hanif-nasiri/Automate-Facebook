@@ -546,7 +546,7 @@ class Account(Facebook, Chrome):
             return
 
         if post_url := self.get_last_post_url(page_url):
-            prefix = self.get_selectors_prefix()
+            prefix = self.get_selectors_prefix(post_url)
 
             before = self.get_screenshot(
                 post_url,
