@@ -14,15 +14,12 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.remote.webelement import WebElement
 from telegram import InputMediaPhoto
 
+import main
 from chrome import Chrome
 from console import console
-from const import (
-    TELEGRAM_BOT_API_TOKEN,
-    FONARTO_XT_PATH,
-    FONARTO_REGULAR_PATH,
-)
+from const import FONARTO_REGULAR_PATH, FONARTO_XT_PATH, TELEGRAM_BOT_API_TOKEN
 from facebook import Facebook, cli
-from functions import get_comments, download_file, edit_image
+from functions import download_file, edit_image, get_comments
 from logger import logger
 from telegram_bot import TelegramBot
 
