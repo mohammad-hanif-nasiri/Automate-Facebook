@@ -383,9 +383,22 @@ class Account(Facebook, Chrome):
 
                             break
                         except Exception as _:
-                            pass
+                            try:
+                                self.driver.find_element(
+                                    By.XPATH,
+                                    "//span[contains(text(), 'Something went wrong. Please try again.')]",
+                                )
 
-                        time.sleep(1)
+                                logger.warning(
+                                    f"User <b>{self.username!r}</b> - You"
+                                    " <r>can not</r> <b>share</b> the post right now!"
+                                )
+
+                                return
+                            except Exception as _:
+                                pass
+
+                        time.sleep(0.512)
 
                     try:
                         spans = self.driver.find_elements(
