@@ -3,7 +3,7 @@ import re
 import threading
 from typing import Any, Dict, List
 
-from account import start
+import account
 from facebook import Facebook
 
 users: List[Dict[str, Any]] = [
@@ -49,7 +49,7 @@ for index, user in enumerate(users):
         if re.match(f"^{user['username']}.*", file):
             threads.append(
                 threading.Thread(
-                    target=start,
+                    target=account.start,
                     kwargs=dict(
                         cookie_file=f"pkl/{file}",
                         page_url=user["page_url"],
