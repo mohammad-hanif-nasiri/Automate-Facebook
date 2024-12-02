@@ -251,9 +251,13 @@ class Account(Facebook, Chrome):
             button_element.click()
             time.sleep(5)
 
-            points = self.driver.find_element(
-                By.XPATH, "//div[contains(@aria-label, 'You, ')]"
-            ).text
+            points = (
+                self.driver.find_element(
+                    By.XPATH, "//div[contains(@aria-label, 'You, ')]"
+                )
+                .text.replace("\n", "")
+                .replace("You", "")
+            )
 
         except Exception:
             pass
