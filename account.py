@@ -610,10 +610,14 @@ class Account(Facebook, Chrome):
         comment_count: int = 50,
         share_count: int = 5,
     ):
+        points: Union[str, None] = None
+        if self.username:
+            Facebook.report[self.username]["points"] = (
+                points := self.get_points(page_url)
+            )
+
         if username and username != self.username:
             return
-
-        console.print(self.get_points(page_url))
 
         if post_url := self.get_last_post_url(page_url):
             prefix: str = self.get_selectors_prefix(post_url)
@@ -666,6 +670,7 @@ class Account(Facebook, Chrome):
                     f"Like: {like}",
                     f"Comment: {comment}",
                     f"Share: {share}",
+                    f"Points: {points}",
                 ]
             )
 
