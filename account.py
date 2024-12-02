@@ -13,6 +13,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.remote.webelement import WebElement
 from telegram import InputMediaPhoto
+from urllib3.exceptions import ReadTimeoutError
 
 import main
 from chrome import Chrome
@@ -739,17 +740,36 @@ def start(
     like_count: int = 50,
     comment_count: int = 50,
     share_count: int = 5,
+    timeout: int = 5,
     **kwarg,
-):
-    with Account(cookie_file, **kwarg) as account:
-        if account:
-            account.start(
-                page_url=page_url,
-                username=username,
-                groups=groups,
-                like_count=like_count,
-                comment_count=comment_count,
-                share_count=share_count,
+) -> None:
+    try:
+        with Account(cookie_file, **kwarg) as account:
+            if account:
+                account.start(
+                    page_url=page_url,
+                    username=username,
+                    groups=groups,
+                    like_count=like_count,
+                    comment_count=comment_count,
+                    share_count=share_count,
+                )
+    except ReadTimeoutError as err:
+        logger.error(f"Read timeout occurred: <r>{err}</r>")
+
+        if timeout > 0:
+            logger.info(
+                f"<y>Retrying...</y> <c>{timeout}</c> attempt(s) remaining to start the process with URL: <c>{page_url}</c>"
+            )
+            return start(
+                cookie_file,
+                page_url,
+                username,
+                groups,
+                like_count,
+                comment_count,
+                share_count,
+                timeout - 1,
             )
 
 
