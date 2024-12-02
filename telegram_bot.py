@@ -65,7 +65,6 @@ class TelegramBot:
 
         for chat_id in await self.chat_ids:
             try:
-
                 logger.info(
                     f"<b>Sending</b> photos to chat ID: <c>{chat_id}</c>"
                 )  # info about specific chat_id
@@ -94,6 +93,11 @@ class TelegramBot:
         try:
             updates = self.updates = await self.bot.get_updates()
             logger.success("<g>Successfully</g> updates retrieved.")
+
+            if len(updates) > 0:
+                logger.info(f"<b>{len(updates)}</b> update(s) retrieved and processed.")
+            else:
+                logger.warning("<r>No</r> updates retrieved.")
 
             return updates
 
