@@ -212,15 +212,17 @@ class Account(Facebook, Chrome):
         return self.driver.find_element(By.ID, "facebook")
 
     def get_points(self: Self, page_url: str, timeout: int = 5) -> Union[str, None]:
-        old_user_agent = self.driver.execute_script("return navigator.userAgent;")
-        new_user_agent = "Mozilla/5.0 (iPhone; CPU iPhone OS 12_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.0 Mobile/15E148 Safari/604.1"
-
         self.driver.get(page_url)
         time.sleep(5)
 
+        old_user_agent = self.driver.execute_script("return navigator.userAgent;")
+        new_user_agent = "Mozilla/5.0 (iPhone; CPU iPhone OS 12_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.0 Mobile/15E148 Safari/604.1"
         self.driver.execute_cdp_cmd(
             "Network.setUserAgentOverride", {"userAgent": new_user_agent}
         )
+
+        self.driver.refresh()
+        time.sleep(5)
 
         points: Union[str, None] = None
 
@@ -254,8 +256,7 @@ class Account(Facebook, Chrome):
             ).text
 
         except Exception:
-            if timeout > 0:
-                return self.get_points(page_url, timeout - 1)
+            pass
 
         self.driver.execute_cdp_cmd(
             "Network.setUserAgentOverride", {"userAgent": old_user_agent}
