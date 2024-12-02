@@ -212,7 +212,58 @@ class Account(Facebook, Chrome):
         return self.driver.find_element(By.ID, "facebook")
 
     def get_points(self: Self, page_url: str, timeout: int = 5) -> Union[str, None]:
-        pass
+        old_user_agent = self.driver.execute_script("return navigator.userAgent;")
+        new_user_agent = "Mozilla/5.0 (iPhone; CPU iPhone OS 12_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.0 Mobile/15E148 Safari/604.1"
+
+        self.driver.get(page_url)
+        time.sleep(5)
+
+        self.driver.execute_cdp_cmd(
+            "Network.setUserAgentOverride", {"userAgent": new_user_agent}
+        )
+
+        points: Union[str, None] = None
+
+        try:
+            about_tab = self.driver.find_element(
+                By.XPATH, "//div[text() = 'About']/ancestor::div[@role='tab']"
+            )
+            self.scroll_into_view(about_tab)
+            about_tab.click()
+            time.sleep(5)
+
+            button_element = self.driver.execute_script(
+                """
+                const element = arguments[0];
+                const containerElement = element.closest("div[data-type='container']");
+                const buttonElement = containerElement.querySelector("div[role='button']");
+
+                return buttonElement;
+                """,
+                self.driver.find_element(
+                    By.XPATH,
+                    "//span[contains(text(), 'Who’s engaging this week')]",
+                ),
+            )
+            self.scroll_into_view(button_element)
+            button_element.click()
+            time.sleep(5)
+
+            points = self.driver.find_element(
+                By.XPATH, "//div[contains(@aria-label, 'You, ')]"
+            ).text
+
+        except Exception:
+            if timeout > 0:
+                return self.get_points(page_url, timeout - 1)
+
+        self.driver.execute_cdp_cmd(
+            "Network.setUserAgentOverride", {"userAgent": old_user_agent}
+        )
+        self.driver.refresh()
+        time.sleep(5)
+
+        return points
 
     def get_screenshot(
         self: Self,
