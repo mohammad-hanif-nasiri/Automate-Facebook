@@ -612,6 +612,8 @@ class Account(Facebook, Chrome):
         if username and username != self.username:
             return
 
+        console.print(self.get_points(page_url))
+
         if post_url := self.get_last_post_url(page_url):
             prefix: str = self.get_selectors_prefix(post_url)
 
