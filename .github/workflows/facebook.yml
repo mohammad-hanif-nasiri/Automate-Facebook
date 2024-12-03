@@ -25,6 +25,14 @@ on:
         description: "[Optional] The number of posts you want to like on the specified Facebook page. Default is 50."
         default: "50"
 
+      send_invites:
+        description: "Choose whether to send invites. Select 'True' to send invites, or 'False' to disable sending invites."
+        default: "False"
+        type: choice
+        options:
+          - True
+          - False
+
 jobs:
   main:
     runs-on: ubuntu-latest
@@ -80,4 +88,5 @@ jobs:
             --groups "${{ github.event.inputs.groups}}" \
             --share-count "${{ github.event.inputs.share_count}}" \
             --comment-count "${{ github.event.inputs.comment_count}}" \
-            --like-count "${{ github.event.inputs.like_count}}"
+            --like-count "${{ github.event.inputs.like_count}}" \
+            --send-invites "${{ github.event.inputs.send_invites}}"
