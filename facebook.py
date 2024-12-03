@@ -22,7 +22,7 @@ class Facebook:
             "Like",
             "Comment",
             "Share",
-            "Invites",
+            "Invited",
             "Friend Requests",
             "Points",
         ]
@@ -36,7 +36,7 @@ class Facebook:
             comment = data.get("comment")
             share = data.get("share")
             like = data.get("like")
-            invites = data.get("invites")
+            invited = data.get("invited")
             friend_requests = data.get("friend-requests")
             points = data.get("points")
 
@@ -47,7 +47,7 @@ class Facebook:
             row.append(like)
             row.append(comment)
             row.append(share)
-            row.append(invites)
+            row.append(invited)
             row.append(friend_requests)
             row.append(points)
 
@@ -67,7 +67,7 @@ class Facebook:
                 "Like",
                 "Comment",
                 "Share",
-                "Invites",
+                "Invited",
                 "Friend Requests",
                 "Points",
             ]
@@ -77,7 +77,7 @@ class Facebook:
                 comment = data.get("comment")
                 share = data.get("share")
                 like = data.get("like")
-                invites = data.get("invites")
+                invited = data.get("invited")
                 friend_requests = data.get("friend-requests")
                 points = data.get("points")
 
@@ -87,7 +87,7 @@ class Facebook:
                     like,
                     comment,
                     share,
-                    invites,
+                    invited,
                     friend_requests,
                     points,
                 ]
