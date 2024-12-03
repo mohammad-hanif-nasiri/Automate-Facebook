@@ -15,7 +15,7 @@ from selenium.webdriver.remote.webelement import WebElement
 from telegram import InputMediaPhoto
 from urllib3.exceptions import ReadTimeoutError
 
-import main
+import main as _
 from chrome import Chrome
 from console import console
 from const import FONARTO_REGULAR_PATH, FONARTO_XT_PATH, TELEGRAM_BOT_API_TOKEN
@@ -722,6 +722,7 @@ class Account(Facebook, Chrome):
         like_count: int = 50,
         comment_count: int = 50,
         share_count: int = 5,
+        send_invites: bool = False,
     ):
         points: Union[str, None] = None
         if self.username:
@@ -761,7 +762,8 @@ class Account(Facebook, Chrome):
             if comment_count > 0:
                 self.comment(post_url, comment_count)
 
-            self.invite(page_url)
+            if send_invites:
+                self.invite(page_url)
 
             like = comment = share = invites = None
             if self.username:
@@ -918,6 +920,7 @@ def start(
     like_count: int = 50,
     comment_count: int = 50,
     share_count: int = 5,
+    send_invites: bool = False,
     timeout: int = 5,
     **kwarg,
 ) -> None:
@@ -931,6 +934,7 @@ def start(
                     like_count=like_count,
                     comment_count=comment_count,
                     share_count=share_count,
+                    send_invites=send_invites,
                 )
     except ReadTimeoutError as err:
         logger.error(f"Read timeout occurred: <r>{err}</r>")
@@ -987,6 +991,12 @@ def start(
     default=50,
     help="Specify the number of posts to like. Default is 50.",
 )
+@click.option(
+    "--send-invites",
+    type=bool,
+    default=False,
+    help="Enable or disable sending invites. Set to True to send invites.",
+)
 @click.pass_context
 def main(
     ctx: click.core.Context,
@@ -996,6 +1006,7 @@ def main(
     share_count: int = 5,
     comment_count: int = 50,
     like_count: int = 50,
+    send_invites: bool = False,
 ) -> None:
 
     threads: List[threading.Thread] = []
@@ -1016,6 +1027,7 @@ def main(
                         like_count=like_count,
                         share_count=share_count,
                         comment_count=comment_count,
+                        send_invites=send_invites,
                         **ctx.parent.params if ctx.parent else {},
                     ),
                 )
