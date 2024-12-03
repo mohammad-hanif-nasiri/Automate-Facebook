@@ -61,7 +61,7 @@ users: List[Dict[str, Any]] = [
         "send_invites": False,
     },
     {
-        "page_url": "https://www.facebook.com/CityComputerStore",
+        "page_url": "https://www.facebook.com/profile.php?id=61563882952139",
         "username": "mustafa.joya.123456789",
         "credentials": {
             "username": "mustafa.joya.123456789",
