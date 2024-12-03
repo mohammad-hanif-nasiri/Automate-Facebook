@@ -951,6 +951,7 @@ def start(
                 like_count,
                 comment_count,
                 share_count,
+                send_invites,
                 timeout - 1,
             )
 
@@ -993,9 +994,8 @@ def start(
 )
 @click.option(
     "--send-invites",
-    type=bool,
-    default=False,
-    help="Enable or disable sending invites. Set to True to send invites.",
+    is_flag=True,
+    help="Send invites when this flag is used.",
 )
 @click.pass_context
 def main(
