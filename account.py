@@ -707,7 +707,40 @@ class Account(Facebook, Chrome):
             callback=send_request,
         )
 
-    def get_invited_count(self: Self, page_url: str, timeout: int = 5) -> int: ...
+    def get_invited_count(self: Self, page_url: str, timeout: int = 5) -> int:
+        self.driver.get(page_url)
+        time.sleep(5)
+
+        try:
+            more_options_button: WebElement = self.driver.find_element(
+                By.XPATH, "//div[@aria-label='See options' and @role='button']"
+            )
+            self.scroll_into_view(more_options_button)
+            more_options_button.click()
+            time.sleep(2.5)
+
+            invite_friends_button: WebElement = self.driver.find_element(
+                By.XPATH,
+                "//span[contains(text(), 'Invite friends')]/ancestor::div[@role='menuitem']",
+            )
+            self.scroll_into_view(invite_friends_button)
+            invite_friends_button.click()
+            time.sleep(5)
+
+            invited = self.driver.find_element(
+                By.XPATH, "//span[contains(text(), 'Invited')]"
+            ).text
+
+            print(invited)
+
+            logger.success(
+                f"User <b>{self.username}</b> - Successfully the invited friends count retrieved."
+            )
+
+            return 0
+
+        except Exception:
+            logger.error(f"User <b>{self.username}</b> - ")
 
     def invite(self: Self, page_url: str, timeout: int = 5) -> None:
         self.driver.get(page_url)
