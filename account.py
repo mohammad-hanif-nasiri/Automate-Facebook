@@ -1040,7 +1040,7 @@ def start(
                 like_count,
                 comment_count,
                 share_count,
-                friend_requests,
+                friend_request_count,
                 send_invites,
                 timeout - 1,
             )
