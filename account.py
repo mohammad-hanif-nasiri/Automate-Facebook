@@ -62,7 +62,7 @@ class Account(Facebook, Chrome):
                     "comment": 0,
                     "friend-requests": 0,
                     "points": 0,
-                    "invites": "",
+                    "invites": 0,
                 },
             )
 
@@ -747,11 +747,6 @@ class Account(Facebook, Chrome):
                     select_all_button.click()
                     time.sleep(2.5)
 
-                    selected_friends: str = self.driver.find_element(
-                        By.XPATH,
-                        "//div[@role='dialog']//span[contains(text(), 'Selected')]",
-                    ).text
-
                     send_invite_button: WebElement = self.driver.find_element(
                         By.XPATH,
                         "//div[@aria-label='Send Invites' and @role='button']",
@@ -765,13 +760,8 @@ class Account(Facebook, Chrome):
                             )
 
                             logger.success(
-                                f"User <b>{self.username}</b> - Invites <c>{selected_friends}</c> <g>successfully</g> sent."
+                                f"User <b>{self.username}</b> - Invites <g>successfully</g> sent."
                             )
-
-                            if self.username:
-                                Facebook.report[self.username][
-                                    "invites"
-                                ] = selected_friends
 
                             break
                         except Exception:
