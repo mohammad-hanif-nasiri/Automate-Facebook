@@ -471,7 +471,11 @@ class Account(Facebook, Chrome):
                         )
 
                         for span in spans:
-                            if "You Can't Use This Feature Right Now" in span.text:
+                            if (
+                                "You Can't Use This Feature Right Now" in span.text
+                                or "You can't use this feature at the moment"
+                                in span.text
+                            ):
                                 logger.warning(
                                     f"User <b>{self.username!r}</b> - You"
                                     " <r>can not</r> <b>share</b> the post right now!"
@@ -642,7 +646,7 @@ class Account(Facebook, Chrome):
                             )
                             self.scroll_into_view(add_friend_button)
                             add_friend_button.click()
-                            time.sleep(1)
+                            time.sleep(2.5)
 
                             try:
                                 suggestion.find_element(
@@ -662,6 +666,27 @@ class Account(Facebook, Chrome):
                                 logger.warning(
                                     f"User <b>{self.username}</b> - The request <y>was not</y> sent successfully."
                                 )
+
+                            try:
+                                spans = self.driver.find_elements(
+                                    By.XPATH,
+                                    "//div[@role='dialog']//span",
+                                )
+
+                                for span in spans:
+                                    if (
+                                        "You Can't Use This Feature Right Now"
+                                        in span.text
+                                        or "You can't use this feature at the moment"
+                                        in span.text
+                                    ):
+                                        logger.warning(
+                                            f"User <b>{self.username!r}</b> - You <r>can not</r> write <b>comments</b> right now!"
+                                        )
+                                        return
+
+                            except Exception:
+                                pass
 
                         except Exception:
                             pass
