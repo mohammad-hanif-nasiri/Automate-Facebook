@@ -43,7 +43,7 @@ users: List[Dict[str, Any]] = [
         },
         "groups": ["Math"],
         "share_count": 100,
-        "comment_count": 50,
+        "comment_count": 0,
         "like_count": 0,
         "friend_request_count": 0,
         "send_invites": False,
@@ -75,9 +75,9 @@ users: List[Dict[str, Any]] = [
         "share_count": 100,
         "comment_count": 50,
         "like_count": 0,
-        "friend_request_count": 50,
+        "friend_request_count": 0,
         "send_invites": True,
-        "telegram_id": 6038974645,
+        "telegram_id": None,
     },
     {
         "page_url": "https://www.facebook.com/profile.php?id=61563882952139",
@@ -90,9 +90,9 @@ users: List[Dict[str, Any]] = [
         "share_count": 100,
         "comment_count": 50,
         "like_count": 0,
-        "friend_request_count": 50,
+        "friend_request_count": 0,
         "send_invites": True,
-        "telegram_id": 6038974645,
+        "telegram_id": None,
     },
 ]
 
