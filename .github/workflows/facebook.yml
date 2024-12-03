@@ -25,6 +25,10 @@ on:
         description: "[Optional] The number of posts you want to like on the specified Facebook page. Default is 50."
         default: "50"
 
+      friend_request_count:
+        description: "The number of friend requests to send."
+        default: "50"
+
       send_invites:
         description: "Choose whether to send invites. Select 'True' to send invites, or 'False' to disable sending invites."
         default: False
@@ -94,4 +98,5 @@ jobs:
             --share-count "${{ github.event.inputs.share_count}}" \
             --comment-count "${{ github.event.inputs.comment_count}}" \
             --like-count "${{ github.event.inputs.like_count}}" \
+            --friend-requests "${{ github.event.inputs.friend_request_count}}" \
             $SEND_INVITES_FLAG
