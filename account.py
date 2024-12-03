@@ -317,6 +317,7 @@ class Account(Facebook, Chrome):
             return self.driver.get_screenshot_as_png()
         except Exception:
             if timeout > 0:
+                time.sleep(5)
                 return self.get_screenshot(url, callback_func, timeout - 1)
 
     def get_screenshot_as_file(
