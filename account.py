@@ -62,7 +62,7 @@ class Account(Facebook, Chrome):
                     "comment": 0,
                     "friend-requests": 0,
                     "points": 0,
-                    "invites": 0,
+                    "invites": "",
                 },
             )
 
@@ -747,14 +747,10 @@ class Account(Facebook, Chrome):
                     select_all_button.click()
                     time.sleep(2.5)
 
-                    selected_friends: str = (
-                        self.driver.find_element(
-                            By.XPATH,
-                            "//div[@role='dialog']//span[contains(text(), 'Selected')]",
-                        )
-                        .text.replace("Selected", "")
-                        .strip()
-                    )
+                    selected_friends: str = self.driver.find_element(
+                        By.XPATH,
+                        "//div[@role='dialog']//span[contains(text(), 'Selected')]",
+                    ).text
 
                     send_invite_button: WebElement = self.driver.find_element(
                         By.XPATH,
