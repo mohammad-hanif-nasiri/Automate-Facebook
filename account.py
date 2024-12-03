@@ -287,7 +287,11 @@ class Account(Facebook, Chrome):
             )
 
         except Exception:
-            logger.error(f"User <b>{self.username}<b/> - <r>Unable</r> to get points.")
+            logger.error(f"User <b>{self.username}</b> - <r>Unable</r> to get points.")
+
+            asyncio.run(
+                self.telegram_bot.send_photo(self.driver.get_screenshot_as_png())
+            )
 
             if timeout > 0:
                 return self.get_points(page_url, timeout - 1)
