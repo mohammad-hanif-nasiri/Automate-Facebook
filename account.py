@@ -669,7 +669,7 @@ class Account(Facebook, Chrome):
                                     "invites"
                                 ] = selected_friends
 
-                            return
+                            break
                         except Exception:
                             pass
 
