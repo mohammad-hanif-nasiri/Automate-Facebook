@@ -22,7 +22,8 @@ class Facebook:
             "Like",
             "Comment",
             "Share",
-            "Invites" "Points",
+            "Invites",
+            "Points",
         ]
 
         for col in cols:
@@ -63,7 +64,8 @@ class Facebook:
                 "Like",
                 "Comment",
                 "Share",
-                "Invites" "Points",
+                "Invites",
+                "Points",
             ]
             rows: List[List[Any]] = []
 
