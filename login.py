@@ -17,6 +17,47 @@ class Login(Chrome):
     def __init__(self: Self, **kwargs) -> None:
         super().__init__(**kwargs)
 
+    def preform_automatically_login(
+        self: Self,
+        username: str,
+        password: str,
+    ) -> Union[None, bool]:
+        # Open Facebook login page
+        self.driver.get("https://www.facebook.com/login")
+
+        try:
+            # Locate email, password fields, and login button
+            email_field = self.driver.find_element(By.ID, "email")
+            password_field = self.driver.find_element(By.ID, "pass")
+            login_button = self.driver.find_element(By.NAME, "login")
+
+            # Enter login credentials
+            email_field.send_keys(username)
+            password_field.send_keys(password)
+
+            # Submit login form
+            login_button.click()
+            time.sleep(5)
+            # Check if there is an element that indicates successful login, e.g., Facebook home button
+            try:
+                self.driver.find_element(
+                    By.XPATH, "//*[contains(@href, 'https://www.facebook.com/')]"
+                )
+
+                logger.success(
+                    f"Login <b><g>successful</g></b> for user: <b>{username!r}</b>"
+                )
+
+                return True  # Login was successful
+            except NoSuchElementException:
+                logger.error(
+                    f"Login <r><b>failed</b></r> for user: <b>{username!r}</b>"
+                )
+                return False  # Login failed (possibly due to wrong credentials)
+        except (NoSuchElementException, TimeoutException):
+            # Handle case where login page elements couldn't be found
+            return False
+
     def login(
         self: Self,
         username: Union[None, str] = None,
