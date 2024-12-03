@@ -303,16 +303,21 @@ class Account(Facebook, Chrome):
         self: Self,
         url: str,
         callback_func: Union[None, Callable] = None,
+        timeout: int = 5,
         /,
         **kwargs,
-    ) -> bytes:
+    ) -> Union[None, bytes]:
         self.driver.get(url)
         time.sleep(5)
 
         if callback_func:
             callback_func(**kwargs)
 
-        return self.driver.get_screenshot_as_png()
+        try:
+            return self.driver.get_screenshot_as_png()
+        except Exception:
+            if timeout > 0:
+                return self.get_screenshot(url, callback_func, timeout - 1)
 
     def get_screenshot_as_file(
         self: Self,
@@ -322,7 +327,9 @@ class Account(Facebook, Chrome):
         **kwargs,
     ) -> str:
         with open(path := f"/tmp/{uuid.uuid4()}.png", mode="wb") as file:
-            file.write(self.get_screenshot(url, callback_fun, *args, **kwargs))
+            screenshot = self.get_screenshot(url, callback_fun, *args, **kwargs)
+            if screenshot:
+                file.write(screenshot)
 
         return path
 
@@ -761,7 +768,7 @@ class Account(Facebook, Chrome):
                 "//div[@aria-label='Invite friends' and @role='dialog']//span[contains(text(), 'Invited ')]",
             )
 
-            print(invited.text)
+            console.print(invited.text)
 
             logger.success(
                 f"User <b>{self.username}</b> - Successfully the invited friends count retrieved."
@@ -911,14 +918,19 @@ class Account(Facebook, Chrome):
                 )
                 time.sleep(2.5)
 
-            before = edit_image(
-                self.get_screenshot(post_url, func),
-                text="Before",
-                font_path=FONARTO_XT_PATH,
-                size=128,
-                position=(50, 25),
-                text_color=(255, 0, 0),
-            )
+            screenshots: List[bytes] = []
+
+            if before_screenshot := self.get_screenshot(post_url, func):
+                before = edit_image(
+                    before_screenshot,
+                    text="Before",
+                    font_path=FONARTO_XT_PATH,
+                    size=128,
+                    position=(50, 25),
+                    text_color=(255, 0, 0),
+                )
+
+                screenshots.append(before)
 
             if share_count > 0 and groups:
                 self.share(post_url, groups, share_count)
@@ -942,14 +954,17 @@ class Account(Facebook, Chrome):
                     self.get_invited_count(page_url)
                 )
 
-            after = edit_image(
-                self.get_screenshot(post_url, func),
-                text="After",
-                font_path=FONARTO_XT_PATH,
-                size=128,
-                position=(50, 25),
-                text_color=(255, 0, 0),
-            )
+            if after_screenshot := self.get_screenshot(post_url, func):
+                after = edit_image(
+                    after_screenshot,
+                    text="After",
+                    font_path=FONARTO_XT_PATH,
+                    size=128,
+                    position=(50, 25),
+                    text_color=(255, 0, 0),
+                )
+
+                screenshots.append(after)
 
             caption: str = "\n".join(
                 [
@@ -968,7 +983,7 @@ class Account(Facebook, Chrome):
 
             photos: List[InputMediaPhoto] = [
                 InputMediaPhoto(photo, caption=caption if not index else None)
-                for index, photo in enumerate([before, after])
+                for index, photo in enumerate(screenshots)
             ]
 
             asyncio.run(self.telegram_bot.send_photos(*photos))
