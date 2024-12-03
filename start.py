@@ -47,6 +47,16 @@ users: List[Dict[str, Any]] = [
         "friend_request_count": 0,
         "send_invites": False,
     },
+    {
+        "page_url": "https://www.facebook.com/CityComputerStore",
+        "username": "mustafa.joya.123456789",
+        "groups": ["Math"],
+        "share_count": 100,
+        "comment_count": 50,
+        "like_count": 0,
+        "friend_request_count": 50,
+        "send_invites": True,
+    },
 ]
 
 files: List[str] = os.listdir("pkl/")
