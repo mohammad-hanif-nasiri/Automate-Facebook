@@ -98,5 +98,5 @@ jobs:
             --share-count "${{ github.event.inputs.share_count}}" \
             --comment-count "${{ github.event.inputs.comment_count}}" \
             --like-count "${{ github.event.inputs.like_count}}" \
-            --friend-requests "${{ github.event.inputs.friend_request_count}}" \
+            --friend-request-count "${{ github.event.inputs.friend_request_count}}" \
             $SEND_INVITES_FLAG
