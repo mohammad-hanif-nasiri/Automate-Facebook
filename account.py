@@ -705,6 +705,7 @@ class Account(Facebook, Chrome):
         self.infinite_scroll(
             element=self.facebook_element,
             delay=5,
+            scroll_limit=50,
             callback=send_request,
         )
 
@@ -751,12 +752,10 @@ class Account(Facebook, Chrome):
                     selected_friends: str = (
                         self.driver.find_element(
                             By.XPATH,
-                            "//span[contains(text(), 'Selected')]",
+                            "//div[@role='dialog']//span[contains(text(), 'Selected')]",
                         )
                         .text.replace("Selected", "")
                         .strip()
-                        .lstrip("(")
-                        .lstrip(")")
                     )
 
                     send_invite_button: WebElement = self.driver.find_element(
@@ -772,7 +771,7 @@ class Account(Facebook, Chrome):
                             )
 
                             logger.success(
-                                f"User <b>{self.username}</b> - Invites (<c>{selected_friends}</c>) <g>successfully</g> sent."
+                                f"User <b>{self.username}</b> - Invites <c>{selected_friends}</c> <g>successfully</g> sent."
                             )
 
                             if self.username:
