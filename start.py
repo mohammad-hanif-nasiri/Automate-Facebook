@@ -14,6 +14,7 @@ users: List[Dict[str, Any]] = [
         "share_count": 100,
         "comment_count": 50,
         "like_count": 0,
+        "friend_request_count": 0,
         "send_invites": True,
     },
     {
@@ -23,6 +24,7 @@ users: List[Dict[str, Any]] = [
         "share_count": 100,
         "comment_count": 50,
         "like_count": 0,
+        "friend_request_count": 0,
         "send_invites": False,
     },
     {
@@ -32,6 +34,7 @@ users: List[Dict[str, Any]] = [
         "share_count": 100,
         "comment_count": 50,
         "like_count": 0,
+        "friend_request_count": 0,
         "send_invites": False,
     },
     {
@@ -41,6 +44,7 @@ users: List[Dict[str, Any]] = [
         "share_count": 100,
         "comment_count": 50,
         "like_count": 0,
+        "friend_request_count": 0,
         "send_invites": False,
     },
 ]
@@ -62,6 +66,7 @@ for index, user in enumerate(users):
                         like_count=user["like_count"],
                         comment_count=user["comment_count"],
                         share_count=user["share_count"],
+                        friend_request_count=user["friend_request_count"],
                         **dict(
                             headless=True,
                             disable_gpu=True,
