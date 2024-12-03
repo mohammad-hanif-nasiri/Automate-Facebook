@@ -10,6 +10,7 @@ users: List[Dict[str, Any]] = [
     {
         "page_url": "https://www.facebook.com/CityComputerStore",
         "username": "aliabdullah.nasiri",
+        "credentials": None,
         "groups": ["Math"],
         "share_count": 100,
         "comment_count": 50,
@@ -20,6 +21,10 @@ users: List[Dict[str, Any]] = [
     {
         "page_url": "https://www.facebook.com/profile.php?id=61554947310688",
         "username": "mohammad.hanif.nasiri.1967",
+        "credentials": {
+            "username": "mohammad.hanif.nasiri.1967",
+            "password": "info@123",
+        },
         "groups": ["Math"],
         "share_count": 100,
         "comment_count": 50,
@@ -30,6 +35,10 @@ users: List[Dict[str, Any]] = [
     {
         "page_url": "https://www.facebook.com/profile.php?id=100063642170837",
         "username": "hanif.nasiri.1967",
+        "credentials": {
+            "username": "hanif.nasiri.1967",
+            "password": "info@123",
+        },
         "groups": ["Math"],
         "share_count": 100,
         "comment_count": 50,
@@ -40,6 +49,10 @@ users: List[Dict[str, Any]] = [
     {
         "page_url": "https://www.facebook.com/PaytakhtMobile",
         "username": "ali.nasiri.20050727",
+        "credentials": {
+            "username": "ali.nasiri.20050727",
+            "password": "info@123",
+        },
         "groups": ["Math"],
         "share_count": 100,
         "comment_count": 50,
@@ -50,6 +63,10 @@ users: List[Dict[str, Any]] = [
     {
         "page_url": "https://www.facebook.com/CityComputerStore",
         "username": "mustafa.joya.123456789",
+        "credentials": {
+            "username": "mustafa.joya.123456789",
+            "password": "milad123456789123456789",
+        },
         "groups": ["Math"],
         "share_count": 100,
         "comment_count": 50,
@@ -70,6 +87,7 @@ for index, user in enumerate(users):
                     target=account.start,
                     kwargs=dict(
                         cookie_file=f"pkl/{file}",
+                        credentials=user["credentials"],
                         page_url=user["page_url"],
                         username=user["username"],
                         groups=user["groups"],
