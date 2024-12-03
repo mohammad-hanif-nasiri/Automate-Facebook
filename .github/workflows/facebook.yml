@@ -26,7 +26,7 @@ on:
         default: "50"
 
       friend_request_count:
-        description: "The number of friend requests to send."
+        description: "[Optional] The number of friend requests to send."
         default: "50"
 
       send_invites:
