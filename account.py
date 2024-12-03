@@ -25,6 +25,9 @@ from login import Login
 from main import main as main_func
 from telegram_bot import TelegramBot
 
+# call the main function which imported from another module called `main.py`
+main_func()
+
 
 class Account(Facebook, Chrome):
     def __init__(
@@ -1088,9 +1091,6 @@ def start(
     credentials: Union[Dict[Literal["username", "password"], str], None] = None,
     **kwarg,
 ) -> None:
-    # call the main function which imported from another module called `main.py`
-    main_func()
-
     try:  # handle exceptions
         with Account(
             cookie_file=cookie_file, credentials=credentials, **kwarg
