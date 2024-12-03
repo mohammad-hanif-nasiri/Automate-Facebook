@@ -707,7 +707,9 @@ class Account(Facebook, Chrome):
             callback=send_request,
         )
 
-    def get_invited_count(self: Self, page_url: str, timeout: int = 5) -> int:
+    def get_invited_count(
+        self: Self, page_url: str, timeout: int = 5
+    ) -> Union[int, None]:
         self.driver.get(page_url)
         time.sleep(5)
 
