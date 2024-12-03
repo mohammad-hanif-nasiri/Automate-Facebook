@@ -728,10 +728,11 @@ class Account(Facebook, Chrome):
             time.sleep(5)
 
             invited = self.driver.find_element(
-                By.XPATH, "//span[contains(text(), 'Invited')]"
-            ).text
+                By.XPATH,
+                "//div[@aria-label='Invite friends' and @role='dialog']//span[contains(text(), 'Invited ')]",
+            )
 
-            print(invited)
+            print(invited.text)
 
             logger.success(
                 f"User <b>{self.username}</b> - Successfully the invited friends count retrieved."
@@ -740,7 +741,11 @@ class Account(Facebook, Chrome):
             return 0
 
         except Exception:
-            logger.error(f"User <b>{self.username}</b> - ")
+            if timeout > 0:
+                logger.error(
+                    f"User <b>{self.username}</b> - Unable to retrieve the invited friends count. Retrying (<c>{timeout}</c> remaining)."
+                )
+                return self.get_invited_count(page_url, timeout - 1)
 
     def invite(self: Self, page_url: str, timeout: int = 5) -> None:
         self.driver.get(page_url)
