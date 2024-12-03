@@ -683,7 +683,7 @@ class Account(Facebook, Chrome):
                                         logger.warning(
                                             f"User <b>{self.username!r}</b> - You <r>can not</r> send friend requests right now!"
                                         )
-                                        return
+                                        return False
 
                             except Exception:
                                 pass
