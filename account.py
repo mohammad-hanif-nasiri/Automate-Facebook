@@ -606,7 +606,6 @@ class Account(Facebook, Chrome):
         time.sleep(5)
 
         def send_request():
-            print("HI")
             try:
                 friends_element: WebElement = self.driver.find_element(
                     By.XPATH,
@@ -705,7 +704,6 @@ class Account(Facebook, Chrome):
         self.infinite_scroll(
             element=self.facebook_element,
             delay=5,
-            scroll_limit=50,
             callback=send_request,
         )
 
@@ -1023,9 +1021,6 @@ class Account(Facebook, Chrome):
             count += 1
             if scroll_limit is not None and count >= scroll_limit:
                 break  # Exit if the scroll limit is reached
-
-        if callback:
-            callback(*args, **kwargs)
 
 
 def start(
