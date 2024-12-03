@@ -60,6 +60,7 @@ class Account(Facebook, Chrome):
                     "share": 0,
                     "like": 0,
                     "comment": 0,
+                    "friend-requests": 0,
                     "points": None,
                     "invites": None,
                 },
@@ -596,6 +597,86 @@ class Account(Facebook, Chrome):
     def like(self: Self, page_url: str, timeout: int = 5) -> Union[bool, None]:
         pass
 
+    def send_friend_request(self: Self, count: int = 100, timeout: int = 5) -> None:
+        self.driver.get("https://www.facebook.com/friends")
+        time.sleep(5)
+
+        def send_request():
+            requests_count: Union[int, None] = None
+            if self.username:
+                requests_count = Facebook.report[self.username]["friend-requests"]
+
+            if requests_count:
+                try:
+                    friends_element: WebElement = self.driver.find_element(
+                        By.XPATH,
+                        "//div[@aria-label='Friends' and @role='main']",
+                    )
+                    list_element: WebElement = friends_element.find_element(
+                        By.XPATH,
+                        "//div[@role='list']",
+                    )
+                    suggestions: List[WebElement] = list_element.find_elements(
+                        By.XPATH,
+                        "//div[@role='listitem']",
+                    )
+
+                    for suggestion in suggestions:
+                        if self.username:
+                            if (
+                                Facebook.report[self.username]["friend-requests"]
+                                == count
+                            ):
+                                logger.success(
+                                    f"User <b>{self.username}</b> - The sending friend requests process completed!"
+                                )
+                                return
+                        try:
+                            self.scroll_into_view(suggestion)
+
+                            add_friend_button = suggestion.find_element(
+                                By.XPATH,
+                                "//div[@aria-label='Add friend' and @role='button']",
+                            )
+                            self.scroll_into_view(add_friend_button)
+                            add_friend_button.click()
+                            time.sleep(1)
+
+                            try:
+                                suggestion.find_element(
+                                    By.XPATH, "//span[contains(text(), 'Request sent')]"
+                                )
+
+                                if self.username:
+                                    Facebook.report[self.username][
+                                        "friend-requests"
+                                    ] += 1
+
+                                logger.success(
+                                    f"User <b>{self.username}</b> - Request <g>successfully</g> sent. [<c>{requests_count}</c> of <c>{count}</c>]"
+                                )
+
+                            except Exception:
+                                logger.warning(
+                                    f"User <b>{self.username}</b> - The request <y>was not</y> sent successfully."
+                                )
+
+                        except Exception:
+                            pass
+
+                except Exception:
+                    if timeout > 0:
+                        logger.error(
+                            f"User <b>{self.username}</b> - An error occurred during sending friend requests. Retrying (<c>{timeout}</c> remaining)."
+                        )
+                        self.send_friend_request(count, timeout - 1)
+
+        self.infinite_scroll(
+            element=self.facebook_element,
+            delay=5,
+            callback=send_request,
+        )
+
     def invite(self: Self, page_url: str, timeout: int = 5) -> None:
         self.driver.get(page_url)
         time.sleep(5)
@@ -722,6 +803,7 @@ class Account(Facebook, Chrome):
         like_count: int = 50,
         comment_count: int = 50,
         share_count: int = 5,
+        friend_request_count: int = 50,
         send_invites: bool = False,
     ):
         points: Union[str, None] = None
@@ -763,14 +845,17 @@ class Account(Facebook, Chrome):
                 self.comment(post_url, comment_count)
 
             if send_invites:
-                # self.invite(page_url)
-                print(f"USER {self.username} - SENDING INVITES")
+                self.invite(page_url)
 
-            like = comment = share = invites = None
+            if friend_request_count > 0:
+                self.send_friend_request(friend_request_count)
+
+            like = comment = share = invites = friend_requests = None
             if self.username:
                 like = Facebook.report[self.username]["like"]
                 comment = Facebook.report[self.username]["comment"]
                 share = Facebook.report[self.username]["share"]
+                friend_requests = Facebook.report[self.username]["friend-requests"]
                 invites = Facebook.report[self.username]["invites"]
 
             after = edit_image(
@@ -792,6 +877,7 @@ class Account(Facebook, Chrome):
                     f"Comment: {comment}",
                     f"Share: {share}",
                     f"Points: {points}",
+                    f"Friend Requests: {friend_requests}",
                     f"Invites: {invites}",
                 ]
             )
@@ -921,6 +1007,7 @@ def start(
     like_count: int = 50,
     comment_count: int = 50,
     share_count: int = 5,
+    friend_request_count: int = 50,
     send_invites: bool = False,
     timeout: int = 5,
     **kwarg,
@@ -935,6 +1022,7 @@ def start(
                     like_count=like_count,
                     comment_count=comment_count,
                     share_count=share_count,
+                    friend_request_count=friend_request_count,
                     send_invites=send_invites,
                 )
     except ReadTimeoutError as err:
@@ -952,6 +1040,7 @@ def start(
                 like_count,
                 comment_count,
                 share_count,
+                friend_requests,
                 send_invites,
                 timeout - 1,
             )
@@ -1007,6 +1096,7 @@ def main(
     share_count: int = 5,
     comment_count: int = 50,
     like_count: int = 50,
+    friend_request_count: int = 50,
     send_invites: bool = False,
 ) -> None:
 
@@ -1028,6 +1118,7 @@ def main(
                         like_count=like_count,
                         share_count=share_count,
                         comment_count=comment_count,
+                        friend_request_count=friend_request_count,
                         send_invites=send_invites,
                         **ctx.parent.params if ctx.parent else {},
                     ),
