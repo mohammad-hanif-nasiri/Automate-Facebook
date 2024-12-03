@@ -22,9 +22,7 @@ class Facebook:
             "Like",
             "Comment",
             "Share",
-            "Invited",
             "Friend Requests",
-            "Points",
         ]
 
         for col in cols:
@@ -36,9 +34,7 @@ class Facebook:
             comment = data.get("comment")
             share = data.get("share")
             like = data.get("like")
-            invited = data.get("invited")
             friend_requests = data.get("friend-requests")
-            points = data.get("points")
 
             row: List[Any] = []
 
@@ -47,9 +43,7 @@ class Facebook:
             row.append(like)
             row.append(comment)
             row.append(share)
-            row.append(invited)
             row.append(friend_requests)
-            row.append(points)
 
             rows.append(list(map(str, row)))
 
@@ -67,9 +61,7 @@ class Facebook:
                 "Like",
                 "Comment",
                 "Share",
-                "Invited",
                 "Friend Requests",
-                "Points",
             ]
             rows: List[List[Any]] = []
 
@@ -77,9 +69,7 @@ class Facebook:
                 comment = data.get("comment")
                 share = data.get("share")
                 like = data.get("like")
-                invited = data.get("invited")
                 friend_requests = data.get("friend-requests")
-                points = data.get("points")
 
                 row = [
                     index + 1,
@@ -87,9 +77,7 @@ class Facebook:
                     like,
                     comment,
                     share,
-                    invited,
                     friend_requests,
-                    points,
                 ]
                 rows.append(row)
 
