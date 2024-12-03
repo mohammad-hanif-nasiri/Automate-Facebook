@@ -14,6 +14,7 @@ users: List[Dict[str, Any]] = [
         "share_count": 100,
         "comment_count": 50,
         "like_count": 0,
+        "send_invites": True,
     },
     {
         "page_url": "https://www.facebook.com/profile.php?id=61554947310688",
@@ -22,6 +23,7 @@ users: List[Dict[str, Any]] = [
         "share_count": 100,
         "comment_count": 50,
         "like_count": 0,
+        "send_invites": False,
     },
     {
         "page_url": "https://www.facebook.com/profile.php?id=100063642170837",
@@ -30,6 +32,7 @@ users: List[Dict[str, Any]] = [
         "share_count": 100,
         "comment_count": 50,
         "like_count": 0,
+        "send_invites": False,
     },
     {
         "page_url": "https://www.facebook.com/PaytakhtMobile",
@@ -38,6 +41,7 @@ users: List[Dict[str, Any]] = [
         "share_count": 100,
         "comment_count": 50,
         "like_count": 0,
+        "send_invites": False,
     },
 ]
 
