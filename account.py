@@ -763,7 +763,8 @@ class Account(Facebook, Chrome):
                 self.comment(post_url, comment_count)
 
             if send_invites:
-                self.invite(page_url)
+                # self.invite(page_url)
+                print(f"USER {self.username} - SENDING INVITES")
 
             like = comment = share = invites = None
             if self.username:
