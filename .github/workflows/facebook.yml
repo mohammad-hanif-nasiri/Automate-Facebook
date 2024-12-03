@@ -29,6 +29,9 @@ on:
         description: "[Optional] The number of friend requests to send."
         default: "50"
 
+      telegram_id:
+        description: "[Optional] The telegram ID."
+
       send_invites:
         description: "Choose whether to send invites. Select 'True' to send invites, or 'False' to disable sending invites."
         default: False
@@ -99,4 +102,5 @@ jobs:
             --comment-count "${{ github.event.inputs.comment_count}}" \
             --like-count "${{ github.event.inputs.like_count}}" \
             --friend-request-count "${{ github.event.inputs.friend_request_count}}" \
+            --telegram-id "${{ github.event.inputs.telegram_id}}" \
             $SEND_INVITES_FLAG
