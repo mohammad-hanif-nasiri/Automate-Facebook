@@ -241,10 +241,11 @@ class Account(Facebook, Chrome):
         self.driver.get(page_url)
         time.sleep(5)
 
-        old_user_agent = self.driver.execute_script("return navigator.userAgent;")
-        new_user_agent = "Mozilla/5.0 (iPhone; CPU iPhone OS 12_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.0 Mobile/15E148 Safari/604.1"
         self.driver.execute_cdp_cmd(
-            "Network.setUserAgentOverride", {"userAgent": new_user_agent}
+            "Network.setUserAgentOverride",
+            {
+                "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 12_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.0 Mobile/15E148 Safari/604.1"
+            },
         )
 
         self.driver.refresh()
@@ -286,10 +287,16 @@ class Account(Facebook, Chrome):
             )
 
         except Exception:
-            pass
+            logger.error(f"User <b>{self.username}<b/> - <r>Unable</r> to get points.")
+
+            if timeout > 0:
+                return self.get_points(page_url, timeout - 1)
 
         self.driver.execute_cdp_cmd(
-            "Network.setUserAgentOverride", {"userAgent": old_user_agent}
+            "Network.setUserAgentOverride",
+            {
+                "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36"
+            },
         )
         self.driver.refresh()
         time.sleep(5)
