@@ -707,6 +707,8 @@ class Account(Facebook, Chrome):
             callback=send_request,
         )
 
+    def get_invited_count(self: Self, page_url: str, timeout: int = 5) -> int: ...
+
     def invite(self: Self, page_url: str, timeout: int = 5) -> None:
         self.driver.get(page_url)
         time.sleep(5)
@@ -763,7 +765,15 @@ class Account(Facebook, Chrome):
                                 f"User <b>{self.username}</b> - Invites <g>successfully</g> sent."
                             )
 
-                            break
+                            if self.username:
+                                Facebook.report[self.username]["invited"] = (
+                                    invited_count := self.get_invited_count(page_url)
+                                )
+                                logger.info(
+                                    f"User <b>{self.username}</b> - Invites sent for <c>{invited_count}</c>."
+                                )
+
+                            return
                         except Exception:
                             pass
 
