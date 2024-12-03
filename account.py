@@ -62,7 +62,7 @@ class Account(Facebook, Chrome):
                     "comment": 0,
                     "friend-requests": 0,
                     "points": 0,
-                    "invites": 0,
+                    "invited": 0,
                 },
             )
 
@@ -863,13 +863,13 @@ class Account(Facebook, Chrome):
             if friend_request_count > 0:
                 self.send_friend_request(friend_request_count)
 
-            like = comment = share = invites = friend_requests = None
+            like = comment = share = invited = friend_requests = None
             if self.username:
                 like = Facebook.report[self.username]["like"]
                 comment = Facebook.report[self.username]["comment"]
                 share = Facebook.report[self.username]["share"]
                 friend_requests = Facebook.report[self.username]["friend-requests"]
-                invites = Facebook.report[self.username]["invites"]
+                invited = Facebook.report[self.username]["invited"]
 
             after = edit_image(
                 self.get_screenshot(post_url, func),
@@ -890,7 +890,7 @@ class Account(Facebook, Chrome):
                     f"Comment: {comment}",
                     f"Share: {share}",
                     f"Friend Requests: {friend_requests}",
-                    f"Invites: {invites}",
+                    f"Invited: {invited}",
                     f"Points: {points}",
                 ]
             )
