@@ -847,8 +847,8 @@ class Account(Facebook, Chrome):
             if send_invites:
                 self.invite(page_url)
 
-            if friend_request_count > 0:
-                self.send_friend_request(friend_request_count)
+            print(friend_request_count)
+            self.send_friend_request(friend_request_count)
 
             like = comment = share = invites = friend_requests = None
             if self.username:
