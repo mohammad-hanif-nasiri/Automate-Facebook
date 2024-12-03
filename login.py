@@ -4,6 +4,7 @@ from typing import Self, Union
 
 import click
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
+from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
 
 from chrome import Chrome
@@ -17,19 +18,20 @@ class Login(Chrome):
     def __init__(self: Self, **kwargs) -> None:
         super().__init__(**kwargs)
 
+    @staticmethod
     def preform_automatically_login(
-        self: Self,
+        driver: WebDriver,
         username: str,
         password: str,
     ) -> Union[None, bool]:
         # Open Facebook login page
-        self.driver.get("https://www.facebook.com/login")
+        driver.get("https://www.facebook.com/login")
 
         try:
             # Locate email, password fields, and login button
-            email_field = self.driver.find_element(By.ID, "email")
-            password_field = self.driver.find_element(By.ID, "pass")
-            login_button = self.driver.find_element(By.NAME, "login")
+            email_field = driver.find_element(By.ID, "email")
+            password_field = driver.find_element(By.ID, "pass")
+            login_button = driver.find_element(By.NAME, "login")
 
             # Enter login credentials
             email_field.send_keys(username)
@@ -40,7 +42,7 @@ class Login(Chrome):
             time.sleep(5)
             # Check if there is an element that indicates successful login, e.g., Facebook home button
             try:
-                self.driver.find_element(
+                driver.find_element(
                     By.XPATH, "//*[contains(@href, 'https://www.facebook.com/')]"
                 )
 
