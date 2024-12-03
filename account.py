@@ -803,14 +803,6 @@ class Account(Facebook, Chrome):
                                 f"User <b>{self.username}</b> - Invites <g>successfully</g> sent."
                             )
 
-                            if self.username:
-                                Facebook.report[self.username]["invited"] = (
-                                    invited_count := self.get_invited_count(page_url)
-                                )
-                                logger.info(
-                                    f"User <b>{self.username}</b> - Invites sent for <c>{invited_count}</c>."
-                                )
-
                             return
                         except Exception:
                             pass
@@ -917,7 +909,9 @@ class Account(Facebook, Chrome):
                 comment = Facebook.report[self.username]["comment"]
                 share = Facebook.report[self.username]["share"]
                 friend_requests = Facebook.report[self.username]["friend-requests"]
-                invited = Facebook.report[self.username]["invited"]
+                invited = Facebook.report[self.username]["invited"] = (
+                    self.get_invited_count(page_url)
+                )
 
             after = edit_image(
                 self.get_screenshot(post_url, func),
