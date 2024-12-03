@@ -606,6 +606,7 @@ class Account(Facebook, Chrome):
         time.sleep(5)
 
         def send_request():
+            print("HI")
             try:
                 friends_element: WebElement = self.driver.find_element(
                     By.XPATH,
