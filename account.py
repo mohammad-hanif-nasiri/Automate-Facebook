@@ -895,6 +895,7 @@ class Account(Facebook, Chrome):
         share_count: int = 5,
         friend_request_count: int = 50,
         send_invites: bool = False,
+        telegram_id: Union[int, None] = None,
     ):
         if username and username != self.username:
             return
@@ -987,7 +988,7 @@ class Account(Facebook, Chrome):
                 for index, photo in enumerate(screenshots)
             ]
 
-            asyncio.run(self.telegram_bot.send_photos(*photos))
+            asyncio.run(self.telegram_bot.send_photos(*photos, chat_id=telegram_id))
 
         if like_count > 0:
             pass
@@ -1106,6 +1107,7 @@ def start(
     send_invites: bool = False,
     timeout: int = 5,
     credentials: Union[Dict[Literal["username", "password"], str], None] = None,
+    telegram_id: Union[int, None] = None,
     **kwarg,
 ) -> None:
     try:  # handle exceptions
@@ -1122,6 +1124,7 @@ def start(
                     share_count=share_count,
                     friend_request_count=friend_request_count,
                     send_invites=send_invites,
+                    telegram_id=telegram_id,
                 )
     except ReadTimeoutError as err:
         logger.error(f"Read timeout occurred: <r>{err}</r>")
@@ -1187,6 +1190,11 @@ def start(
     help="Specify the number of friend requests to send. Default is 50.",
 )
 @click.option(
+    "--telegram-id",
+    type=int,
+    help="Specify the telegram ID.",
+)
+@click.option(
     "--send-invites",
     is_flag=True,
     help="Send invites when this flag is used.",
@@ -1201,6 +1209,7 @@ def main(
     comment_count: int = 50,
     like_count: int = 50,
     friend_request_count: int = 50,
+    telegram_id: Union[int, None] = None,
     send_invites: bool = False,
 ) -> None:
 
@@ -1224,6 +1233,7 @@ def main(
                         comment_count=comment_count,
                         friend_request_count=friend_request_count,
                         send_invites=send_invites,
+                        telegram_id=telegram_id,
                         **ctx.parent.params if ctx.parent else {},
                     ),
                 )
