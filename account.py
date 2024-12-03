@@ -1083,6 +1083,12 @@ def start(
     help="Specify the number of posts to like. Default is 50.",
 )
 @click.option(
+    "--friend-request-count",
+    type=int,
+    default=50,
+    help="Specify the number of friend requests to send. Default is 50.",
+)
+@click.option(
     "--send-invites",
     is_flag=True,
     help="Send invites when this flag is used.",
