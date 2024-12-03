@@ -61,8 +61,8 @@ class Account(Facebook, Chrome):
                     "like": 0,
                     "comment": 0,
                     "friend-requests": 0,
-                    "points": None,
-                    "invites": None,
+                    "points": 0,
+                    "invites": 0,
                 },
             )
 
