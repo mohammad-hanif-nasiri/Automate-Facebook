@@ -602,12 +602,11 @@ class Account(Facebook, Chrome):
         time.sleep(5)
 
         def send_request():
-            print("HI")
             requests_count: Union[int, None] = None
             if self.username:
                 requests_count = Facebook.report[self.username]["friend-requests"]
 
-            if requests_count:
+            if requests_count is not None:
                 try:
                     friends_element: WebElement = self.driver.find_element(
                         By.XPATH,
