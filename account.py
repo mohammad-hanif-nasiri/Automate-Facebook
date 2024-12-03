@@ -700,7 +700,7 @@ class Account(Facebook, Chrome):
             try:
                 self.driver.find_element(
                     By.XPATH,
-                    "//span(contains(text(), 'No Friends To Invite'))",
+                    "//span[contains(text(), 'No Friends To Invite')]",
                 )
 
                 logger.warning(
