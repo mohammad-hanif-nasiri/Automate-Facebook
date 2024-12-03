@@ -17,7 +17,7 @@ users: List[Dict[str, Any]] = [
         "like_count": 0,
         "friend_request_count": 0,
         "send_invites": True,
-        "telegram_id": "5906633627",
+        "telegram_id": 5906633627,
     },
     {
         "page_url": "https://www.facebook.com/profile.php?id=61554947310688",
@@ -32,7 +32,7 @@ users: List[Dict[str, Any]] = [
         "like_count": 0,
         "friend_request_count": 0,
         "send_invites": False,
-        "telegram_id": "5906633627",
+        "telegram_id": 5906633627,
     },
     {
         "page_url": "https://www.facebook.com/profile.php?id=100063642170837",
@@ -47,7 +47,7 @@ users: List[Dict[str, Any]] = [
         "like_count": 0,
         "friend_request_count": 0,
         "send_invites": False,
-        "telegram_id": "5906633627",
+        "telegram_id": 5906633627,
     },
     {
         "page_url": "https://www.facebook.com/PaytakhtMobile",
@@ -62,7 +62,7 @@ users: List[Dict[str, Any]] = [
         "like_count": 0,
         "friend_request_count": 0,
         "send_invites": False,
-        "telegram_id": "5906633627",
+        "telegram_id": 5906633627,
     },
     {
         "page_url": "https://www.facebook.com/CityComputerStore",
@@ -77,7 +77,7 @@ users: List[Dict[str, Any]] = [
         "like_count": 0,
         "friend_request_count": 50,
         "send_invites": True,
-        "telegram_id": "6038974645",
+        "telegram_id": 6038974645,
     },
     {
         "page_url": "https://www.facebook.com/profile.php?id=61563882952139",
@@ -92,7 +92,7 @@ users: List[Dict[str, Any]] = [
         "like_count": 0,
         "friend_request_count": 50,
         "send_invites": True,
-        "telegram_id": "6038974645",
+        "telegram_id": 6038974645,
     },
 ]
 
