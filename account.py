@@ -294,6 +294,9 @@ class Account(Facebook, Chrome):
         self.driver.refresh()
         time.sleep(5)
 
+        if points is None:
+            points = "You are not on this week's list."
+
         return points
 
     def get_screenshot(
