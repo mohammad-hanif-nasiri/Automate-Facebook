@@ -694,7 +694,7 @@ class Account(Facebook, Chrome):
                                     ] += 1
 
                                 logger.success(
-                                    f"User <b>{self.username}</b> - Request <g>successfully</g> sent. [<c>{requests_count}</c> of <c>{count}</c>]"
+                                    f"User <b>{self.username}</b> - Request <g>successfully</g> sent. [<c>{requests_count + 1}</c> of <c>{count}</c>]"
                                 )
 
                             except Exception:
