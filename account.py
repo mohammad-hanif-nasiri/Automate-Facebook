@@ -65,7 +65,7 @@ class Account(Facebook, Chrome):
 
         self.driver.refresh()
 
-        if not self.is_logged_in and self.credentials is not None:
+        if not (is_logged_in := self.is_logged_in) and self.credentials is not None:
             username: Union[str, None] = self.credentials.get(
                 "username"
             )  # get username from credentials dictionary
@@ -75,9 +75,11 @@ class Account(Facebook, Chrome):
 
             if username and password:  # validate username and password
                 # Perform automatically login using the Login static method
-                Login.preform_automatically_login(self.driver, username, password)
+                is_logged_in = Login.preform_automatically_login(
+                    self.driver, username, password
+                )
 
-        if self.is_logged_in and self.username:
+        if is_logged_in and self.username:
             Facebook.report.setdefault(
                 f"{self.username}",
                 {
@@ -85,8 +87,6 @@ class Account(Facebook, Chrome):
                     "like": 0,
                     "comment": 0,
                     "friend-requests": 0,
-                    "points": None,
-                    "invited": None,
                 },
             )
 
@@ -236,79 +236,6 @@ class Account(Facebook, Chrome):
                         enabling interaction or further manipulation.
         """
         return self.driver.find_element(By.ID, "facebook")
-
-    def get_points(self: Self, page_url: str, timeout: int = 5) -> Union[str, None]:
-        self.driver.get(page_url)
-        time.sleep(5)
-
-        self.driver.execute_cdp_cmd(
-            "Network.setUserAgentOverride",
-            {
-                "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 12_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.0 Mobile/15E148 Safari/604.1"
-            },
-        )
-
-        self.driver.refresh()
-        time.sleep(5)
-
-        points: Union[str, None] = None
-
-        try:
-            about_tab = self.driver.find_element(
-                By.XPATH, "//div[text() = 'About']/ancestor::div[@role='tab']"
-            )
-            self.scroll_into_view(about_tab)
-            about_tab.click()
-            time.sleep(5)
-
-            button_element = self.driver.execute_script(
-                """
-                const element = arguments[0];
-                const containerElement = element.closest("div[data-type='container']");
-                const buttonElement = containerElement.querySelector("div[role='button']");
-
-                return buttonElement;
-                """,
-                self.driver.find_element(
-                    By.XPATH,
-                    "//span[contains(text(), 'Who’s engaging this week')]",
-                ),
-            )
-            self.scroll_into_view(button_element)
-            button_element.click()
-            time.sleep(5)
-
-            points = (
-                self.driver.find_element(
-                    By.XPATH, "//div[contains(@aria-label, 'You, ')]"
-                )
-                .text.replace("\n", "")
-                .replace("You", "")
-            )
-
-        except Exception:
-            logger.error(f"User <b>{self.username}</b> - <r>Unable</r> to get points.")
-
-            asyncio.run(
-                self.telegram_bot.send_photo(self.driver.get_screenshot_as_png())
-            )
-
-            if timeout > 0:
-                return self.get_points(page_url, timeout - 1)
-
-        self.driver.execute_cdp_cmd(
-            "Network.setUserAgentOverride",
-            {
-                "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36"
-            },
-        )
-        self.driver.refresh()
-        time.sleep(5)
-
-        if points is None:
-            points = "You are not on this week's list."
-
-        return points
 
     def get_screenshot(
         self: Self,
@@ -751,48 +678,6 @@ class Account(Facebook, Chrome):
             callback=send_request,
         )
 
-    def get_invited_count(
-        self: Self, page_url: str, timeout: int = 5
-    ) -> Union[int, None]:
-        self.driver.get(page_url)
-        time.sleep(5)
-
-        try:
-            more_options_button: WebElement = self.driver.find_element(
-                By.XPATH, "//div[@aria-label='See options' and @role='button']"
-            )
-            self.scroll_into_view(more_options_button)
-            more_options_button.click()
-            time.sleep(2.5)
-
-            invite_friends_button: WebElement = self.driver.find_element(
-                By.XPATH,
-                "//span[contains(text(), 'Invite friends')]/ancestor::div[@role='menuitem']",
-            )
-            self.scroll_into_view(invite_friends_button)
-            invite_friends_button.click()
-            time.sleep(5)
-
-            invited = self.driver.find_element(
-                By.XPATH,
-                "//div[@aria-label='Invite friends' and @role='dialog']//span[contains(text(), 'Invited ')]",
-            )
-
-            console.print(invited.text)
-
-            logger.success(
-                f"User <b>{self.username}</b> - Successfully the invited friends count retrieved."
-            )
-
-            return 0
-
-        except Exception:
-            if timeout > 0:
-                logger.error(
-                    f"User <b>{self.username}</b> - Unable to retrieve the invited friends count. Retrying (<c>{timeout}</c> remaining)."
-                )
-                return self.get_invited_count(page_url, timeout - 1)
-
     def invite(self: Self, page_url: str, timeout: int = 5) -> None:
         self.driver.get(page_url)
         time.sleep(5)
@@ -909,12 +794,6 @@ class Account(Facebook, Chrome):
         if username and username != self.username:
             return
 
-        points: Union[str, None] = None
-        if self.username:
-            Facebook.report[self.username]["points"] = (
-                points := self.get_points(page_url)
-            )
-
         if post_url := self.get_last_post_url(page_url):
             prefix: str = self.get_selectors_prefix(post_url)
 
@@ -949,21 +828,21 @@ class Account(Facebook, Chrome):
             if comment_count > 0:
                 self.comment(post_url, comment_count)
 
+            if like_count > 0:
+                pass
+
             if send_invites:
                 self.invite(page_url)
 
             if friend_request_count > 0:
                 self.send_friend_request(friend_request_count)
 
-            like = comment = share = invited = friend_requests = None
+            like = comment = share = friend_requests = None
             if self.username:
                 like = Facebook.report[self.username]["like"]
                 comment = Facebook.report[self.username]["comment"]
                 share = Facebook.report[self.username]["share"]
                 friend_requests = Facebook.report[self.username]["friend-requests"]
-                invited = Facebook.report[self.username]["invited"] = (
-                    self.get_invited_count(page_url)
-                )
 
             if after_screenshot := self.get_screenshot(post_url, func):
                 after = edit_image(
@@ -987,8 +866,6 @@ class Account(Facebook, Chrome):
                     f"Comment: {comment}",
                     f"Share: {share}",
                     f"Friend Requests: {friend_requests}",
-                    f"Invited: {invited}",
-                    f"Points: {points}",
                 ]
             )
 
@@ -998,9 +875,6 @@ class Account(Facebook, Chrome):
             ]
 
             asyncio.run(self.telegram_bot.send_photos(*photos, chat_id=telegram_id))
-
-        if like_count > 0:
-            pass
 
     def infinite_scroll(
         self: Self,
