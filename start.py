@@ -61,11 +61,25 @@ users: List[Dict[str, Any]] = [
         "send_invites": False,
     },
     {
-        "page_url": "https://www.facebook.com/profile.php?id=61563882952139",
+        "page_url": "https://www.facebook.com/CityComputerStore",
         "username": "mustafa.joya.123456789",
         "credentials": {
             "username": "mustafa.joya.123456789",
             "password": "milad123456789123456789",
+        },
+        "groups": ["Math"],
+        "share_count": 100,
+        "comment_count": 50,
+        "like_count": 0,
+        "friend_request_count": 50,
+        "send_invites": True,
+    },
+    {
+        "page_url": "https://www.facebook.com/profile.php?id=61563882952139",
+        "username": "milad.noori.7860",
+        "credentials": {
+            "username": "milad.noori.7860",
+            "password": "milad0731161624",
         },
         "groups": ["Math"],
         "share_count": 100,
