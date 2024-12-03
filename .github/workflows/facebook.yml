@@ -27,7 +27,7 @@ on:
 
       send_invites:
         description: "Choose whether to send invites. Select 'True' to send invites, or 'False' to disable sending invites."
-        default: "False"
+        default: False
         type: choice
         options:
           - True
