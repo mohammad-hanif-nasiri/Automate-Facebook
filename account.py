@@ -60,7 +60,8 @@ class Account(Facebook, Chrome):
                     "share": 0,
                     "like": 0,
                     "comment": 0,
-                    "points": 0,
+                    "points": None,
+                    "invites": None,
                 },
             )
 
@@ -379,7 +380,10 @@ class Account(Facebook, Chrome):
         try:
             for group in groups:
                 for _ in range(count // len(groups)):
-                    share_count = Facebook.report[f"{self.username}"]["share"]
+                    share_count: int = 0
+                    if self.username:
+                        share_count = Facebook.report[self.username]["share"]
+
                     if share_count >= count:
                         logger.success(
                             f"User <b>{self.username!r}</b> - <g>Successfully</g> the sharing process completed!"
@@ -436,8 +440,9 @@ class Account(Facebook, Chrome):
                                 f"User <b>{self.username!r}</b> - The post was <b><g>successfully</g></b> shared in the group <b>{group!r}</b>."
                             )
 
-                            # Increment share count in report
-                            Facebook.report[f"{self.username}"]["share"] += 1
+                            if self.username:
+                                # Increment share count in report
+                                Facebook.report[self.username]["share"] += 1
 
                             break
                         except Exception as _:
@@ -509,7 +514,9 @@ class Account(Facebook, Chrome):
                 textbox.click()
 
                 for _ in range(count):
-                    comment_count = Facebook.report[f"{self.username}"]["comment"]
+                    comment_count: int = 0
+                    if self.username:
+                        comment_count = Facebook.report[self.username]["comment"]
 
                     if comment_count >= count:
                         logger.info(
@@ -548,8 +555,9 @@ class Account(Facebook, Chrome):
                                     f"User <b>{self.username!r}</b> - <g>Successfully</g> posted comment {comment_count+1}/{count}: <b>{text!r}</b>"
                                 )
 
-                                # Increment comment count in report
-                                Facebook.report[f"{self.username}"]["comment"] += 1
+                                if self.username:
+                                    # Increment comment count in report
+                                    Facebook.report[self.username]["comment"] += 1
 
                                 break
 
@@ -584,6 +592,107 @@ class Account(Facebook, Chrome):
 
         else:
             logger.error("<r>No</r> comments available to post.")
+
+    def like(self: Self, page_url: str, timeout: int = 5) -> Union[bool, None]:
+        pass
+
+    def invite(self: Self, page_url: str, timeout: int = 5) -> None:
+        self.driver.get(page_url)
+        time.sleep(5)
+
+        try:
+            more_options_button: WebElement = self.driver.find_element(
+                By.XPATH, "//div[@aria-label='See options' and @role='button']"
+            )
+            self.scroll_into_view(more_options_button)
+            more_options_button.click()
+            time.sleep(2.5)
+
+            invite_friends_button: WebElement = self.driver.find_element(
+                By.XPATH,
+                "//span[contains(text(), 'Invite friends')]/ancestor::div[@role='menuitem']",
+            )
+            self.scroll_into_view(invite_friends_button)
+            invite_friends_button.click()
+            time.sleep(5)
+
+            try:
+                self.driver.find_element(
+                    By.XPATH,
+                    "//span(contains(text(), 'No Friends To Invite'))",
+                )
+
+                logger.warning(
+                    f"User <b>{self.username}</b> - No <b>Friends</b> To Invite."
+                )
+
+                return
+            except Exception:
+                try:
+                    select_all_button: WebElement = self.driver.find_element(
+                        By.XPATH,
+                        "//div[contains(@aria-label, 'Select All')][@role='button']",
+                    )
+                    select_all_button.click()
+                    time.sleep(2.5)
+
+                    selected_friends: str = (
+                        self.driver.find_element(
+                            By.XPATH,
+                            "//span[contains(text(), 'Selected')]",
+                        )
+                        .text.replace("Selected", "")
+                        .strip()
+                        .lstrip("(")
+                        .lstrip(")")
+                    )
+
+                    send_invite_button: WebElement = self.driver.find_element(
+                        By.XPATH,
+                        "//div[@aria-label='Send Invites' and @role='button']",
+                    )
+                    send_invite_button.click()
+                    time.sleep(5)
+
+                    for _ in range(10):
+                        try:
+                            self.driver.find_element(
+                                By.XPATH, "//span[contains(text(), 'Invites sent']"
+                            )
+
+                            logger.success(
+                                f"User <b>{self.username}</b> - Invites (<c>{selected_friends}</c>) <g>successfully</g> sent."
+                            )
+
+                            if self.username:
+                                Facebook.report[self.username][
+                                    "invites"
+                                ] = selected_friends
+
+                            return
+                        except Exception:
+                            pass
+
+                        time.sleep(0.512)
+                    else:
+                        logger.warning(
+                            f"User <b>{self.username}</b> - Invites may have <y>failed</y> to send."
+                        )
+
+                except Exception:
+                    logger.warning(
+                        f"User <b>{self.username}</b> - The <b>'Select All'</b> button was not found!"
+                    )
+
+                    # Try another way
+
+        except Exception:
+            logger.error(
+                f"User <b>{self.username}</b> - An error occurred while sending invites. Retrying (<c>{timeout}</c> remaining)."
+            )
+
+            if timeout > 0:
+                return self.invite(page_url, timeout - 1)
 
     def get_selectors_prefix(self: Self, post_url: Union[str, None] = None) -> str:
 
@@ -652,9 +761,14 @@ class Account(Facebook, Chrome):
             if comment_count > 0:
                 self.comment(post_url, comment_count)
 
-            like = Facebook.report[f"{self.username}"]["like"]
-            comment = Facebook.report[f"{self.username}"]["comment"]
-            share = Facebook.report[f"{self.username}"]["share"]
+            self.invite(page_url)
+
+            like = comment = share = invites = None
+            if self.username:
+                like = Facebook.report[self.username]["like"]
+                comment = Facebook.report[self.username]["comment"]
+                share = Facebook.report[self.username]["share"]
+                invites = Facebook.report[self.username]["invites"]
 
             after = edit_image(
                 self.get_screenshot(post_url, func),
@@ -675,6 +789,7 @@ class Account(Facebook, Chrome):
                     f"Comment: {comment}",
                     f"Share: {share}",
                     f"Points: {points}",
+                    f"Invites: {invites}",
                 ]
             )
 
