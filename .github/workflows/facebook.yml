@@ -74,7 +74,7 @@ jobs:
         if: ${{ github.event_name == 'workflow_dispatch' }}
         run: |
           SEND_INVITES_FLAG=""
-          if [ "${{ github.event.inputs.send_invites }}" == "True" ]; then
+          if [ "${{ github.event.inputs.send_invites }}" == "true" ]; then
             SEND_INVITES_FLAG="--send-invites"
           fi
 
