@@ -73,6 +73,11 @@ jobs:
       - name: Execute Facebook Bot for Manual Trigger
         if: ${{ github.event_name == 'workflow_dispatch' }}
         run: |
+          SEND_INVITES_FLAG=""
+          if [ "${{ github.event.inputs.send_invites }}" == "True" ]; then
+            SEND_INVITES_FLAG="--send-invites"
+          fi
+
           python account.py \
             --headless \
             --disable-gpu \
@@ -89,4 +94,4 @@ jobs:
             --share-count "${{ github.event.inputs.share_count}}" \
             --comment-count "${{ github.event.inputs.comment_count}}" \
             --like-count "${{ github.event.inputs.like_count}}" \
-            --send-invites "${{ github.event.inputs.send_invites}}"
+            $SEND_INVITES_FLAG
