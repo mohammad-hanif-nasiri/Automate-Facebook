@@ -23,6 +23,7 @@ class Facebook:
             "Comment",
             "Share",
             "Invites",
+            "Friend Requests",
             "Points",
         ]
 
@@ -36,6 +37,7 @@ class Facebook:
             share = data.get("share")
             like = data.get("like")
             invites = data.get("invites")
+            friend_requests = data.get("friend_requests")
             points = data.get("points")
 
             row: List[Any] = []
@@ -46,6 +48,7 @@ class Facebook:
             row.append(comment)
             row.append(share)
             row.append(invites)
+            row.append(friend_requests)
             row.append(points)
 
             rows.append(list(map(str, row)))
@@ -65,6 +68,7 @@ class Facebook:
                 "Comment",
                 "Share",
                 "Invites",
+                "Friend Requests",
                 "Points",
             ]
             rows: List[List[Any]] = []
@@ -74,9 +78,19 @@ class Facebook:
                 share = data.get("share")
                 like = data.get("like")
                 invites = data.get("invites")
+                friend_requests = data.get("friend_requests")
                 points = data.get("points")
 
-                row = [index + 1, username, like, comment, share, invites, points]
+                row = [
+                    index + 1,
+                    username,
+                    like,
+                    comment,
+                    share,
+                    invites,
+                    friend_requests,
+                    points,
+                ]
                 rows.append(row)
 
             send_email("Automate - Facebook", cols=cols, rows=rows)
