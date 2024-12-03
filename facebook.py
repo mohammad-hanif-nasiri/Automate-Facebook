@@ -37,7 +37,7 @@ class Facebook:
             share = data.get("share")
             like = data.get("like")
             invites = data.get("invites")
-            friend_requests = data.get("friend_requests")
+            friend_requests = data.get("friend-requests")
             points = data.get("points")
 
             row: List[Any] = []
@@ -78,7 +78,7 @@ class Facebook:
                 share = data.get("share")
                 like = data.get("like")
                 invites = data.get("invites")
-                friend_requests = data.get("friend_requests")
+                friend_requests = data.get("friend-requests")
                 points = data.get("points")
 
                 row = [
