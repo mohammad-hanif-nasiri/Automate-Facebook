@@ -602,26 +602,28 @@ class Account(Facebook, Chrome):
         time.sleep(5)
 
         def send_request():
-            requests_count: Union[int, None] = None
-            if self.username:
-                requests_count = Facebook.report[self.username]["friend-requests"]
+            try:
+                friends_element: WebElement = self.driver.find_element(
+                    By.XPATH,
+                    "//div[@aria-label='Friends' and @role='main']",
+                )
+                list_element: WebElement = friends_element.find_element(
+                    By.XPATH,
+                    "//div[@role='list']",
+                )
+                suggestions: List[WebElement] = list_element.find_elements(
+                    By.XPATH,
+                    "//div[@role='listitem']",
+                )
 
-            if requests_count is not None:
-                try:
-                    friends_element: WebElement = self.driver.find_element(
-                        By.XPATH,
-                        "//div[@aria-label='Friends' and @role='main']",
-                    )
-                    list_element: WebElement = friends_element.find_element(
-                        By.XPATH,
-                        "//div[@role='list']",
-                    )
-                    suggestions: List[WebElement] = list_element.find_elements(
-                        By.XPATH,
-                        "//div[@role='listitem']",
-                    )
+                for suggestion in suggestions:
+                    requests_count: Union[int, None] = None
+                    if self.username:
+                        requests_count = Facebook.report[self.username][
+                            "friend-requests"
+                        ]
 
-                    for suggestion in suggestions:
+                    if requests_count is not None:
                         if self.username:
                             if (
                                 Facebook.report[self.username]["friend-requests"]
@@ -630,7 +632,7 @@ class Account(Facebook, Chrome):
                                 logger.success(
                                     f"User <b>{self.username}</b> - The sending friend requests process completed!"
                                 )
-                                return
+                                return True
                         try:
                             self.scroll_into_view(suggestion)
 
@@ -664,12 +666,15 @@ class Account(Facebook, Chrome):
                         except Exception:
                             pass
 
-                except Exception:
-                    if timeout > 0:
-                        logger.error(
-                            f"User <b>{self.username}</b> - An error occurred during sending friend requests. Retrying (<c>{timeout}</c> remaining)."
-                        )
-                        self.send_friend_request(count, timeout - 1)
+                    else:
+                        return False
+
+            except Exception:
+                if timeout > 0:
+                    logger.error(
+                        f"User <b>{self.username}</b> - An error occurred during sending friend requests. Retrying (<c>{timeout}</c> remaining)."
+                    )
+                    self.send_friend_request(count, timeout - 1)
 
         self.infinite_scroll(
             element=self.facebook_element,
@@ -876,9 +881,9 @@ class Account(Facebook, Chrome):
                     f"Like: {like}",
                     f"Comment: {comment}",
                     f"Share: {share}",
-                    f"Points: {points}",
                     f"Friend Requests: {friend_requests}",
                     f"Invites: {invites}",
+                    f"Points: {points}",
                 ]
             )
 
