@@ -6,7 +6,7 @@ import re
 import threading
 import time
 import uuid
-from typing import Callable, List, Self, Union
+from typing import Callable, Dict, List, Literal, Self, Union
 
 import click
 from selenium.webdriver.common.by import By
@@ -15,21 +15,30 @@ from selenium.webdriver.remote.webelement import WebElement
 from telegram import InputMediaPhoto
 from urllib3.exceptions import ReadTimeoutError
 
-import main as _
 from chrome import Chrome
 from console import console
-from const import FONARTO_REGULAR_PATH, FONARTO_XT_PATH, TELEGRAM_BOT_API_TOKEN
+from const import FONARTO_XT_PATH, TELEGRAM_BOT_API_TOKEN
 from facebook import Facebook, cli
-from functions import download_file, edit_image, get_comments
+from functions import edit_image, get_comments
 from logger import logger
+from login import Login
+from main import main as main_func
 from telegram_bot import TelegramBot
 
 
 class Account(Facebook, Chrome):
-    def __init__(self: Self, cookie_file: str, **kwargs) -> None:
+    def __init__(
+        self: Self,
+        cookie_file: str,
+        credentials: Union[Dict[Literal["username", "password"], str], None],
+        **kwargs,
+    ) -> None:
         super().__init__(**kwargs)
 
         self.cookie_file: str = cookie_file
+        self.credentials: Union[Dict[Literal["username", "password"], str], None] = (
+            credentials
+        )
         self.telegram_bot: TelegramBot = TelegramBot(TELEGRAM_BOT_API_TOKEN)
 
     def __enter__(self: Self) -> Union[Self, None]:
@@ -52,6 +61,18 @@ class Account(Facebook, Chrome):
             self.driver.add_cookie(cookie)
 
         self.driver.refresh()
+
+        if not self.is_logged_in and self.credentials is not None:
+            username: Union[str, None] = self.credentials.get(
+                "username"
+            )  # get username from credentials dictionary
+            password: Union[str, None] = self.credentials.get(
+                "password"
+            )  # get password from credentials dictionary
+
+            if username and password:  # validate username and password
+                # Perform automatically login using the Login static method
+                Login.preform_automatically_login(self.driver, username, password)
 
         if self.is_logged_in and self.username:
             Facebook.report.setdefault(
@@ -1064,10 +1085,16 @@ def start(
     friend_request_count: int = 50,
     send_invites: bool = False,
     timeout: int = 5,
+    credentials: Union[Dict[Literal["username", "password"], str], None] = None,
     **kwarg,
 ) -> None:
-    try:
-        with Account(cookie_file, **kwarg) as account:
+    # call the main function which imported from another module called `main.py`
+    main_func()
+
+    try:  # handle exceptions
+        with Account(
+            cookie_file=cookie_file, credentials=credentials, **kwarg
+        ) as account:
             if account:
                 account.start(
                     page_url=page_url,
