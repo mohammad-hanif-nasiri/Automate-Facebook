@@ -85,8 +85,8 @@ class Account(Facebook, Chrome):
                     "like": 0,
                     "comment": 0,
                     "friend-requests": 0,
-                    "points": 0,
-                    "invited": 0,
+                    "points": None,
+                    "invited": None,
                 },
             )
 
@@ -896,14 +896,14 @@ class Account(Facebook, Chrome):
         friend_request_count: int = 50,
         send_invites: bool = False,
     ):
+        if username and username != self.username:
+            return
+
         points: Union[str, None] = None
         if self.username:
             Facebook.report[self.username]["points"] = (
                 points := self.get_points(page_url)
             )
-
-        if username and username != self.username:
-            return
 
         if post_url := self.get_last_post_url(page_url):
             prefix: str = self.get_selectors_prefix(post_url)
@@ -991,8 +991,6 @@ class Account(Facebook, Chrome):
 
         if like_count > 0:
             pass
-
-        Facebook.print_report()
 
     def infinite_scroll(
         self: Self,
