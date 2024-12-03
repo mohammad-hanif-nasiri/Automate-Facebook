@@ -763,7 +763,6 @@ class Account(Facebook, Chrome):
                         "//div[@aria-label='Send Invites' and @role='button']",
                     )
                     send_invite_button.click()
-                    time.sleep(5)
 
                     for _ in range(10):
                         try:
