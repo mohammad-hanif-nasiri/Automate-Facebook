@@ -1073,11 +1073,6 @@ def start(
     help="Specify the number of friend requests to send. Default is 50.",
 )
 @click.option(
-    "--telegram-id",
-    type=int,
-    help="Specify the telegram ID.",
-)
-@click.option(
     "--send-invites",
     is_flag=True,
     help="Send invites when this flag is used.",
@@ -1092,7 +1087,6 @@ def main(
     comment_count: int = 50,
     like_count: int = 50,
     friend_request_count: int = 50,
-    telegram_id: Union[int, None] = None,
     send_invites: bool = False,
 ) -> None:
 
@@ -1116,7 +1110,6 @@ def main(
                         comment_count=comment_count,
                         friend_request_count=friend_request_count,
                         send_invites=send_invites,
-                        telegram_id=telegram_id,
                         **ctx.parent.params if ctx.parent else {},
                     ),
                 )
