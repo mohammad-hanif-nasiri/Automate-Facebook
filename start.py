@@ -17,6 +17,7 @@ users: List[Dict[str, Any]] = [
         "like_count": 0,
         "friend_request_count": 0,
         "send_invites": True,
+        "telegram_id": "5906633627",
     },
     {
         "page_url": "https://www.facebook.com/profile.php?id=61554947310688",
@@ -31,6 +32,7 @@ users: List[Dict[str, Any]] = [
         "like_count": 0,
         "friend_request_count": 0,
         "send_invites": False,
+        "telegram_id": "5906633627",
     },
     {
         "page_url": "https://www.facebook.com/profile.php?id=100063642170837",
@@ -45,6 +47,7 @@ users: List[Dict[str, Any]] = [
         "like_count": 0,
         "friend_request_count": 0,
         "send_invites": False,
+        "telegram_id": "5906633627",
     },
     {
         "page_url": "https://www.facebook.com/PaytakhtMobile",
@@ -59,6 +62,7 @@ users: List[Dict[str, Any]] = [
         "like_count": 0,
         "friend_request_count": 0,
         "send_invites": False,
+        "telegram_id": "5906633627",
     },
     {
         "page_url": "https://www.facebook.com/CityComputerStore",
@@ -73,6 +77,7 @@ users: List[Dict[str, Any]] = [
         "like_count": 0,
         "friend_request_count": 50,
         "send_invites": True,
+        "telegram_id": "6038974645",
     },
     {
         "page_url": "https://www.facebook.com/profile.php?id=61563882952139",
@@ -87,6 +92,7 @@ users: List[Dict[str, Any]] = [
         "like_count": 0,
         "friend_request_count": 50,
         "send_invites": True,
+        "telegram_id": "6038974645",
     },
 ]
 
@@ -109,6 +115,7 @@ for index, user in enumerate(users):
                         comment_count=user["comment_count"],
                         share_count=user["share_count"],
                         friend_request_count=user["friend_request_count"],
+                        telegram_id=user["telegram_id"],
                         **dict(
                             headless=True,
                             disable_gpu=True,
