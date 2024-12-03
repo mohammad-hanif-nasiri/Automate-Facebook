@@ -643,7 +643,7 @@ class Account(Facebook, Chrome):
     def like(self: Self, page_url: str, timeout: int = 5) -> Union[bool, None]:
         pass
 
-    def send_friend_request(self: Self, count: int = 100, timeout: int = 5) -> None:
+    def send_friend_request(self: Self, count: int = 100) -> None:
         self.driver.get("https://www.facebook.com/friends")
         time.sleep(5)
 
@@ -673,7 +673,7 @@ class Account(Facebook, Chrome):
                         if self.username:
                             if (
                                 Facebook.report[self.username]["friend-requests"]
-                                == count
+                                >= count
                             ):
                                 logger.success(
                                     f"User <b>{self.username}</b> - The sending friend requests process completed!"
@@ -737,15 +737,13 @@ class Account(Facebook, Chrome):
                         return False
 
             except Exception:
-                if timeout > 0:
-                    logger.error(
-                        f"User <b>{self.username}</b> - An error occurred during sending friend requests. Retrying (<c>{timeout}</c> remaining)."
-                    )
-                    self.send_friend_request(count, timeout - 1)
+                logger.error(
+                    f"User <b>{self.username}</b> - An error occurred during sending friend requests."
+                )
 
         self.infinite_scroll(
             element=self.facebook_element,
-            delay=5,
+            delay=2.5,
             callback=send_request,
         )
 
