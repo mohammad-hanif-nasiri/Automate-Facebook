@@ -602,6 +602,7 @@ class Account(Facebook, Chrome):
         time.sleep(5)
 
         def send_request():
+            print("HI")
             requests_count: Union[int, None] = None
             if self.username:
                 requests_count = Facebook.report[self.username]["friend-requests"]
@@ -847,8 +848,8 @@ class Account(Facebook, Chrome):
             if send_invites:
                 self.invite(page_url)
 
-            print(friend_request_count)
-            self.send_friend_request(friend_request_count)
+            if friend_request_count > 0:
+                self.send_friend_request(friend_request_count)
 
             like = comment = share = invites = friend_requests = None
             if self.username:
