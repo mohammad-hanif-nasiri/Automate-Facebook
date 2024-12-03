@@ -657,7 +657,7 @@ class Account(Facebook, Chrome):
                     for _ in range(10):
                         try:
                             self.driver.find_element(
-                                By.XPATH, "//span[contains(text(), 'Invites sent']"
+                                By.XPATH, "//span[contains(text(), 'Invites sent')]"
                             )
 
                             logger.success(
