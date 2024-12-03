@@ -681,7 +681,7 @@ class Account(Facebook, Chrome):
                                         in span.text
                                     ):
                                         logger.warning(
-                                            f"User <b>{self.username!r}</b> - You <r>can not</r> write <b>comments</b> right now!"
+                                            f"User <b>{self.username!r}</b> - You <r>can not</r> send friend requests right now!"
                                         )
                                         return
 
