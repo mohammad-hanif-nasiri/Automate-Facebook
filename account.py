@@ -334,8 +334,8 @@ class Account(Facebook, Chrome):
 
                 return link
 
-        except Exception as err:
-            console.print(err, style="red bold")
+        except Exception as _:
+            pass
 
         logger.error(
             f"User <b>{self.username!r}</b> - <r>Unable</r> to get the last post link."
