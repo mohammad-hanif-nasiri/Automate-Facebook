@@ -188,19 +188,18 @@ class Account(Facebook, Chrome):
             return False
 
     @property
-    def username(self: Self) -> Union[str, None]:
+    def username(self: Self) -> str:
         """
         Retrieve the username of the logged-in Facebook user.
 
         This property accesses the Facebook homepage and attempts to locate the
         username by finding the link in the shortcuts section. If successful,
-        it returns the username extracted from the link. If unsuccessful,
-        it logs an error and returns None.
+        it returns the username extracted from the link.
 
         Returns:
         -------
-        Union[str, None]
-            The username of the logged-in user if found; otherwise, None.
+        str
+            The username of the logged-in user if found;
         """
 
         if hasattr(self, "_username"):
@@ -214,17 +213,20 @@ class Account(Facebook, Chrome):
                 By.XPATH, '//div[@aria-label="Shortcuts"]//a'
             )
             if href := link.get_dom_attribute("href"):
-                username = href.split("/").pop()
+                username = self._username = href.split("/").pop()
+
                 logger.info(
                     f"Successfully retrieved the user <b>{username!r}</b> information."
                 )
-                self._username = username
+
                 return username
 
         except Exception:
             logger.error("<r>Unable</r> to retrieve username!")
 
-        return None
+        username = self._username = f"USER-{uuid.uuid4()}"
+
+        return username
 
     @property
     def facebook_element(self: Self) -> WebElement:
@@ -305,7 +307,7 @@ class Account(Facebook, Chrome):
                 copy_button.click()
                 time.sleep(5)
 
-            except Exception as _:
+            except Exception:
                 # Find the first "Share" button on the page
                 share_button = self.driver.find_element(
                     By.XPATH,
@@ -334,7 +336,7 @@ class Account(Facebook, Chrome):
 
                 return link
 
-        except Exception as _:
+        except Exception:
             pass
 
         logger.error(
@@ -354,9 +356,7 @@ class Account(Facebook, Chrome):
         try:
             for group in groups:
                 for _ in range(count // len(groups)):
-                    share_count: int = 0
-                    if self.username:
-                        share_count = Facebook.report[self.username]["share"]
+                    share_count: int = Facebook.report[self.username]["share"]
 
                     if share_count >= count:
                         logger.success(
@@ -414,12 +414,11 @@ class Account(Facebook, Chrome):
                                 f"User <b>{self.username!r}</b> - The post was <b><g>successfully</g></b> shared in the group <b>{group!r}</b>."
                             )
 
-                            if self.username:
-                                # Increment share count in report
-                                Facebook.report[self.username]["share"] += 1
+                            # Increment share count in report
+                            Facebook.report[self.username]["share"] += 1
 
                             break
-                        except Exception as _:
+                        except Exception:
                             try:
                                 self.driver.find_element(
                                     By.XPATH,
@@ -432,7 +431,7 @@ class Account(Facebook, Chrome):
                                 )
 
                                 return
-                            except Exception as _:
+                            except Exception:
                                 pass
 
                         time.sleep(0.512)
@@ -456,10 +455,10 @@ class Account(Facebook, Chrome):
 
                                 return
 
-                    except Exception as _:
+                    except Exception:
                         pass
 
-        except Exception as _:
+        except Exception:
             logger.error(
                 f"User <b>{self.username!r}</b> - An <r>error</r> occurred during sharing the post!"
             )
@@ -492,9 +491,7 @@ class Account(Facebook, Chrome):
                 textbox.click()
 
                 for _ in range(count):
-                    comment_count: int = 0
-                    if self.username:
-                        comment_count = Facebook.report[self.username]["comment"]
+                    comment_count: int = Facebook.report[self.username]["comment"]
 
                     if comment_count >= count:
                         logger.info(
@@ -516,7 +513,7 @@ class Account(Facebook, Chrome):
                             time.sleep(0.512)
                             continue
 
-                        except Exception as _:
+                        except Exception:
                             try:
                                 self.driver.find_element(
                                     By.XPATH,
@@ -528,14 +525,13 @@ class Account(Facebook, Chrome):
                                 )
                                 return
 
-                            except Exception as _:
+                            except Exception:
                                 logger.success(
                                     f"User <b>{self.username!r}</b> - <g>Successfully</g> posted comment {comment_count+1}/{count}: <b>{text!r}</b>"
                                 )
 
-                                if self.username:
-                                    # Increment comment count in report
-                                    Facebook.report[self.username]["comment"] += 1
+                                # Increment comment count in report
+                                Facebook.report[self.username]["comment"] += 1
 
                                 break
 
@@ -558,10 +554,10 @@ class Account(Facebook, Chrome):
                                 )
                                 return
 
-                    except Exception as _:
+                    except Exception:
                         pass
 
-            except Exception as _:
+            except Exception:
                 logger.error(
                     f"User <b>{self.username!r}</b> - <r>Failed</r> to locate or interact with comment textbox."
                 )
@@ -571,13 +567,13 @@ class Account(Facebook, Chrome):
         else:
             logger.error("<r>No</r> comments available to post.")
 
-    def like(self: Self, page_url: str, timeout: int = 5) -> Union[bool, None]:
+    def like(
+        self: Self, page_url: str, count: int, timeout: int = 5
+    ) -> Union[bool, None]:
         self.driver.get(page_url)
         time.sleep(5)
 
-        self.infinite_scroll(self.facebook_element, delay=5, scroll_limit=50)
-
-        try:
+        def like():
             like_buttons: List[WebElement] = self.driver.find_elements(
                 By.XPATH, "//div[@aria-label='Like' and @role='button']"
             )
@@ -593,14 +589,26 @@ class Account(Facebook, Chrome):
                     screenshots.append(self.driver.get_screenshot_as_png())
 
                     asyncio.run(
-                        self.telegram_bot.send_photos(*screenshots, chat_id=5906633627)
+                        self.telegram_bot.send_photos(
+                            *[
+                                InputMediaPhoto(screenshot)
+                                for screenshot in screenshots
+                            ],
+                            chat_id=5906633627,
+                        )
                     )
+
+                    Facebook.report[self.username]["like"] += 1
+
+                    if Facebook.report[self.username]["like"] > count:
+                        return True
+
                 except Exception:
                     pass
 
-        except Exception:
-            if timeout > 0:
-                return self.like(page_url, timeout - 1)
+        self.infinite_scroll(
+            self.facebook_element, delay=2.5, scroll_limit=500, callback=like
+        )
 
     def send_friend_request(self: Self, count: int = 100) -> None:
         self.driver.get("https://www.facebook.com/friends")
@@ -622,78 +630,66 @@ class Account(Facebook, Chrome):
                 )
 
                 for suggestion in suggestions:
-                    requests_count: Union[int, None] = None
-                    if self.username:
-                        requests_count = Facebook.report[self.username][
-                            "friend-requests"
-                        ]
+                    requests_count: int = Facebook.report[self.username][
+                        "friend-requests"
+                    ]
 
-                    if requests_count is not None:
-                        if self.username:
-                            if (
-                                Facebook.report[self.username]["friend-requests"]
-                                >= count
-                            ):
-                                logger.success(
-                                    f"User <b>{self.username}</b> - The sending friend requests process completed!"
-                                )
-                                return True
+                    if requests_count >= count:
+                        logger.success(
+                            f"User <b>{self.username}</b> - The sending friend requests process completed!"
+                        )
+
+                        return True
+
+                    try:
+                        self.scroll_into_view(suggestion)
+
+                        add_friend_button = suggestion.find_element(
+                            By.XPATH,
+                            "//div[@aria-label='Add friend' and @role='button']",
+                        )
+                        self.scroll_into_view(add_friend_button)
+                        add_friend_button.click()
+                        time.sleep(2.5)
+
                         try:
-                            self.scroll_into_view(suggestion)
-
-                            add_friend_button = suggestion.find_element(
-                                By.XPATH,
-                                "//div[@aria-label='Add friend' and @role='button']",
+                            suggestion.find_element(
+                                By.XPATH, "//span[contains(text(), 'Request sent')]"
                             )
-                            self.scroll_into_view(add_friend_button)
-                            add_friend_button.click()
-                            time.sleep(2.5)
 
-                            try:
-                                suggestion.find_element(
-                                    By.XPATH, "//span[contains(text(), 'Request sent')]"
-                                )
+                            Facebook.report[self.username]["friend-requests"] += 1
 
-                                if self.username:
-                                    Facebook.report[self.username][
-                                        "friend-requests"
-                                    ] += 1
+                            logger.success(
+                                f"User <b>{self.username}</b> - Request <g>successfully</g> sent. [<c>{requests_count + 1}</c> of <c>{count}</c>]"
+                            )
 
-                                logger.success(
-                                    f"User <b>{self.username}</b> - Request <g>successfully</g> sent. [<c>{requests_count + 1}</c> of <c>{count}</c>]"
-                                )
+                        except Exception:
+                            logger.warning(
+                                f"User <b>{self.username}</b> - The request <y>was not</y> sent successfully."
+                            )
 
-                            except Exception:
-                                logger.warning(
-                                    f"User <b>{self.username}</b> - The request <y>was not</y> sent successfully."
-                                )
+                        try:
+                            spans = self.driver.find_elements(
+                                By.XPATH,
+                                "//div[@role='dialog']//span",
+                            )
 
-                            try:
-                                spans = self.driver.find_elements(
-                                    By.XPATH,
-                                    "//div[@role='dialog']//span",
-                                )
-
-                                for span in spans:
-                                    if (
-                                        "You Can't Use This Feature Right Now"
-                                        in span.text
-                                        or "You can't use this feature at the moment"
-                                        in span.text
-                                    ):
-                                        logger.warning(
-                                            f"User <b>{self.username!r}</b> - You <r>can not</r> send friend requests right now!"
-                                        )
-                                        return False
-
-                            except Exception:
-                                pass
+                            for span in spans:
+                                if (
+                                    "You Can't Use This Feature Right Now" in span.text
+                                    or "You can't use this feature at the moment"
+                                    in span.text
+                                ):
+                                    logger.warning(
+                                        f"User <b>{self.username!r}</b> - You <r>can not</r> send friend requests right now!"
+                                    )
+                                    return False
 
                         except Exception:
                             pass
 
-                    else:
-                        return False
+                    except Exception:
+                        pass
 
             except Exception:
                 logger.error(
@@ -788,7 +784,6 @@ class Account(Facebook, Chrome):
                 return self.invite(page_url, timeout - 1)
 
     def get_selectors_prefix(self: Self, post_url: Union[str, None] = None) -> str:
-
         if post_url is not None:
             self.driver.get(post_url)
             time.sleep(5)
@@ -801,7 +796,7 @@ class Account(Facebook, Chrome):
             logger.info(f"User <b>{self.username}</b> - Dialog Found!")
 
             return "//div[@role='dialog']"
-        except Exception as _:
+        except Exception:
             logger.warning(f"User <b>{self.username}</b> - Dialog Not Found!")
 
             return ""
@@ -857,7 +852,7 @@ class Account(Facebook, Chrome):
                 self.comment(post_url, comment_count)
 
             if like_count > 0:
-                self.like(page_url)
+                self.like(page_url, like_count)
 
             if send_invites:
                 self.invite(page_url)
@@ -865,12 +860,10 @@ class Account(Facebook, Chrome):
             if friend_request_count > 0:
                 self.send_friend_request(friend_request_count)
 
-            like = comment = share = friend_requests = None
-            if self.username:
-                like = Facebook.report[self.username]["like"]
-                comment = Facebook.report[self.username]["comment"]
-                share = Facebook.report[self.username]["share"]
-                friend_requests = Facebook.report[self.username]["friend-requests"]
+            like = Facebook.report[self.username]["like"]
+            comment = Facebook.report[self.username]["comment"]
+            share = Facebook.report[self.username]["share"]
+            friend_requests = Facebook.report[self.username]["friend-requests"]
 
             if after_screenshot := self.get_screenshot(post_url, func):
                 after = edit_image(
