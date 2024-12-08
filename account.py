@@ -431,6 +431,7 @@ class Account(Facebook, Chrome):
                                 )
 
                                 return
+
                             except Exception:
                                 pass
 
@@ -567,9 +568,7 @@ class Account(Facebook, Chrome):
         else:
             logger.error("<r>No</r> comments available to post.")
 
-    def like(
-        self: Self, page_url: str, count: int, timeout: int = 5
-    ) -> Union[bool, None]:
+    def like(self: Self, page_url: str, count: int) -> Union[bool, None]:
         self.driver.get(page_url)
         time.sleep(5)
 
@@ -580,31 +579,23 @@ class Account(Facebook, Chrome):
 
             for like_button in like_buttons:
                 try:
-                    screenshots = []
-
                     self.scroll_into_view(like_button)
-                    screenshots.append(self.driver.get_screenshot_as_png())
-
                     like_button.click()
-                    screenshots.append(self.driver.get_screenshot_as_png())
 
-                    asyncio.run(
-                        self.telegram_bot.send_photos(
-                            *[
-                                InputMediaPhoto(screenshot)
-                                for screenshot in screenshots
-                            ],
-                            chat_id=5906633627,
-                        )
+                    logger.success(
+                        f"User <b>{self.username}</b> - Like button successfully pressed."
                     )
 
+                    time.sleep(1 + random.random())
+
+                except Exception:
+                    logger.error(f"User <b>{self.username}</b> - An error occurred!")
+
+                else:
                     Facebook.report[self.username]["like"] += 1
 
                     if Facebook.report[self.username]["like"] > count:
                         return True
-
-                except Exception:
-                    pass
 
         self.infinite_scroll(
             self.facebook_element, delay=2.5, scroll_limit=500, callback=like
