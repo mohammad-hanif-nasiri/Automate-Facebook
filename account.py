@@ -572,7 +572,35 @@ class Account(Facebook, Chrome):
             logger.error("<r>No</r> comments available to post.")
 
     def like(self: Self, page_url: str, timeout: int = 5) -> Union[bool, None]:
-        pass
+        self.driver.get(page_url)
+        time.sleep(5)
+
+        self.infinite_scroll(self.facebook_element, delay=5, scroll_limit=50)
+
+        try:
+            like_buttons: List[WebElement] = self.driver.find_elements(
+                By.XPATH, "//div[@aria-label='Like' and @role='button']"
+            )
+
+            for like_button in like_buttons:
+                try:
+                    screenshots = []
+
+                    self.scroll_into_view(like_button)
+                    screenshots.append(self.driver.get_screenshot_as_png())
+
+                    like_button.click()
+                    screenshots.append(self.driver.get_screenshot_as_png())
+
+                    asyncio.run(
+                        self.telegram_bot.send_photos(*screenshots, chat_id=5906633627)
+                    )
+                except Exception:
+                    pass
+
+        except Exception:
+            if timeout > 0:
+                return self.like(page_url, timeout - 1)
 
     def send_friend_request(self: Self, count: int = 100) -> None:
         self.driver.get("https://www.facebook.com/friends")
@@ -829,7 +857,7 @@ class Account(Facebook, Chrome):
                 self.comment(post_url, comment_count)
 
             if like_count > 0:
-                pass
+                self.like(page_url)
 
             if send_invites:
                 self.invite(page_url)
