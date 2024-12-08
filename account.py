@@ -583,7 +583,8 @@ class Account(Facebook, Chrome):
                     like_button.click()
 
                     logger.success(
-                        f"User <b>{self.username}</b> - Like button successfully pressed."
+                        f"User <b>{self.username}</b> - Like button successfully pressed. (Total Like: %s of {count})"
+                        % (Facebook.report[self.username]["like"])
                     )
 
                     time.sleep(1 + random.random())
