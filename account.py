@@ -18,6 +18,7 @@ from urllib3.exceptions import ReadTimeoutError
 from chrome import Chrome
 from console import console
 from const import FONARTO_XT_PATH, TELEGRAM_BOT_API_TOKEN
+from exceptions import UserNotLoggedInException
 from facebook import Facebook, cli
 from functions import edit_image, get_comments
 from logger import logger
@@ -33,15 +34,16 @@ class Account(Facebook, Chrome):
     def __init__(
         self: Self,
         cookie_file: str,
-        credentials: Union[Dict[Literal["username", "password"], str], None],
+        credentials: Union[Dict[Literal["username", "password"], str], None] = None,
         **kwargs,
     ) -> None:
         super().__init__(**kwargs)
 
         self.cookie_file: str = cookie_file
-        self.credentials: Union[Dict[Literal["username", "password"], str], None] = (
-            credentials
-        )
+        self.credentials: Union[
+            Dict[Literal["username", "password"], str],
+            None,
+        ] = credentials
         self.telegram_bot: TelegramBot = TelegramBot(TELEGRAM_BOT_API_TOKEN)
 
     def __enter__(self: Self) -> Union[Self, None]:
@@ -190,18 +192,45 @@ class Account(Facebook, Chrome):
     @property
     def username(self: Self) -> str:
         """
-        Retrieve the username of the logged-in Facebook user.
+        Retrieves the username of the currently logged-in Facebook user.
 
-        This property accesses the Facebook homepage and attempts to locate the
-        username by finding the link in the shortcuts section. If successful,
-        it returns the username extracted from the link.
+        This method attempts to fetch the username by navigating to the Facebook homepage
+        and extracting it from a shortcut link. If the username is already cached as
+        an instance attribute `_username`, it returns the cached value.
+
+        Process:
+            1. Checks if `_username` is already available and returns it.
+            2. Navigates to the Facebook homepage using the web driver.
+            3. Searches for the shortcut link element containing the username.
+            4. Extracts the username from the link's `href` attribute.
+            5. Logs the retrieved username and caches it in `_username`.
+
+        Logging:
+            - Logs a success message if the username is retrieved successfully.
+            - Logs an error message if username retrieval fails.
+
+        Exceptions:
+            - Raises `UserNotLoggedInException` if the user is not logged in or if
+              the username cannot be determined.
 
         Returns:
-        -------
-        str
-            The username of the logged-in user if found;
-        """
+            str: The username of the logged-in Facebook user.
 
+        Raises:
+            UserNotLoggedInException: If the username could not be retrieved, likely
+            because the user is not logged in.
+
+        Example:
+            >>> user = FacebookBot(driver)
+            >>> print(user.username)
+            Successfully retrieved the user 'john_doe' information.
+            'john_doe'
+
+        Notes:
+            - Ensure that the driver is authenticated and navigable to Facebook.
+            - The method assumes that the user shortcuts are accessible on the homepage.
+
+        """
         if hasattr(self, "_username"):
             return self._username
 
@@ -224,9 +253,7 @@ class Account(Facebook, Chrome):
         except Exception:
             logger.error("<r>Unable</r> to retrieve username!")
 
-        username = self._username = f"USER-{uuid.uuid4()}"
-
-        return username
+        raise UserNotLoggedInException()
 
     @property
     def facebook_element(self: Self) -> WebElement:
@@ -804,6 +831,7 @@ class Account(Facebook, Chrome):
         share_count: int = 5,
         friend_request_count: int = 50,
         send_invites: bool = False,
+        cancel_all_friend_requests: bool = False,
         telegram_id: Union[int, None] = None,
     ):
         if username and username != self.username:
@@ -851,6 +879,9 @@ class Account(Facebook, Chrome):
 
             if friend_request_count > 0:
                 self.send_friend_request(friend_request_count)
+
+            if cancel_all_friend_requests:
+                self.cancel_all_friend_requests()
 
             like = Facebook.report[self.username]["like"]
             comment = Facebook.report[self.username]["comment"]
@@ -990,6 +1021,59 @@ class Account(Facebook, Chrome):
             if scroll_limit is not None and count >= scroll_limit:
                 break  # Exit if the scroll limit is reached
 
+    def cancel_all_friend_requests(self: Self, timeout: int = 5) -> None:
+        self.driver.get("https://www.facebook.com/friends/requests")
+        time.sleep(5)
+
+        try:
+            view_sent_requests_element: WebElement = self.driver.find_element(
+                By.XPATH,
+                "//span[contains(text(), 'View sent requests')]/ancestor::*[@role='button']",
+            )
+            view_sent_requests_element.click()
+            time.sleep(2.5)
+
+            dialog_element: WebElement = self.driver.find_element(
+                By.XPATH,
+                "//div[@role='dialog' and @aria-label='Sent Requests']",
+            )
+
+            last_child_element: WebElement = dialog_element.find_element(
+                By.XPATH, "//div[last()]"
+            )
+
+            def cancel():
+                try:
+                    cancel_buttons: List[WebElement] = self.driver.find_elements(
+                        By.XPATH,
+                        "//div[@aria-label='Cancel request' and @role='button']",
+                    )
+
+                    for cancel_button in cancel_buttons:
+                        try:
+                            self.scroll_into_view(cancel_button)
+                            cancel_button.click()
+
+                            logger.success(
+                                f"User <b>{self.username}</b> - The request <g>successfully</g> canceled."
+                            )
+                        except Exception:
+                            logger.error(
+                                f"User <b>{self.username}</b> - An error occurred during cancelling the request."
+                            )
+                        else:
+                            time.sleep(1 + random.random())
+
+                except Exception:
+                    logger.error(f"User <b>{self.username}</b> - An error occurred!")
+
+            self.infinite_scroll(last_child_element, delay=5, callback=cancel)
+
+        except Exception:
+            if timeout > 0:
+                logger.warning(f"User <b>{self.username}</b> - Retrying...")
+                return self.cancel_all_friend_requests(timeout - 1)
+
 
 def start(
     cookie_file: str,
@@ -1001,6 +1085,7 @@ def start(
     share_count: int = 5,
     friend_request_count: int = 50,
     send_invites: bool = False,
+    cancel_all_friend_requests: bool = False,
     timeout: int = 5,
     credentials: Union[Dict[Literal["username", "password"], str], None] = None,
     telegram_id: Union[int, None] = None,
@@ -1020,6 +1105,7 @@ def start(
                     share_count=share_count,
                     friend_request_count=friend_request_count,
                     send_invites=send_invites,
+                    cancel_all_friend_requests=cancel_all_friend_requests,
                     telegram_id=telegram_id,
                 )
     except ReadTimeoutError as err:
@@ -1039,6 +1125,7 @@ def start(
                 share_count,
                 friend_request_count,
                 send_invites,
+                cancel_all_friend_requests,
                 timeout - 1,
             )
 
@@ -1090,6 +1177,11 @@ def start(
     is_flag=True,
     help="Send invites when this flag is used.",
 )
+@click.option(
+    "--cancel-all-friend-requests",
+    is_flag=True,
+    help="Send invites when this flag is used.",
+)
 @click.pass_context
 def main(
     ctx: click.core.Context,
@@ -1101,6 +1193,7 @@ def main(
     like_count: int = 50,
     friend_request_count: int = 50,
     send_invites: bool = False,
+    cancel_all_friend_requests: bool = False,
 ) -> None:
 
     threads: List[threading.Thread] = []
@@ -1123,6 +1216,7 @@ def main(
                         comment_count=comment_count,
                         friend_request_count=friend_request_count,
                         send_invites=send_invites,
+                        cancel_all_friend_requests=cancel_all_friend_requests,
                         **ctx.parent.params if ctx.parent else {},
                     ),
                 )
