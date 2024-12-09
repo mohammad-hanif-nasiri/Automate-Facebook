@@ -95,7 +95,7 @@ jobs:
             CANCEL_ALL_FRIEND_REQUESTS="--cancel-all-friend-requests"
           fi
 
-          python account.py \
+          python main.py \
             --headless \
             --disable-gpu \
             --disable-infobars \
@@ -104,7 +104,7 @@ jobs:
             --block-notifications \
             --no-sandbox \
             --incognito \
-            main \
+            account \
             --page-url "${{ github.event.inputs.page_url}}" \
             --username "${{ github.event.inputs.username }}" \
             --groups "${{ github.event.inputs.groups}}" \
