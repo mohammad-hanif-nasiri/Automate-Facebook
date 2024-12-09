@@ -19,7 +19,6 @@ from facebook import Facebook
 from functions import edit_image, get_comments
 from logger import logger
 from login import Login
-from main import account
 from telegram_bot import TelegramBot
 
 
