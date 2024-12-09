@@ -2,14 +2,12 @@ import time
 import uuid
 from typing import Self, Union
 
-import click
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
 
 from chrome import Chrome
 from console import console
-from facebook import cli
 from functions import save_cookies
 from logger import logger
 
@@ -145,31 +143,3 @@ class Login(Chrome):
                 )
 
                 return False  # Manual login failed or not completed
-
-
-@cli.command()
-@click.option(
-    "-U",
-    "--username",
-    type=str,
-    help="The username or email address for Facebook login. [Optional]",
-)
-@click.option(
-    "-P",
-    "--password",
-    type=str,
-    help="The password associated with the Facebook account. [Optional]",
-)
-@click.pass_context
-def login(
-    ctx: click.core.Context,
-    username: Union[None, str],
-    password: Union[None, str],
-) -> None:
-    login: Login = Login(**ctx.parent.params if ctx.parent else {})
-
-    login.login(username, password)
-
-
-if __name__ == "__main__":
-    cli()
