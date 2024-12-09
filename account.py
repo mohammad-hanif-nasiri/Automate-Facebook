@@ -324,10 +324,9 @@ class Account(Facebook, Chrome):
     def get_last_post_url(
         self: Self, page_url: str, timeout: int = 5
     ) -> Union[str, None]:
-        if self.driver.current_url != page_url:
-            self.driver.get(page_url)
-            self.infinite_scroll(scroll_limit=2, delay=2.5)
-            time.sleep(5)
+        self.driver.get(page_url)
+        self.infinite_scroll(scroll_limit=2, delay=2.5)
+        time.sleep(5)
 
         self.driver.execute_script(
             """
