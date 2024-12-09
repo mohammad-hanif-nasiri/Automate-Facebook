@@ -35,7 +35,7 @@ users: List[Dict[str, Any]] = [
         "telegram_id": 5906633627,
     },
     {
-        "page_url": "https://www.facebook.com/SalekMobile",
+        "page_url": "https://www.facebook.com/profile.php?id=100063642170837",
         "username": "hanif.nasiri.1967",
         "credentials": {
             "username": "hanif.nasiri.1967",
