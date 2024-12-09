@@ -89,6 +89,7 @@ class Account(Facebook, Chrome):
                     "like": 0,
                     "comment": 0,
                     "friend-requests": 0,
+                    "canceled-friend-requests": 0,
                 },
             )
 
@@ -887,6 +888,9 @@ class Account(Facebook, Chrome):
             comment = Facebook.report[self.username]["comment"]
             share = Facebook.report[self.username]["share"]
             friend_requests = Facebook.report[self.username]["friend-requests"]
+            canceled_friend_requests = Facebook.report[self.username][
+                "canceled-friend-requests"
+            ]
 
             if after_screenshot := self.get_screenshot(post_url, func):
                 after = edit_image(
@@ -910,6 +914,7 @@ class Account(Facebook, Chrome):
                     f"Comment: {comment}",
                     f"Share: {share}",
                     f"Friend Requests: {friend_requests}",
+                    f"Cancelled Friend Requests: {canceled_friend_requests}",
                 ]
             )
 
@@ -1057,6 +1062,10 @@ class Account(Facebook, Chrome):
                             logger.success(
                                 f"User <b>{self.username}</b> - The request <g>successfully</g> canceled."
                             )
+
+                            Facebook.report[self.username][
+                                "canceled-friend-requests"
+                            ] += 1
                         except Exception:
                             logger.error(
                                 f"User <b>{self.username}</b> - An error occurred during cancelling the request."
