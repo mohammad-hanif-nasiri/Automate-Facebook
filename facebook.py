@@ -23,6 +23,7 @@ class Facebook:
             "Comment",
             "Share",
             "Friend Requests",
+            "Cancelled Friend Requests",
         ]
 
         for col in cols:
@@ -35,6 +36,7 @@ class Facebook:
             share = data.get("share")
             like = data.get("like")
             friend_requests = data.get("friend-requests")
+            canceled_friend_requests = data.get("canceled-friend-requests")
 
             row: List[Any] = []
 
@@ -44,6 +46,7 @@ class Facebook:
             row.append(comment)
             row.append(share)
             row.append(friend_requests)
+            row.append(canceled_friend_requests)
 
             rows.append(list(map(str, row)))
 
@@ -62,6 +65,7 @@ class Facebook:
                 "Comment",
                 "Share",
                 "Friend Requests",
+                "Cancelled Friend Requests",
             ]
             rows: List[List[Any]] = []
 
@@ -70,6 +74,7 @@ class Facebook:
                 share = data.get("share")
                 like = data.get("like")
                 friend_requests = data.get("friend-requests")
+                canceled_friend_requests = data.get("canceled-friend-requests")
 
                 row = [
                     index + 1,
@@ -78,6 +83,7 @@ class Facebook:
                     comment,
                     share,
                     friend_requests,
+                    canceled_friend_requests,
                 ]
                 rows.append(row)
 
