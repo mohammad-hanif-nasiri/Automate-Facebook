@@ -881,8 +881,8 @@ class Account(Facebook, Chrome):
             if friend_request_count > 0:
                 self.send_friend_request(friend_request_count)
 
-            if cancel_all_friend_requests:
-                self.cancel_all_friend_requests()
+            # if cancel_all_friend_requests:
+            #     self.cancel_all_friend_requests()
 
             like = Facebook.report[self.username]["like"]
             comment = Facebook.report[self.username]["comment"]
