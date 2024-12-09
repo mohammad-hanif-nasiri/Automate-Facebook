@@ -1,9 +1,10 @@
 import asyncio
 import pickle
 import random
+import threading
 import time
 import uuid
-from typing import Callable, Dict, List, Literal, Self, Union
+from typing import Any, Callable, Dict, List, Literal, Self, Union, final
 from selenium.webdriver.chrome.webdriver import WebDriver
 
 from selenium.webdriver.common.by import By
@@ -37,6 +38,7 @@ class Account(Facebook, Chrome):
             None,
         ] = credentials
         self.telegram_bot: TelegramBot = TelegramBot(TELEGRAM_BOT_API_TOKEN)
+        self.kwargs: Dict[str, Any] = kwargs
 
     def __enter__(self: Self) -> Union[Self, None]:
         """
@@ -59,7 +61,7 @@ class Account(Facebook, Chrome):
 
         self.driver.refresh()
 
-        if not (is_logged_in := self.is_logged_in) and self.credentials is not None:
+        if not (is_login := self.is_login()) and self.credentials is not None:
             username: Union[str, None] = self.credentials.get(
                 "username"
             )  # get username from credentials dictionary
@@ -69,11 +71,11 @@ class Account(Facebook, Chrome):
 
             if username and password:  # validate username and password
                 # Perform automatically login using the Login static method
-                is_logged_in = Login.preform_automatically_login(
+                is_login = Login.preform_automatically_login(
                     self.driver, username, password
                 )
 
-        if is_logged_in and self.username:
+        if is_login and self.username:
             Facebook.report.setdefault(
                 f"{self.username}",
                 {
@@ -139,32 +141,13 @@ class Account(Facebook, Chrome):
 
         return True
 
-    def scroll_into_view(self: Self, element: WebElement) -> None:
-        """
-        Scrolls a specified WebElement into view within the browser window.
+    def scroll_into_view(
+        self: Self, element: WebElement, driver: Union[WebDriver, None] = None
+    ) -> None:
+        if driver is None:
+            driver = self.driver
 
-        This function leverages JavaScript to smoothly scroll the element into view.
-        It centers the element vertically and aligns it horizontally based on its
-        closest scrollable ancestor.
-
-        Parameters:
-        ----------
-        element : WebElement
-            The web element to be scrolled into view.
-
-        Returns:
-        -------
-        None
-            This function does not return any value.
-
-        Example:
-        -------
-        ```python
-        element = driver.find_element(By.ID, "targetElement")
-        scroll_into_view(self, element)
-        ```
-        """
-        self.driver.execute_script(
+        driver.execute_script(
             """
             const element = arguments[0];
 
@@ -179,8 +162,7 @@ class Account(Facebook, Chrome):
 
         time.sleep(1)
 
-    @property
-    def is_logged_in(self: Self) -> bool:
+    def is_login(self: Self, driver: Union[WebDriver, None] = None) -> bool:
         """
         Check if the user is logged into Facebook.
 
@@ -194,20 +176,25 @@ class Account(Facebook, Chrome):
             True if the user is logged in (i.e., the profile element is found),
             False otherwise.
         """
-        if (url := "https://www.facebook.com") != self.driver.current_url:
-            self.driver.get(url)
-            time.sleep(5)
+
+        if driver is None:
+            driver = self.driver
+
+        driver.get("https://www.facebook.com")
+        time.sleep(5)
 
         try:
             # Example: Check for the presence of the profile picture or the user's name
-            self.driver.find_element(By.XPATH, "//div[@aria-label='Your profile']")
+            driver.find_element(By.XPATH, "//div[@aria-label='Your profile']")
             logger.info("User is logged in.")
 
             return True
         except Exception:
-            logger.info("User is not logged in.")
+            ...
 
-            return False
+        logger.info("User is not logged in.")
+
+        return False
 
     @property
     def username(self: Self) -> str:
@@ -394,12 +381,14 @@ class Account(Facebook, Chrome):
     def share(
         self: Self, post_url: str, groups: List[str], count: int, timeout: int = 5
     ) -> None:
-        self.driver.get(post_url)
+        chrome: Chrome = Chrome(cookies_file=self.cookie_file, **self.kwargs)
+        driver: WebDriver = chrome.driver
+
+        driver.get(post_url)
         time.sleep(5)
 
-        prefix: str = self.get_selectors_prefix(
-            suffix="//span[contains(text(), 'Share')]/ancestor::*[@role='button']"
-        )
+        suffix: str = "//span[contains(text(), 'Share')]/ancestor::*[@role='button']"
+        prefix: str = self.get_selectors_prefix(suffix=suffix)
 
         try:
             while True:
@@ -417,44 +406,44 @@ class Account(Facebook, Chrome):
                 )
 
                 # Find the first "Share" button on the page
-                share_button = self.driver.find_element(
+                share_button = driver.find_element(
                     By.XPATH,
                     f"{prefix}//span[contains(text(), 'Share')]/ancestor::*[@role='button']",
                 )
-                self.scroll_into_view(share_button)
+                self.scroll_into_view(share_button, driver)
                 share_button.click()
                 time.sleep(2.5)
 
                 # Select the "Share to a Group" option
-                share_to_group_button = self.driver.find_element(
+                share_to_group_button = driver.find_element(
                     By.XPATH,
                     f"{prefix}//span[contains(text(), 'Group')]/ancestor::*[@role='button']",
                 )
                 share_to_group_button.click()
                 time.sleep(2.5)
 
-                search_input = self.driver.find_element(
+                search_input = driver.find_element(
                     By.XPATH,
                     f'{prefix}//input[@placeholder="Search for groups"]',
                 )
                 search_input.send_keys(group := random.choice(groups))
                 time.sleep(2.5)
 
-                group_elem = self.driver.find_element(
+                group_elem = driver.find_element(
                     By.XPATH,
                     f"{prefix}//span[contains(text(), '{group}')]/ancestor::*[@role='button']",
                 )
                 group_elem.click()
                 time.sleep(2.5)
 
-                post_button = self.driver.find_element(
+                post_button = driver.find_element(
                     By.XPATH, f"{prefix}//div[@aria-label='Post']"
                 )
                 post_button.click()
 
                 while True:
                     try:
-                        self.driver.find_element(
+                        driver.find_element(
                             By.XPATH,
                             "//span[contains(text(), 'Shared to your group.')]",
                         )
@@ -471,10 +460,12 @@ class Account(Facebook, Chrome):
 
                     time.sleep(0.512)
 
-                if self.check_feature() is False:
+                if self.check_feature(driver) is False:
                     break
 
         except Exception:
+            driver.quit()
+
             logger.error(
                 f"User <b>{self.username!r}</b> - An <r>error</r> occurred during sharing the post!"
             )
@@ -490,24 +481,31 @@ class Account(Facebook, Chrome):
                     timeout - 1,
                 )
         else:
-            Facebook.print_report()
+            Facebook.print_report()  # print the accounts reports
+
+        # Close the browser and shuts down the ChromeDriver executable.
+        driver.quit()
 
     def comment(self: Self, post_url: str, count: int = 50, timeout: int = 5) -> None:
-        self.driver.get(post_url)
+        chrome: Chrome = Chrome(cookies_file=self.cookie_file, **self.kwargs)
+        driver: WebDriver = chrome.driver
+
+        driver.get(post_url)
         time.sleep(5)
 
         # Retrieve comments random comments
         if comments := get_comments():
             try:
-                prefix: str = self.get_selectors_prefix(
-                    suffix="//span[contains(text(), 'Share')]/ancestor::*[@role='button']"
+                suffix: str = (
+                    "//span[contains(text(), 'Share')]/ancestor::*[@role='button']"
                 )
+                prefix: str = self.get_selectors_prefix(suffix=suffix, driver=driver)
 
-                textbox: WebElement = self.driver.find_element(
+                textbox: WebElement = driver.find_element(
                     By.XPATH,
                     f'{prefix}//div[@aria-label="Write a comment…" or contains(@aria-label, "Comment as") and @role="textbox"]',
                 )
-
+                self.scroll_into_view(textbox, driver)
                 textbox.click()
 
                 while True:
@@ -527,7 +525,7 @@ class Account(Facebook, Chrome):
 
                     while True:
                         try:
-                            self.driver.find_element(
+                            driver.find_element(
                                 By.XPATH,
                                 "//span[contains(text(), 'Posting...')]",
                             )
@@ -537,20 +535,17 @@ class Account(Facebook, Chrome):
 
                         except Exception:
                             try:
-                                self.driver.find_element(
+                                driver.find_element(
                                     By.XPATH,
                                     "//span[contains(text(), 'Unable to post comment.')]",
                                 )
 
-                                logger.warning(
-                                    f"User <b>{self.username!r}</b> - You <r>can not</r> write <b>comments</b> right now!"
-                                )
-
-                                return
+                                break
 
                             except Exception:
                                 logger.success(
-                                    f"User <b>{self.username!r}</b> - <g>Successfully</g> posted comment {comment_count+1}/{count}: <b>{text!r}</b>"
+                                    f"User <b>{self.username!r}</b> - Comment <b>{text!r}</b> <g>successfully</g> posted. "
+                                    f"(Total Comments: {comment_count+1} of {count})."
                                 )
 
                                 # Increment comment count in report
@@ -560,7 +555,7 @@ class Account(Facebook, Chrome):
 
                     time.sleep(1.5 + random.random())
 
-                    if self.check_feature() is False:
+                    if self.check_feature(driver) is False:
                         break
 
             except Exception:
@@ -576,18 +571,23 @@ class Account(Facebook, Chrome):
         else:
             logger.error("<r>No</r> comments available to post.")
 
+        driver.quit()
+
     def like(self: Self, page_url: str, count: int) -> Union[bool, None]:
-        self.driver.get(page_url)
+        chrome: Chrome = Chrome(cookies_file=self.cookie_file, **self.kwargs)
+        driver: WebDriver = chrome.driver
+
+        driver.get(page_url)
         time.sleep(5)
 
         def like():
-            like_buttons: List[WebElement] = self.driver.find_elements(
+            like_buttons: List[WebElement] = driver.find_elements(
                 By.XPATH, "//div[@aria-label='Like' and @role='button']"
             )
 
             for like_button in like_buttons:
                 try:
-                    self.scroll_into_view(like_button)
+                    self.scroll_into_view(like_button, driver)
                     like_button.click()
 
                     logger.success(
@@ -595,7 +595,7 @@ class Account(Facebook, Chrome):
                         % (Facebook.report[self.username]["like"] + 1)
                     )
 
-                    time.sleep(1 + random.random())
+                    time.sleep(random.random())
 
                 except Exception:
                     logger.error(f"User <b>{self.username}</b> - An error occurred!")
@@ -607,16 +607,23 @@ class Account(Facebook, Chrome):
                         return True
 
         self.infinite_scroll(
-            self.facebook_element, delay=2.5, scroll_limit=500, callback=like
+            element=driver.find_element(By.ID, "facebook"),
+            delay=2.5,
+            callback=like,
         )
 
+        driver.quit()
+
     def send_friend_request(self: Self, count: int = 100) -> None:
-        self.driver.get("https://www.facebook.com/friends")
+        chrome: Chrome = Chrome(cookies_file=self.cookie_file, **self.kwargs)
+        driver: WebDriver = chrome.driver
+
+        driver.get("https://www.facebook.com/friends")
         time.sleep(5)
 
         def send_request():
             try:
-                friends_element: WebElement = self.driver.find_element(
+                friends_element: WebElement = driver.find_element(
                     By.XPATH,
                     "//div[@aria-label='Friends' and @role='main']",
                 )
@@ -681,33 +688,38 @@ class Account(Facebook, Chrome):
                 )
 
         self.infinite_scroll(
-            element=self.facebook_element,
+            element=driver.find_element(By.ID, "facebook"),
             delay=2.5,
             callback=send_request,
         )
 
+        driver.quit()
+
     def invite(self: Self, page_url: str, timeout: int = 5) -> None:
-        self.driver.get(page_url)
+        chrome: Chrome = Chrome(cookies_file=self.cookie_file, **self.kwargs)
+        driver: WebDriver = chrome.driver
+
+        driver.get(page_url)
         time.sleep(5)
 
         try:
-            more_options_button: WebElement = self.driver.find_element(
+            more_options_button: WebElement = driver.find_element(
                 By.XPATH, "//div[@aria-label='See options' and @role='button']"
             )
-            self.scroll_into_view(more_options_button)
+            self.scroll_into_view(more_options_button, driver)
             more_options_button.click()
             time.sleep(2.5)
 
-            invite_friends_button: WebElement = self.driver.find_element(
+            invite_friends_button: WebElement = driver.find_element(
                 By.XPATH,
                 "//span[contains(text(), 'Invite friends')]/ancestor::div[@role='menuitem']",
             )
-            self.scroll_into_view(invite_friends_button)
+            self.scroll_into_view(invite_friends_button, driver)
             invite_friends_button.click()
             time.sleep(5)
 
             try:
-                self.driver.find_element(
+                driver.find_element(
                     By.XPATH,
                     "//span[contains(text(), 'No Friends To Invite')]",
                 )
@@ -716,17 +728,16 @@ class Account(Facebook, Chrome):
                     f"User <b>{self.username}</b> - No <b>Friends</b> To Invite."
                 )
 
-                return
             except Exception:
                 try:
-                    select_all_button: WebElement = self.driver.find_element(
+                    select_all_button: WebElement = driver.find_element(
                         By.XPATH,
                         "//div[contains(@aria-label, 'Select All')][@role='button']",
                     )
                     select_all_button.click()
                     time.sleep(2.5)
 
-                    send_invite_button: WebElement = self.driver.find_element(
+                    send_invite_button: WebElement = driver.find_element(
                         By.XPATH,
                         "//div[@aria-label='Send Invites' and @role='button']",
                     )
@@ -734,13 +745,15 @@ class Account(Facebook, Chrome):
 
                     for number in range(10):
                         try:
-                            self.driver.find_element(
+                            driver.find_element(
                                 By.XPATH, "//span[contains(text(), 'Invites sent')]"
                             )
 
                             logger.success(
                                 f"User <b>{self.username}</b> - Invites <g>successfully</g> sent."
                             )
+
+                            driver.quit()
 
                             return
 
@@ -760,6 +773,8 @@ class Account(Facebook, Chrome):
                     )
 
         except Exception:
+            driver.quit()
+
             logger.error(
                 f"User <b>{self.username}</b> - An error occurred while sending invites. Retrying (<c>{timeout}</c> remaining)."
             )
@@ -767,17 +782,23 @@ class Account(Facebook, Chrome):
             if timeout > 0:
                 return self.invite(page_url, timeout - 1)
 
+        driver.quit()
+
     def get_selectors_prefix(
         self: Self,
         post_url: Union[str, None] = None,
         suffix: Union[None, str] = None,
+        driver: Union[WebDriver, None] = None,
     ) -> str:
+        if driver is None:
+            driver = self.driver
+
         if post_url is not None:
             self.driver.get(post_url)
             time.sleep(5)
 
         try:
-            self.driver.find_element(
+            driver.find_element(
                 By.XPATH,
                 "//div[@role='dialog']{suffix}".format(suffix=suffix if suffix else ""),
             )
@@ -838,23 +859,45 @@ class Account(Facebook, Chrome):
 
                 screenshots.append(before)
 
+            tasks: List[threading.Thread] = []
+
             if share_count > 0 and groups:
-                self.share(post_url, groups, share_count)
+                tasks.append(
+                    threading.Thread(
+                        target=self.share, args=(post_url, groups, share_count, 5)
+                    )
+                )
 
             if comment_count > 0:
-                self.comment(post_url, comment_count)
+                tasks.append(
+                    threading.Thread(
+                        target=self.comment, args=(post_url, comment_count)
+                    )
+                )
 
             if like_count > 0:
-                self.like(page_url, like_count)
+                tasks.append(
+                    threading.Thread(target=self.like, args=(page_url, like_count))
+                )
 
             if send_invites:
-                self.invite(page_url)
+                tasks.append(threading.Thread(target=self.invite, args=(page_url,)))
 
             if friend_request_count > 0:
-                self.send_friend_request(friend_request_count)
+                tasks.append(
+                    threading.Thread(
+                        target=self.send_friend_request, args=(friend_request_count,)
+                    )
+                )
 
             if cancel_all_friend_requests:
                 pass
+
+            for task in tasks:
+                task.start()
+
+            for task in tasks:
+                task.join()
 
             like = Facebook.report[self.username]["like"]
             comment = Facebook.report[self.username]["comment"]
@@ -903,73 +946,23 @@ class Account(Facebook, Chrome):
         delay: float = 5,
         scroll_limit: Union[None, int] = None,
         callback: Union[Callable, None] = None,
+        driver: Union[WebDriver, None] = None,
         *args,
         **kwargs,
     ) -> None:
-        """
-        Scrolls down a specified web element to load additional content up to a specified limit.
 
-        This method automatically scrolls to the bottom of the provided web element and waits
-        for new content to load. It continues scrolling until either the specified number of
-        scrolls is reached or no new content is detected.
+        if driver is None:
+            driver = self.driver
 
-        Parameters:
-        -----------
-        element: Union[WebElement, None], optional
-            The specific web element to scroll. If not provided, the method defaults to
-            finding the Facebook main element by its ID. This should be an instance of a
-            Selenium WebElement that contains scrollable content.
-
-        delay: float, optional
-            The time to wait (in seconds) after each scroll before checking for new content.
-            Default is 5 seconds.
-
-        scroll_limit: Union[None, int], optional
-            The maximum number of scrolls to perform. If set to None, the method will continue
-            scrolling until no more new content is loaded. Default is None.
-
-        callback: Union[Callable, None], optional
-            A function to be executed after each successful scroll. This can be used to perform
-            actions such as logging the number of items loaded or any other processing. Default is None.
-
-        *args:
-            Additional positional arguments to pass to the callback function.
-
-        **kwargs:
-            Additional keyword arguments to pass to the callback function.
-
-        Returns:
-        --------
-        None
-            This method does not return any value. It performs scrolling actions on the specified
-            web element and may execute the provided callback function.
-
-        Raises:
-        -------
-        WebDriverException
-            If the Selenium WebDriver encounters an issue while executing the scrolling actions
-            or JavaScript commands.
-
-        Example:
-        --------
-        >>> def my_callback(arg1, kwarg1=None):
-        >>>     print(f"Scrolled and loaded new content! Arg1: {arg1}, Kwarg1: {kwarg1}")
-        >>>
-        >>> element_to_scroll = driver.find_element(By.ID, "scrollable-element-id")  # Example element
-        >>> infinite_scroll(element=element_to_scroll, scroll_limit=5, callback=my_callback, "Some value", kwarg1="Some keyword value")
-        """
-
-        if not element:
+        if not element and driver is None:
             element = self.facebook_element
 
-        last_height = self.driver.execute_script(
-            "return arguments[0].scrollHeight", element
-        )
+        last_height = driver.execute_script("return arguments[0].scrollHeight", element)
 
         count = 0  # Initialize scroll count
         while True:
             # Scroll to the bottom of the page
-            self.driver.execute_script(
+            driver.execute_script(
                 "window.scrollTo(0, arguments[0].scrollHeight);", element
             )
 
@@ -977,7 +970,7 @@ class Account(Facebook, Chrome):
             time.sleep(delay)  # Adjust based on your needs
 
             # Calculate new height and compare with the last height
-            new_height = self.driver.execute_script(
+            new_height = driver.execute_script(
                 "return arguments[0].scrollHeight", element
             )
             if new_height == last_height:
@@ -999,36 +992,39 @@ class Account(Facebook, Chrome):
                 break  # Exit if the scroll limit is reached
 
     def cancel_all_friend_requests(self: Self, timeout: int = 5) -> None:
-        self.driver.get("https://www.facebook.com/friends/requests")
+        chrome: Chrome = Chrome(cookies_file=self.cookie_file, **self.kwargs)
+        driver: WebDriver = chrome.driver
+
+        driver.get("https://www.facebook.com/friends/requests")
         time.sleep(5)
 
         try:
-            view_sent_requests_element: WebElement = self.driver.find_element(
+            view_sent_requests_element: WebElement = driver.find_element(
                 By.XPATH,
                 "//span[contains(text(), 'View sent requests')]/ancestor::*[@role='button']",
             )
             view_sent_requests_element.click()
             time.sleep(2.5)
 
-            dialog_element: WebElement = self.driver.find_element(
+            dialog_element: WebElement = driver.find_element(
                 By.XPATH,
                 "//div[@role='dialog' and @aria-label='Sent Requests']",
             )
 
-            last_child_element: WebElement = dialog_element.find_element(
+            child_element: WebElement = dialog_element.find_element(
                 By.XPATH, "//div[last()]"
             )
 
             def cancel():
                 try:
-                    cancel_buttons: List[WebElement] = self.driver.find_elements(
+                    cancel_buttons: List[WebElement] = driver.find_elements(
                         By.XPATH,
                         "//div[@aria-label='Cancel request' and @role='button']",
                     )
 
                     for cancel_button in cancel_buttons:
                         try:
-                            self.scroll_into_view(cancel_button)
+                            self.scroll_into_view(cancel_button, driver)
                             cancel_button.click()
 
                             logger.success(
@@ -1048,12 +1044,16 @@ class Account(Facebook, Chrome):
                 except Exception:
                     logger.error(f"User <b>{self.username}</b> - An error occurred!")
 
-            self.infinite_scroll(last_child_element, delay=5, callback=cancel)
+            self.infinite_scroll(child_element, delay=2.5, callback=cancel)
 
         except Exception:
+            driver.quit()
+
             if timeout > 0:
                 logger.warning(f"User <b>{self.username}</b> - Retrying...")
                 return self.cancel_all_friend_requests(timeout - 1)
+
+        driver.quit()
 
 
 def start(
