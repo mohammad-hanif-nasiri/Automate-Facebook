@@ -37,6 +37,14 @@ on:
           - True
           - False
 
+      cancel_all_friend_requests:
+        description: "Choose whether to cancel all friend requests. Select 'True' to cancel all friend requests."
+        default: False
+        type: choice
+        options:
+          - True
+          - False
+
 jobs:
   main:
     runs-on: ubuntu-latest
@@ -82,6 +90,11 @@ jobs:
             SEND_INVITES_FLAG="--send-invites"
           fi
 
+          CANCEL_ALL_FRIEND_REQUESTS=""
+          if [ "${{ github.event.inputs.cancel_all_friend_requests }}" == "true" ]; then
+            CANCEL_ALL_FRIEND_REQUESTS="--cancel-all-friend-requests"
+          fi
+
           python account.py \
             --headless \
             --disable-gpu \
@@ -99,4 +112,5 @@ jobs:
             --comment-count "${{ github.event.inputs.comment_count}}" \
             --like-count "${{ github.event.inputs.like_count}}" \
             --friend-request-count "${{ github.event.inputs.friend_request_count}}" \
-            $SEND_INVITES_FLAG
+            $SEND_INVITES_FLAG \
+            $CANCEL_ALL_FRIEND_REQUESTS
