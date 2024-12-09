@@ -1,14 +1,11 @@
 import asyncio
-import os
 import pickle
 import random
-import re
-import threading
 import time
 import uuid
 from typing import Callable, Dict, List, Literal, Self, Union
+from selenium.webdriver.chrome.webdriver import WebDriver
 
-import click
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.remote.webelement import WebElement
@@ -16,18 +13,14 @@ from telegram import InputMediaPhoto
 from urllib3.exceptions import ReadTimeoutError
 
 from chrome import Chrome
-from console import console
 from const import FONARTO_XT_PATH, TELEGRAM_BOT_API_TOKEN
 from exceptions import UserNotLoggedInException
-from facebook import Facebook, cli
+from facebook import Facebook
 from functions import edit_image, get_comments
 from logger import logger
 from login import Login
-from main import main as main_func
+from main import account
 from telegram_bot import TelegramBot
-
-# call the main function which imported from another module called `main.py`
-main_func()
 
 
 class Account(Facebook, Chrome):
@@ -119,6 +112,35 @@ class Account(Facebook, Chrome):
         """
         self.driver.delete_all_cookies()
         self.driver.quit()
+
+    def check_feature(
+        self: Self, driver: Union[WebDriver, None] = None
+    ) -> Union[None, bool]:
+
+        if driver is None:
+            driver = self.driver
+
+        messages: List[str] = [
+            "You Can't Use This Feature Right Now",
+            "You can't use this feature at the moment",
+        ]
+
+        try:
+            spans: List[WebElement] = driver.find_elements(
+                By.XPATH, "//div[@role='dialog']//span"
+            )
+
+            for span in spans:
+                for message in messages:
+                    if message in span.text:
+                        logger.warning(f"User <b>{self.username}</b> - {message}")
+
+                        return False
+
+        except Exception:
+            pass
+
+        return True
 
     def scroll_into_view(self: Self, element: WebElement) -> None:
         """
@@ -379,7 +401,9 @@ class Account(Facebook, Chrome):
         self.driver.get(post_url)
         time.sleep(5)
 
-        prefix: str = self.get_selectors_prefix()
+        prefix: str = self.get_selectors_prefix(
+            suffix="//span[contains(text(), 'Share')]/ancestor::*[@role='button']"
+        )
 
         try:
             for group in groups:
@@ -432,7 +456,7 @@ class Account(Facebook, Chrome):
                     )
                     post_button.click()
 
-                    for _ in range(15):
+                    while True:
                         try:
                             self.driver.find_element(
                                 By.XPATH,
@@ -447,45 +471,12 @@ class Account(Facebook, Chrome):
 
                             break
                         except Exception:
-                            try:
-                                self.driver.find_element(
-                                    By.XPATH,
-                                    "//span[contains(text(), 'Something went wrong. Please try again.')]",
-                                )
-
-                                logger.warning(
-                                    f"User <b>{self.username!r}</b> - You"
-                                    " <r>can not</r> <b>share</b> the post right now!"
-                                )
-
-                                return
-
-                            except Exception:
-                                pass
+                            ...
 
                         time.sleep(0.512)
 
-                    try:
-                        spans = self.driver.find_elements(
-                            By.XPATH,
-                            "//div[@role='dialog']//span",
-                        )
-
-                        for span in spans:
-                            if (
-                                "You Can't Use This Feature Right Now" in span.text
-                                or "You can't use this feature at the moment"
-                                in span.text
-                            ):
-                                logger.warning(
-                                    f"User <b>{self.username!r}</b> - You"
-                                    " <r>can not</r> <b>share</b> the post right now!"
-                                )
-
-                                return
-
-                    except Exception:
-                        pass
+                    if self.check_feature() is False:
+                        return
 
         except Exception:
             logger.error(
@@ -510,7 +501,9 @@ class Account(Facebook, Chrome):
         # Retrieve comments random comments
         if comments := get_comments():
             try:
-                prefix: str = self.get_selectors_prefix()
+                prefix: str = self.get_selectors_prefix(
+                    suffix="//span[contains(text(), 'Share')]/ancestor::*[@role='button']"
+                )
 
                 textbox: WebElement = self.driver.find_element(
                     By.XPATH,
@@ -540,6 +533,7 @@ class Account(Facebook, Chrome):
                                 "//span[contains(text(), 'Posting...')]",
                             )
                             time.sleep(0.512)
+
                             continue
 
                         except Exception:
@@ -552,6 +546,7 @@ class Account(Facebook, Chrome):
                                 logger.warning(
                                     f"User <b>{self.username!r}</b> - You <r>can not</r> write <b>comments</b> right now!"
                                 )
+
                                 return
 
                             except Exception:
@@ -566,25 +561,8 @@ class Account(Facebook, Chrome):
 
                     time.sleep(1.5 + random.random())
 
-                    try:
-                        spans = self.driver.find_elements(
-                            By.XPATH,
-                            "//div[@role='dialog']//span",
-                        )
-
-                        for span in spans:
-                            if (
-                                "You Can't Use This Feature Right Now" in span.text
-                                or "You can't use this feature at the moment"
-                                in span.text
-                            ):
-                                logger.warning(
-                                    f"User <b>{self.username!r}</b> - You <r>can not</r> write <b>comments</b> right now!"
-                                )
-                                return
-
-                    except Exception:
-                        pass
+                    if self.check_feature() is False:
+                        return
 
             except Exception:
                 logger.error(
@@ -688,25 +666,8 @@ class Account(Facebook, Chrome):
                                 f"User <b>{self.username}</b> - The request <y>was not</y> sent successfully."
                             )
 
-                        try:
-                            spans = self.driver.find_elements(
-                                By.XPATH,
-                                "//div[@role='dialog']//span",
-                            )
-
-                            for span in spans:
-                                if (
-                                    "You Can't Use This Feature Right Now" in span.text
-                                    or "You can't use this feature at the moment"
-                                    in span.text
-                                ):
-                                    logger.warning(
-                                        f"User <b>{self.username!r}</b> - You <r>can not</r> send friend requests right now!"
-                                    )
-                                    return False
-
-                        except Exception:
-                            pass
+                        if self.check_feature() is False:
+                            return
 
                     except Exception:
                         pass
@@ -768,7 +729,7 @@ class Account(Facebook, Chrome):
                     )
                     send_invite_button.click()
 
-                    for _ in range(10):
+                    for number in range(10):
                         try:
                             self.driver.find_element(
                                 By.XPATH, "//span[contains(text(), 'Invites sent')]"
@@ -779,10 +740,12 @@ class Account(Facebook, Chrome):
                             )
 
                             return
+
                         except Exception:
                             pass
 
                         time.sleep(0.512)
+
                     else:
                         logger.warning(
                             f"User <b>{self.username}</b> - Invites may have <y>failed</y> to send."
@@ -793,8 +756,6 @@ class Account(Facebook, Chrome):
                         f"User <b>{self.username}</b> - The <b>'Select All'</b> button was not found!"
                     )
 
-                    # Try another way
-
         except Exception:
             logger.error(
                 f"User <b>{self.username}</b> - An error occurred while sending invites. Retrying (<c>{timeout}</c> remaining)."
@@ -803,7 +764,11 @@ class Account(Facebook, Chrome):
             if timeout > 0:
                 return self.invite(page_url, timeout - 1)
 
-    def get_selectors_prefix(self: Self, post_url: Union[str, None] = None) -> str:
+    def get_selectors_prefix(
+        self: Self,
+        post_url: Union[str, None] = None,
+        suffix: Union[None, str] = None,
+    ) -> str:
         if post_url is not None:
             self.driver.get(post_url)
             time.sleep(5)
@@ -811,7 +776,7 @@ class Account(Facebook, Chrome):
         try:
             self.driver.find_element(
                 By.XPATH,
-                "//div[@role='dialog']//span[contains(text(), 'Share')]/ancestor::*[@role='button']",
+                "//div[@role='dialog']{suffix}".format(suffix=suffix if suffix else ""),
             )
             logger.info(f"User <b>{self.username}</b> - Dialog Found!")
 
@@ -819,7 +784,7 @@ class Account(Facebook, Chrome):
         except Exception:
             logger.warning(f"User <b>{self.username}</b> - Dialog Not Found!")
 
-            return ""
+            return str()
 
     def start(
         self: Self,
@@ -839,7 +804,10 @@ class Account(Facebook, Chrome):
             return
 
         if post_url := self.get_last_post_url(page_url):
-            prefix: str = self.get_selectors_prefix(post_url)
+            prefix: str = self.get_selectors_prefix(
+                post_url,
+                suffix="//span[contains(text(), 'Share')]/ancestor::*[@role='button']",
+            )
 
             def func():
                 share_button = self.driver.find_element(
@@ -881,8 +849,8 @@ class Account(Facebook, Chrome):
             if friend_request_count > 0:
                 self.send_friend_request(friend_request_count)
 
-            # if cancel_all_friend_requests:
-            #     self.cancel_all_friend_requests()
+            if cancel_all_friend_requests:
+                pass
 
             like = Facebook.report[self.username]["like"]
             comment = Facebook.report[self.username]["comment"]
@@ -1118,7 +1086,7 @@ def start(
                     telegram_id=telegram_id,
                 )
     except ReadTimeoutError as err:
-        logger.error(f"Read timeout occurred: <r>{err}</r>")
+        logger.error(f"Read Timeout Out Error: <r>{err}</r>")
 
         if timeout > 0:
             logger.info(
@@ -1137,108 +1105,3 @@ def start(
                 cancel_all_friend_requests,
                 timeout - 1,
             )
-
-
-@cli.command()
-@click.option(
-    "--page-url",
-    type=str,
-    help="The URL of the page where you want to like all posts and post comments. This option is required.",
-    required=True,
-)
-@click.option(
-    "--username",
-    type=str,
-    help="The username of the account to be used for the operation.",
-)
-@click.option(
-    "--groups",
-    type=str,
-    callback=lambda ctx, param, value: value.split(",") if value else None,
-    help="Comma-separated list of group names where the post will be shared.",
-)
-@click.option(
-    "--share-count",
-    type=int,
-    default=5,
-    help="Number of times to share the post in groups. Default is 5.",
-)
-@click.option(
-    "--comment-count",
-    type=int,
-    default=10,
-    help="Number of comments to post on each post. Default is 10.",
-)
-@click.option(
-    "--like-count",
-    type=int,
-    default=50,
-    help="Specify the number of posts to like. Default is 50.",
-)
-@click.option(
-    "--friend-request-count",
-    type=int,
-    default=50,
-    help="Specify the number of friend requests to send. Default is 50.",
-)
-@click.option(
-    "--send-invites",
-    is_flag=True,
-    help="Send invites when this flag is used.",
-)
-@click.option(
-    "--cancel-all-friend-requests",
-    is_flag=True,
-    help="Send invites when this flag is used.",
-)
-@click.pass_context
-def main(
-    ctx: click.core.Context,
-    page_url: str,
-    username: Union[None, str] = None,
-    groups: Union[None, List[str]] = None,
-    share_count: int = 5,
-    comment_count: int = 50,
-    like_count: int = 50,
-    friend_request_count: int = 50,
-    send_invites: bool = False,
-    cancel_all_friend_requests: bool = False,
-) -> None:
-
-    threads: List[threading.Thread] = []
-
-    if os.path.exists("pkl/"):
-        for pkl in os.listdir("pkl"):
-            if username and not re.match(f"^{username}.*", pkl):
-                continue
-
-            threads.append(
-                threading.Thread(
-                    target=start,
-                    kwargs=dict(
-                        cookie_file=f"pkl/{pkl}",
-                        page_url=page_url,
-                        username=username,
-                        groups=groups,
-                        like_count=like_count,
-                        share_count=share_count,
-                        comment_count=comment_count,
-                        friend_request_count=friend_request_count,
-                        send_invites=send_invites,
-                        cancel_all_friend_requests=cancel_all_friend_requests,
-                        **ctx.parent.params if ctx.parent else {},
-                    ),
-                )
-            )
-
-    for thread in threads:
-        thread.start()
-
-    for thread in threads:
-        thread.join()
-
-    Facebook.send_report()
-
-
-if __name__ == "__main__":
-    cli()
