@@ -402,77 +402,77 @@ class Account(Facebook, Chrome):
         )
 
         try:
-            for group in groups:
-                for _ in range(count // len(groups)):
-                    share_count: int = Facebook.report[self.username]["share"]
+            while True:
+                share_count: int = Facebook.report[self.username]["share"]
 
-                    if share_count >= count:
-                        logger.success(
-                            f"User <b>{self.username!r}</b> - <g>Successfully</g> the sharing process completed!"
+                if share_count >= count:
+                    logger.success(
+                        f"User <b>{self.username!r}</b> - <g>Successfully</g> the sharing process completed!"
+                    )
+
+                    break
+
+                logger.info(
+                    f"User <b>{self.username!r}</b> - Preparing to share the last post... (Attempt <c>{share_count+1}</c> of <c>{count}</c>)"
+                )
+
+                # Find the first "Share" button on the page
+                share_button = self.driver.find_element(
+                    By.XPATH,
+                    f"{prefix}//span[contains(text(), 'Share')]/ancestor::*[@role='button']",
+                )
+                self.scroll_into_view(share_button)
+                share_button.click()
+                time.sleep(2.5)
+
+                # Select the "Share to a Group" option
+                share_to_group_button = self.driver.find_element(
+                    By.XPATH,
+                    f"{prefix}//span[contains(text(), 'Group')]/ancestor::*[@role='button']",
+                )
+                share_to_group_button.click()
+                time.sleep(2.5)
+
+                search_input = self.driver.find_element(
+                    By.XPATH,
+                    f'{prefix}//input[@placeholder="Search for groups"]',
+                )
+                search_input.send_keys(group := random.choice(groups))
+                time.sleep(2.5)
+
+                group_elem = self.driver.find_element(
+                    By.XPATH,
+                    f"{prefix}//span[contains(text(), '{group}')]/ancestor::*[@role='button']",
+                )
+                group_elem.click()
+                time.sleep(2.5)
+
+                post_button = self.driver.find_element(
+                    By.XPATH, f"{prefix}//div[@aria-label='Post']"
+                )
+                post_button.click()
+
+                while True:
+                    try:
+                        self.driver.find_element(
+                            By.XPATH,
+                            "//span[contains(text(), 'Shared to your group.')]",
                         )
-                        return
+                        logger.success(
+                            f"User <b>{self.username!r}</b> - The post was <b><g>successfully</g></b> shared in the group <b>{group!r}</b>."
+                        )
 
-                    logger.info(
-                        f"User <b>{self.username!r}</b> - Preparing to share the last post... (Attempt <c>{share_count+1}</c> of <c>{count}</c>)"
-                    )
+                        # Increment share count in report
+                        Facebook.report[self.username]["share"] += 1
 
-                    # Find the first "Share" button on the page
-                    share_button = self.driver.find_element(
-                        By.XPATH,
-                        f"{prefix}//span[contains(text(), 'Share')]/ancestor::*[@role='button']",
-                    )
-                    self.scroll_into_view(share_button)
-                    share_button.click()
-                    time.sleep(2.5)
+                        break
+                    except Exception:
+                        ...
 
-                    # Select the "Share to a Group" option
-                    share_to_group_button = self.driver.find_element(
-                        By.XPATH,
-                        f"{prefix}//span[contains(text(), 'Group')]/ancestor::*[@role='button']",
-                    )
-                    share_to_group_button.click()
-                    time.sleep(2.5)
+                    time.sleep(0.512)
 
-                    search_input = self.driver.find_element(
-                        By.XPATH,
-                        f'{prefix}//input[@placeholder="Search for groups"]',
-                    )
-                    search_input.send_keys(group)
-                    time.sleep(2.5)
-
-                    group_elem = self.driver.find_element(
-                        By.XPATH,
-                        f"{prefix}//span[contains(text(), '{group}')]/ancestor::*[@role='button']",
-                    )
-                    group_elem.click()
-                    time.sleep(2.5)
-
-                    post_button = self.driver.find_element(
-                        By.XPATH, f"{prefix}//div[@aria-label='Post']"
-                    )
-                    post_button.click()
-
-                    while True:
-                        try:
-                            self.driver.find_element(
-                                By.XPATH,
-                                "//span[contains(text(), 'Shared to your group.')]",
-                            )
-                            logger.success(
-                                f"User <b>{self.username!r}</b> - The post was <b><g>successfully</g></b> shared in the group <b>{group!r}</b>."
-                            )
-
-                            # Increment share count in report
-                            Facebook.report[self.username]["share"] += 1
-
-                            break
-                        except Exception:
-                            ...
-
-                        time.sleep(0.512)
-
-                    if self.check_feature() is False:
-                        return
+                if self.check_feature() is False:
+                    break
 
         except Exception:
             logger.error(
@@ -489,6 +489,8 @@ class Account(Facebook, Chrome):
                     count,
                     timeout - 1,
                 )
+        else:
+            Facebook.print_report()
 
     def comment(self: Self, post_url: str, count: int = 50, timeout: int = 5) -> None:
         self.driver.get(post_url)
@@ -508,14 +510,15 @@ class Account(Facebook, Chrome):
 
                 textbox.click()
 
-                for _ in range(count):
+                while True:
                     comment_count: int = Facebook.report[self.username]["comment"]
 
                     if comment_count >= count:
                         logger.info(
                             f"User <b>{self.username!r}</b> - <b>Completed</b> commenting process."
                         )
-                        return
+
+                        break
 
                     textbox.send_keys(text := random.choice(comments))
                     time.sleep(random.random())
@@ -558,7 +561,7 @@ class Account(Facebook, Chrome):
                     time.sleep(1.5 + random.random())
 
                     if self.check_feature() is False:
-                        return
+                        break
 
             except Exception:
                 logger.error(
@@ -566,6 +569,9 @@ class Account(Facebook, Chrome):
                 )
                 if timeout > 0:
                     return self.comment(post_url, count, timeout - 1)
+
+            else:
+                Facebook.print_report()
 
         else:
             logger.error("<r>No</r> comments available to post.")
@@ -651,15 +657,16 @@ class Account(Facebook, Chrome):
                                 By.XPATH, "//span[contains(text(), 'Request sent')]"
                             )
 
-                            Facebook.report[self.username]["friend-requests"] += 1
-
-                            logger.success(
-                                f"User <b>{self.username}</b> - Request <g>successfully</g> sent. [<c>{requests_count + 1}</c> of <c>{count}</c>]"
-                            )
-
                         except Exception:
                             logger.warning(
                                 f"User <b>{self.username}</b> - The request <y>was not</y> sent successfully."
+                            )
+                        else:
+                            Facebook.report[self.username]["friend-requests"] += 1
+
+                            logger.success(
+                                f"User <b>{self.username}</b> - Request <g>successfully</g> sent. "
+                                f"( Total Requests: <c>{requests_count + 1}</c> of <c>{count}</c>)"
                             )
 
                         if self.check_feature() is False:
@@ -800,9 +807,10 @@ class Account(Facebook, Chrome):
             return
 
         if post_url := self.get_last_post_url(page_url):
+            suffix = "//span[contains(text(), 'Share')]/ancestor::*[@role='button']"
             prefix: str = self.get_selectors_prefix(
                 post_url,
-                suffix="//span[contains(text(), 'Share')]/ancestor::*[@role='button']",
+                suffix,
             )
 
             def func():
