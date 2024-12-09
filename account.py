@@ -112,9 +112,7 @@ class Account(Facebook, Chrome):
         self.driver.delete_all_cookies()
         self.driver.quit()
 
-    def check_feature(
-        self: Self, driver: Union[WebDriver, None] = None
-    ) -> Union[None, bool]:
+    def check_feature(self: Self, driver: Union[WebDriver, None] = None) -> bool:
 
         if driver is None:
             driver = self.driver
@@ -666,7 +664,7 @@ class Account(Facebook, Chrome):
                             )
 
                         if self.check_feature() is False:
-                            return
+                            return False
 
                     except Exception:
                         pass
