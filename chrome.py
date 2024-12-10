@@ -1,3 +1,7 @@
+import os
+import pickle
+import random
+import time
 from typing import Self
 
 from selenium import webdriver
@@ -51,3 +55,14 @@ class Chrome:
             service=self.service,
             options=self.options,
         )
+
+        if cookies_file := kwargs.get("cookies_file", None):
+            if site_url := kwargs.get("site_url", None):
+                self.driver.get(site_url)
+                time.sleep(5 + random.random())
+
+                if os.path.exists(cookies_file):
+                    cookies = pickle.load(open(cookies_file, "rb"))
+
+                    for cookie in cookies:
+                        self.driver.add_cookie(cookie)
