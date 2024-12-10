@@ -580,8 +580,7 @@ class Account(Facebook, Chrome):
         driver.quit()
 
     def like(self: Self, page_url: str, count: int) -> Union[bool, None]:
-        chrome: Chrome = Chrome(cookies_file=self.cookie_file, **self.kwargs)
-        driver: WebDriver = chrome.driver
+        driver: WebDriver = self.driver
 
         driver.get(page_url)
         time.sleep(5)
@@ -612,17 +611,12 @@ class Account(Facebook, Chrome):
                         return True
 
         self.infinite_scroll(
-            element=driver.find_element(By.ID, "facebook"),
             delay=2.5,
             callback=like,
-            driver=driver,
         )
 
-        driver.quit()
-
     def send_friend_request(self: Self, count: int = 100) -> None:
-        chrome: Chrome = Chrome(cookies_file=self.cookie_file, **self.kwargs)
-        driver: WebDriver = chrome.driver
+        driver: WebDriver = self.driver
 
         driver.get("https://www.facebook.com/friends")
         time.sleep(5)
@@ -694,13 +688,9 @@ class Account(Facebook, Chrome):
                 )
 
         self.infinite_scroll(
-            element=driver.find_element(By.ID, "facebook"),
             delay=2.5,
             callback=send_request,
-            driver=driver,
         )
-
-        driver.quit()
 
     def invite(self: Self, page_url: str, timeout: int = 5) -> None:
         chrome: Chrome = Chrome(cookies_file=self.cookie_file, **self.kwargs)
@@ -882,14 +872,6 @@ class Account(Facebook, Chrome):
                     )
                 )
 
-            if like_count > 0:
-                tasks.append(
-                    threading.Thread(
-                        target=self.like,
-                        args=(page_url, like_count),
-                    )
-                )
-
             if send_invites:
                 tasks.append(
                     threading.Thread(
@@ -898,23 +880,20 @@ class Account(Facebook, Chrome):
                     ),
                 )
 
-            if friend_request_count > 0:
-                tasks.append(
-                    threading.Thread(
-                        target=self.send_friend_request, args=(friend_request_count,)
-                    )
-                )
-
-            if cancel_all_friend_requests:
-                pass
-
-            console.print(tasks)
-
             for task in tasks:
                 task.start()
 
             for task in tasks:
                 task.join()
+
+            if like_count > 0:
+                self.like(page_url, like_count)
+
+            if friend_request_count > 0:
+                self.send_friend_request(friend_request_count)
+
+            if cancel_all_friend_requests:
+                pass
 
             like = Facebook.report[self.username]["like"]
             comment = Facebook.report[self.username]["comment"]
