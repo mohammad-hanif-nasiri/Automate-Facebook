@@ -615,6 +615,7 @@ class Account(Facebook, Chrome):
             element=driver.find_element(By.ID, "facebook"),
             delay=2.5,
             callback=like,
+            driver=driver,
         )
 
         driver.quit()
@@ -696,6 +697,7 @@ class Account(Facebook, Chrome):
             element=driver.find_element(By.ID, "facebook"),
             delay=2.5,
             callback=send_request,
+            driver=driver,
         )
 
         driver.quit()
@@ -1049,7 +1051,12 @@ class Account(Facebook, Chrome):
                 except Exception:
                     logger.error(f"User <b>{self.username}</b> - An error occurred!")
 
-            self.infinite_scroll(child_element, delay=2.5, callback=cancel)
+            self.infinite_scroll(
+                child_element,
+                delay=2.5,
+                callback=cancel,
+                driver=driver,
+            )
 
         except Exception:
             driver.quit()
