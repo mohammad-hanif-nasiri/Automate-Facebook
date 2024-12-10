@@ -584,8 +584,10 @@ class Account(Facebook, Chrome):
 
         driver.get(page_url)
         time.sleep(5)
+        print("HI 1")
 
         def like():
+            print("HI 2")
             like_buttons: List[WebElement] = driver.find_elements(
                 By.XPATH, "//div[@aria-label='Like' and @role='button']"
             )
@@ -602,12 +604,11 @@ class Account(Facebook, Chrome):
 
                     time.sleep(random.random())
 
+                    Facebook.report[self.username]["like"] += 1
                 except Exception:
                     logger.error(f"User <b>{self.username}</b> - An error occurred!")
 
                 else:
-                    Facebook.report[self.username]["like"] += 1
-
                     if Facebook.report[self.username]["like"] > count:
                         return True
 
