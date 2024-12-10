@@ -55,13 +55,10 @@ class Chrome:
         )
 
         if cookies_file := kwargs.get("cookies_file", None):
+            self.driver.get("https://facebook.com")
+
             if os.path.exists(cookies_file):
                 cookies = pickle.load(open(cookies_file, "rb"))
 
                 for cookie in cookies:
-                    domain = cookie["domain"]
-
-                    if domain not in self.driver.current_url:
-                        self.driver.get(domain)
-
                     self.driver.add_cookie(cookie)
