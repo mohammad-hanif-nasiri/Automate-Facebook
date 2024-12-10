@@ -312,7 +312,12 @@ class Account(Facebook, Chrome):
         self: Self, page_url: str, timeout: int = 5
     ) -> Union[str, None]:
         self.driver.get(page_url)
-        self.infinite_scroll(scroll_limit=2, delay=2.5)
+        self.infinite_scroll(
+            element=self.driver.find_element(By.ID, "facebook"),
+            scroll_limit=2,
+            delay=2.5,
+            driver=self.driver,
+        )
         time.sleep(5)
 
         self.driver.execute_script(
