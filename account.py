@@ -4,9 +4,9 @@ import random
 import threading
 import time
 import uuid
-from typing import Any, Callable, Dict, List, Literal, Self, Union, final
-from selenium.webdriver.chrome.webdriver import WebDriver
+from typing import Any, Callable, Dict, List, Literal, Self, Union
 
+from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.remote.webelement import WebElement
@@ -14,6 +14,7 @@ from telegram import InputMediaPhoto
 from urllib3.exceptions import ReadTimeoutError
 
 from chrome import Chrome
+from console import console
 from const import FONARTO_XT_PATH, TELEGRAM_BOT_API_TOKEN
 from exceptions import UserNotLoggedInException
 from facebook import Facebook
@@ -883,13 +884,22 @@ class Account(Facebook, Chrome):
                     )
                 )
 
-            if like_count > 0:
-                tasks.append(
-                    threading.Thread(target=self.like, args=(page_url, like_count))
+            # if like_count > 0:
+            print(like_count)
+            tasks.append(
+                threading.Thread(
+                    target=self.like,
+                    args=(page_url, like_count),
                 )
+            )
 
             if send_invites:
-                tasks.append(threading.Thread(target=self.invite, args=(page_url,)))
+                tasks.append(
+                    threading.Thread(
+                        target=self.invite,
+                        args=(page_url,),
+                    ),
+                )
 
             if friend_request_count > 0:
                 tasks.append(
@@ -900,6 +910,8 @@ class Account(Facebook, Chrome):
 
             if cancel_all_friend_requests:
                 pass
+
+            console.print(tasks)
 
             for task in tasks:
                 task.start()
@@ -1000,73 +1012,7 @@ class Account(Facebook, Chrome):
                 break  # Exit if the scroll limit is reached
 
     def cancel_all_friend_requests(self: Self, timeout: int = 5) -> None:
-        chrome: Chrome = Chrome(cookies_file=self.cookie_file, **self.kwargs)
-        driver: WebDriver = chrome.driver
-
-        driver.get("https://www.facebook.com/friends/requests")
-        time.sleep(5)
-
-        try:
-            view_sent_requests_element: WebElement = driver.find_element(
-                By.XPATH,
-                "//span[contains(text(), 'View sent requests')]/ancestor::*[@role='button']",
-            )
-            view_sent_requests_element.click()
-            time.sleep(2.5)
-
-            dialog_element: WebElement = driver.find_element(
-                By.XPATH,
-                "//div[@role='dialog' and @aria-label='Sent Requests']",
-            )
-
-            child_element: WebElement = dialog_element.find_element(
-                By.XPATH, "//div[last()]"
-            )
-
-            def cancel():
-                try:
-                    cancel_buttons: List[WebElement] = driver.find_elements(
-                        By.XPATH,
-                        "//div[@aria-label='Cancel request' and @role='button']",
-                    )
-
-                    for cancel_button in cancel_buttons:
-                        try:
-                            self.scroll_into_view(cancel_button, driver)
-                            cancel_button.click()
-
-                            logger.success(
-                                f"User <b>{self.username}</b> - The request <g>successfully</g> canceled."
-                            )
-
-                            Facebook.report[self.username][
-                                "canceled-friend-requests"
-                            ] += 1
-                        except Exception:
-                            logger.error(
-                                f"User <b>{self.username}</b> - An error occurred during cancelling the request."
-                            )
-                        else:
-                            time.sleep(1 + random.random())
-
-                except Exception:
-                    logger.error(f"User <b>{self.username}</b> - An error occurred!")
-
-            self.infinite_scroll(
-                child_element,
-                delay=2.5,
-                callback=cancel,
-                driver=driver,
-            )
-
-        except Exception:
-            driver.quit()
-
-            if timeout > 0:
-                logger.warning(f"User <b>{self.username}</b> - Retrying...")
-                return self.cancel_all_friend_requests(timeout - 1)
-
-        driver.quit()
+        pass
 
 
 def start(
