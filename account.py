@@ -554,7 +554,9 @@ class Account(Facebook, Chrome):
                                     "//span[contains(text(), 'Unable to post comment.')]",
                                 )
 
-                                break
+                                driver.quit()
+
+                                return
 
                             except Exception:
                                 logger.success(
