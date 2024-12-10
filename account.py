@@ -387,7 +387,11 @@ class Account(Facebook, Chrome):
     def share(
         self: Self, post_url: str, groups: List[str], count: int, timeout: int = 5
     ) -> None:
-        chrome: Chrome = Chrome(cookies_file=self.cookie_file, **self.kwargs)
+        chrome: Chrome = Chrome(
+            cookies_file=self.cookie_file,
+            site_url="https://facebook.com",
+            **self.kwargs,
+        )
         driver: WebDriver = chrome.driver
 
         driver.get(post_url)
@@ -493,7 +497,11 @@ class Account(Facebook, Chrome):
         driver.quit()
 
     def comment(self: Self, post_url: str, count: int = 50, timeout: int = 5) -> None:
-        chrome: Chrome = Chrome(cookies_file=self.cookie_file, **self.kwargs)
+        chrome: Chrome = Chrome(
+            cookies_file=self.cookie_file,
+            site_url="https://facebook.com",
+            **self.kwargs,
+        )
         driver: WebDriver = chrome.driver
 
         driver.get(post_url)
@@ -693,7 +701,11 @@ class Account(Facebook, Chrome):
         )
 
     def invite(self: Self, page_url: str, timeout: int = 5) -> None:
-        chrome: Chrome = Chrome(cookies_file=self.cookie_file, **self.kwargs)
+        chrome: Chrome = Chrome(
+            cookies_file=self.cookie_file,
+            site_url="https://facebook.com",
+            **self.kwargs,
+        )
         driver: WebDriver = chrome.driver
 
         driver.get(page_url)
