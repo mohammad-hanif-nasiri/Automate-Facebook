@@ -1,5 +1,7 @@
 import os
 import pickle
+import random
+import time
 from typing import Self
 
 from selenium import webdriver
@@ -56,6 +58,7 @@ class Chrome:
 
         if cookies_file := kwargs.get("cookies_file", None):
             self.driver.get("https://facebook.com")
+            time.sleep(5 + random.random())
 
             if os.path.exists(cookies_file):
                 cookies = pickle.load(open(cookies_file, "rb"))
