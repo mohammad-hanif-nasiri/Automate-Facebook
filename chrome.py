@@ -57,11 +57,12 @@ class Chrome:
         )
 
         if cookies_file := kwargs.get("cookies_file", None):
-            self.driver.get("https://facebook.com")
-            time.sleep(5 + random.random())
+            if site_url := kwargs.get("site_url", None):
+                self.driver.get(site_url)
+                time.sleep(5 + random.random())
 
-            if os.path.exists(cookies_file):
-                cookies = pickle.load(open(cookies_file, "rb"))
+                if os.path.exists(cookies_file):
+                    cookies = pickle.load(open(cookies_file, "rb"))
 
-                for cookie in cookies:
-                    self.driver.add_cookie(cookie)
+                    for cookie in cookies:
+                        self.driver.add_cookie(cookie)
