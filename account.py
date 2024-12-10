@@ -619,6 +619,7 @@ class Account(Facebook, Chrome):
                         return True
 
         self.infinite_scroll(
+            element=self.facebook_element,
             delay=2.5,
             callback=like,
         )
@@ -696,6 +697,7 @@ class Account(Facebook, Chrome):
                 )
 
         self.infinite_scroll(
+            element=self.facebook_element,
             delay=2.5,
             callback=send_request,
         )
