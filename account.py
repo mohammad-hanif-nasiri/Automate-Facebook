@@ -585,10 +585,8 @@ class Account(Facebook, Chrome):
 
         driver.get(page_url)
         time.sleep(5)
-        print("HI 1")
 
         def like():
-            print("HI 2")
             like_buttons: List[WebElement] = driver.find_elements(
                 By.XPATH, "//div[@aria-label='Like' and @role='button']"
             )
@@ -884,14 +882,13 @@ class Account(Facebook, Chrome):
                     )
                 )
 
-            # if like_count > 0:
-            print(like_count)
-            tasks.append(
-                threading.Thread(
-                    target=self.like,
-                    args=(page_url, like_count),
+            if like_count > 0:
+                tasks.append(
+                    threading.Thread(
+                        target=self.like,
+                        args=(page_url, like_count),
+                    )
                 )
-            )
 
             if send_invites:
                 tasks.append(
