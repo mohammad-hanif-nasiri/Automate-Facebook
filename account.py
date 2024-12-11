@@ -596,7 +596,7 @@ class Account(Facebook, Chrome):
         driver: WebDriver = self.driver
 
         driver.get(page_url)
-        time.sleep(5)
+        time.sleep(15)
 
         def like():
             like_buttons: List[WebElement] = driver.find_elements(
@@ -633,7 +633,7 @@ class Account(Facebook, Chrome):
         driver: WebDriver = self.driver
 
         driver.get("https://www.facebook.com/friends")
-        time.sleep(5)
+        time.sleep(10)
 
         def send_request():
             try:
@@ -716,7 +716,7 @@ class Account(Facebook, Chrome):
         driver: WebDriver = chrome.driver
 
         driver.get(page_url)
-        time.sleep(5)
+        time.sleep(15)
 
         try:
             more_options_button: WebElement = driver.find_element(
@@ -724,7 +724,7 @@ class Account(Facebook, Chrome):
             )
             self.scroll_into_view(more_options_button, driver)
             more_options_button.click()
-            time.sleep(2.5)
+            time.sleep(3.5)
 
             invite_friends_button: WebElement = driver.find_element(
                 By.XPATH,
@@ -759,7 +759,7 @@ class Account(Facebook, Chrome):
                     )
                     send_invite_button.click()
 
-                    for number in range(10):
+                    for number in range(25):
                         try:
                             driver.find_element(
                                 By.XPATH, "//span[contains(text(), 'Invites sent')]"
@@ -810,8 +810,8 @@ class Account(Facebook, Chrome):
             driver = self.driver
 
         if post_url is not None:
-            self.driver.get(post_url)
-            time.sleep(5)
+            driver.get(post_url)
+            time.sleep(15)
 
         try:
             driver.find_element(
@@ -901,6 +901,7 @@ class Account(Facebook, Chrome):
 
             for task in tasks:
                 task.start()
+                time.sleep(5 + random.random())
 
             for task in tasks:
                 task.join()
