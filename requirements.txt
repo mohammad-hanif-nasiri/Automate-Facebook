@@ -11,3 +11,5 @@ numerize
 fake_useragent
 python-telegram-bot
 pillow
+flask
+pyngrok
