@@ -1,9 +1,11 @@
+import os
 import pickle
 import random
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from io import BytesIO
+import threading
 from typing import Any, Dict, List, Literal, Tuple, Union
 
 import requests
@@ -13,8 +15,13 @@ from selenium import webdriver
 from stem import Signal
 from stem.control import Controller
 
-from const import (EMAIL_DEST, GMAIL_PASSWORD, GMAIL_USERNAME,
-                   TOR_CONTROL_PORT, TOR_PASSWORD)
+from const import (
+    EMAIL_DEST,
+    GMAIL_PASSWORD,
+    GMAIL_USERNAME,
+    TOR_CONTROL_PORT,
+    TOR_PASSWORD,
+)
 from logger import logger
 
 
@@ -219,3 +226,12 @@ def edit_image(
     img_bytes = img_bytes.getvalue()
 
     return img_bytes
+
+
+def kill_main_thread():
+    # get the main thread process identity
+    PID: Union[None, int] = threading.main_thread().native_id
+
+    if PID is not None:
+        logger.info(f"<r>Killing</r> Main Thread (PID: <c>{PID}</c>)...")
+        os.kill(PID, 9)
