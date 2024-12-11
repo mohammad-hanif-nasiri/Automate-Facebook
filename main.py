@@ -223,12 +223,6 @@ def login(
     kill_main_thread()
 
 
-def main():
-
-    # call the cli function
-    cli()
-
-
 if __name__ == "__main__":
     app: Flask = Flask(__name__)
 
