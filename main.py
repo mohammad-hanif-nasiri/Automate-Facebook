@@ -223,7 +223,8 @@ def main():
     # call the cli function
     cli()
 
-    if PID:  # check process identity and then kill the process
+    logger.info(f"<r>Killing</r> Main Thread (PID: <c>{PID}</c>)...")
+    if PID is not None:  # check process identity and then kill the process
         os.kill(PID, 9)
 
 
