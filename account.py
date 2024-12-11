@@ -395,10 +395,10 @@ class Account(Facebook, Chrome):
         driver: WebDriver = chrome.driver
 
         driver.get(post_url)
-        time.sleep(5)
+        time.sleep(10)
 
         suffix: str = "//span[contains(text(), 'Share')]/ancestor::*[@role='button']"
-        prefix: str = self.get_selectors_prefix(suffix=suffix)
+        prefix: str = self.get_selectors_prefix(suffix=suffix, driver=driver)
 
         try:
             while True:
@@ -422,7 +422,7 @@ class Account(Facebook, Chrome):
                 )
                 self.scroll_into_view(share_button, driver)
                 share_button.click()
-                time.sleep(2.5)
+                time.sleep(3.5)
 
                 # Select the "Share to a Group" option
                 share_to_group_button = driver.find_element(
@@ -430,21 +430,21 @@ class Account(Facebook, Chrome):
                     f"{prefix}//span[contains(text(), 'Group')]/ancestor::*[@role='button']",
                 )
                 share_to_group_button.click()
-                time.sleep(2.5)
+                time.sleep(3.5)
 
                 search_input = driver.find_element(
                     By.XPATH,
                     f'{prefix}//input[@placeholder="Search for groups"]',
                 )
                 search_input.send_keys(group := random.choice(groups))
-                time.sleep(2.5)
+                time.sleep(3.5)
 
                 group_elem = driver.find_element(
                     By.XPATH,
                     f"{prefix}//span[contains(text(), '{group}')]/ancestor::*[@role='button']",
                 )
                 group_elem.click()
-                time.sleep(2.5)
+                time.sleep(3.5)
 
                 post_button = driver.find_element(
                     By.XPATH, f"{prefix}//div[@aria-label='Post']"
@@ -505,7 +505,7 @@ class Account(Facebook, Chrome):
         driver: WebDriver = chrome.driver
 
         driver.get(post_url)
-        time.sleep(5)
+        time.sleep(10)
 
         # Retrieve comments random comments
         if comments := get_comments():
@@ -576,6 +576,8 @@ class Account(Facebook, Chrome):
                         break
 
             except Exception:
+                driver.quit()
+
                 logger.error(
                     f"User <b>{self.username!r}</b> - <r>Failed</r> to locate or interact with comment textbox."
                 )
