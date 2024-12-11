@@ -395,7 +395,7 @@ class Account(Facebook, Chrome):
         driver: WebDriver = chrome.driver
 
         driver.get(post_url)
-        time.sleep(10)
+        time.sleep(15)
 
         suffix: str = "//span[contains(text(), 'Share')]/ancestor::*[@role='button']"
         prefix: str = self.get_selectors_prefix(suffix=suffix, driver=driver)
