@@ -2,7 +2,7 @@ import os
 import pickle
 import random
 import time
-from typing import Self
+from typing import List, Self
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -12,6 +12,15 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 class Chrome:
     path: str = ChromeDriverManager().install()
+
+    windows: List[Self] = []
+
+    def __new__(cls, *args, **kwargs) -> Self:
+        cls.windows.append(
+            instance := super().__new__(cls),
+        )
+
+        return instance
 
     def __init__(self: Self, **kwargs) -> None:
 
