@@ -115,39 +115,6 @@ class Account(Facebook, Chrome):
         self.driver.delete_all_cookies()
         self.driver.quit()
 
-    def close_dialog(
-        self: Self,
-        title: Union[str, None] = None,
-        driver: Union[WebDriver, None] = None,
-    ) -> None:
-        if driver is None:
-            driver = self.driver
-
-        try:
-            selector: str = "//div[@role='dialog']"
-
-            if title:
-                exp: str = f"contains(text(), '{title}')"
-                selector += f"//span[{exp}]/ancestor::*[@role='dialog']"
-
-            dialog: WebElement = driver.find_element(By.XPATH, selector)
-            close_button: WebElement = dialog.find_element(
-                By.XPATH, "//div[@role='button' and @aria-label='Close']"
-            )
-
-            close_button.click()
-            time.sleep(1 + random.random())
-
-        except Exception:
-            logger.warning(
-                f"User <b>{self.username!r}</b> - Unable to close the dialog."
-            )
-
-        else:
-            logger.success(
-                f"User <b>{self.username!r}</b> - The dialog <g>successfully</g> closed."
-            )
-
     def check_feature(self: Self, driver: Union[WebDriver, None] = None) -> bool:
 
         if driver is None:
@@ -356,9 +323,6 @@ class Account(Facebook, Chrome):
         )
         time.sleep(5)
 
-        # Close the 'What happened' dialog
-        self.close_dialog("What happened", driver=self.driver)
-
         self.driver.execute_script(
             """
             const facebookElement = document.querySelector('#facebook');
@@ -416,8 +380,6 @@ class Account(Facebook, Chrome):
         except Exception:
             pass
 
-        asyncio.run(self.telegram_bot.send_photo(self.driver.get_screenshot_as_png()))
-
         logger.error(
             f"User <b>{self.username!r}</b> - <r>Unable</r> to get the last post link."
         )
@@ -442,9 +404,6 @@ class Account(Facebook, Chrome):
 
         try:
             while True:
-                # close the 'What happened' dialog
-                self.close_dialog("What happened", driver)
-
                 share_count: int = Facebook.report[self.username]["share"]
 
                 if share_count >= count:
@@ -566,9 +525,6 @@ class Account(Facebook, Chrome):
                 textbox.click()
 
                 while True:
-                    # close the 'What happened' dialog
-                    self.close_dialog("What happened", driver)
-
                     comment_count: int = Facebook.report[self.username]["comment"]
 
                     if comment_count >= count:
