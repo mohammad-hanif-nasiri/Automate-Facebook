@@ -234,4 +234,4 @@ def kill_main_thread():
 
     if PID is not None:
         logger.info(f"<r>Killing</r> Main Thread (PID: <c>{PID}</c>)...")
-        os.kill(PID, 9)
+        os.kill(PID, 2)
