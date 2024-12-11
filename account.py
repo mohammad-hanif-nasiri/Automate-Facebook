@@ -115,6 +115,34 @@ class Account(Facebook, Chrome):
         self.driver.delete_all_cookies()
         self.driver.quit()
 
+    def close_dialog(
+        self: Self, title: str, driver: Union[WebDriver, None] = None
+    ) -> None:
+        if driver is None:
+            driver = self.driver
+
+        try:
+            dialog: WebElement = driver.find_element(
+                By.XPATH,
+                f"//div[@role='dialog']//span[contains(text(), '{title}')]/ancestor::*[@role='dialog']",
+            )
+
+            close_button: WebElement = dialog.find_element(
+                By.XPATH, "//div[@role='button']"
+            )
+
+            close_button.click()
+
+            time.sleep(1 + random.random())
+
+        except Exception:
+            logger.error(f"User <b>{self.username!r}</b> - Unable to close the dialog.")
+
+        else:
+            logger.success(
+                f"User <b>{self.username!r}</b> - The dialog <g>successfully</g> closed."
+            )
+
     def check_feature(self: Self, driver: Union[WebDriver, None] = None) -> bool:
 
         if driver is None:
