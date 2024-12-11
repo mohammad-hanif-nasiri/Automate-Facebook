@@ -12,6 +12,7 @@ from account import start
 from chrome import Chrome
 from console import console
 from facebook import Facebook
+from functions import kill_main_thread
 from logger import logger
 from login import Login
 
@@ -188,6 +189,9 @@ def account(
 
     Facebook.send_report()  # send report
 
+    # kill the main thread
+    kill_main_thread()
+
 
 @cli.command()
 @click.option(
@@ -215,17 +219,14 @@ def login(
 
     login.login(username, password)
 
+    # kill the main thread
+    kill_main_thread()
+
 
 def main():
-    # get the main thread process identity
-    PID: Union[None, int] = threading.main_thread().native_id
 
     # call the cli function
     cli()
-
-    logger.info(f"<r>Killing</r> Main Thread (PID: <c>{PID}</c>)...")
-    if PID is not None:  # check process identity and then kill the process
-        os.kill(PID, 9)
 
 
 if __name__ == "__main__":
@@ -235,7 +236,7 @@ if __name__ == "__main__":
     def windows():
         return render_template("report.html", report=Facebook.report)
 
-    thread: threading.Thread = threading.Thread(target=main)
+    thread: threading.Thread = threading.Thread(target=cli)
     thread.start()
 
     port: int = 5000
