@@ -822,9 +822,11 @@ class Account(Facebook, Chrome):
 
             return "//div[@role='dialog']"
         except Exception:
-            logger.warning(f"User <b>{self.username}</b> - Dialog Not Found!")
+            pass
 
-            return str()
+        logger.warning(f"User <b>{self.username}</b> - Dialog Not Found!")
+
+        return ""
 
     def start(
         self: Self,
