@@ -35,6 +35,21 @@ users: List[Dict[str, Any]] = [
         "telegram_id": 5906633627,
     },
     {
+        "page_url": "https://www.facebook.com/profile.php?id=100063642170837",
+        "username": "hanif.nasiri.1967",
+        "credentials": {
+            "username": "hanif.nasiri.1967",
+            "password": "info@123",
+        },
+        "groups": ["Math"],
+        "share_count": 100,
+        "comment_count": 50,
+        "like_count": 0,
+        "friend_request_count": 0,
+        "send_invites": False,
+        "telegram_id": 5906633627,
+    },
+    {
         "page_url": "https://www.facebook.com/CityComputerStore",
         "username": "milad.noori.7860",
         "credentials": None,
