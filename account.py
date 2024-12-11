@@ -479,8 +479,16 @@ class Account(Facebook, Chrome):
             driver.quit()
 
             logger.error(
-                f"User <b>{self.username!r}</b> - An <r>error</r> occurred during sharing the post!"
+                msg := f"User <b>{self.username!r}</b> - An <r>error</r> occurred during sharing the post!"
             )
+
+            asyncio.run(
+                self.telegram_bot.send_photo(
+                    self.driver.get_screenshot_as_png(),
+                    caption=msg,
+                )
+            )
+
             logger.info(
                 f"User <b>{self.username!r}</b> - <b>Retrying</b> to share the post."
             )
