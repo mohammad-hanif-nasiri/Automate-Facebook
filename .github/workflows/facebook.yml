@@ -84,6 +84,10 @@ jobs:
 
       - name: Execute Facebook Bot for Manual Trigger
         if: ${{ github.event_name == 'workflow_dispatch' }}
+
+        env:
+          NGROK_TOKEN: ${{ secrets.NGROK_TOKEN }}
+
         run: |
           SEND_INVITES_FLAG=""
           if [ "${{ github.event.inputs.send_invites }}" == "true" ]; then
