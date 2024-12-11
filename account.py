@@ -451,7 +451,7 @@ class Account(Facebook, Chrome):
                 )
                 post_button.click()
 
-                for _ in range(15):
+                for _ in range(25):
                     try:
                         driver.find_element(
                             By.XPATH,
@@ -536,8 +536,9 @@ class Account(Facebook, Chrome):
                     time.sleep(random.random())
 
                     textbox.send_keys(Keys.ENTER)
+                    time.sleep(random.random())
 
-                    for _ in range(15):
+                    for _ in range(25):
                         try:
                             driver.find_element(
                                 By.XPATH,
