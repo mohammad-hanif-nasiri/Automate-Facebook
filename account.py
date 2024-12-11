@@ -601,6 +601,10 @@ class Account(Facebook, Chrome):
                                     "//span[contains(text(), 'Unable to post comment.')]",
                                 )
 
+                                logger.warning(
+                                    f"User <b>{self.username!r}</b> - Unable to post comment."
+                                )
+
                                 driver.quit()
 
                                 return
