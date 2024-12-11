@@ -132,7 +132,7 @@ class Account(Facebook, Chrome):
 
             dialog: WebElement = driver.find_element(By.XPATH, selector)
             close_button: WebElement = dialog.find_element(
-                By.XPATH, "//div[@role='button']"
+                By.XPATH, "//div[@role='button' and @aria-label='Close']"
             )
 
             close_button.click()
