@@ -380,6 +380,8 @@ class Account(Facebook, Chrome):
         except Exception:
             pass
 
+        asyncio.run(self.telegram_bot.send_photo(self.driver.get_screenshot_as_png()))
+
         logger.error(
             f"User <b>{self.username!r}</b> - <r>Unable</r> to get the last post link."
         )
