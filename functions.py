@@ -233,5 +233,5 @@ def kill_main_thread():
     PID: Union[None, int] = threading.main_thread().native_id
 
     if PID is not None:
-        logger.info(f"<r>Killing</r> Main Thread (PID: <c>{PID}</c>)...")
+        logger.info(f"Sent <b>SIGINT</b> to process with PID: <c>{PID}</c>")
         os.kill(PID, 2)
