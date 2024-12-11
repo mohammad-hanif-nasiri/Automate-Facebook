@@ -372,7 +372,7 @@ class Account(Facebook, Chrome):
 
             if link:
                 logger.success(
-                    f"User <b>{self.username!r}</b> - Successfully the last post link ({link}) retrieved."
+                    f"User <b>{self.username}</b> - Successfully the last post link ({link}) retrieved."
                 )
 
                 return link
@@ -381,7 +381,7 @@ class Account(Facebook, Chrome):
             pass
 
         logger.error(
-            f"User <b>{self.username!r}</b> - <r>Unable</r> to get the last post link."
+            f"User <b>{self.username}</b> - <r>Unable</r> to get the last post link."
         )
 
         return self.get_last_post_url(page_url, timeout - 1) if timeout > 0 else None
@@ -408,13 +408,13 @@ class Account(Facebook, Chrome):
 
                 if share_count >= count:
                     logger.success(
-                        f"User <b>{self.username!r}</b> - <g>Successfully</g> the sharing process completed!"
+                        f"User <b>{self.username}</b> - <g>Successfully</g> the sharing process completed!"
                     )
 
                     break
 
                 logger.info(
-                    f"User <b>{self.username!r}</b> - Preparing to share the last post... (Attempt <c>{share_count+1}</c> of <c>{count}</c>)"
+                    f"User <b>{self.username}</b> - Preparing to share the last post... (Attempt <c>{share_count+1}</c> of <c>{count}</c>)"
                 )
 
                 # Find the first "Share" button on the page
@@ -460,7 +460,7 @@ class Account(Facebook, Chrome):
                             "//span[contains(text(), 'Shared to your group.')]",
                         )
                         logger.success(
-                            f"User <b>{self.username!r}</b> - The post was <b><g>successfully</g></b> shared in the group <b>{group!r}</b>."
+                            f"User <b>{self.username}</b> - The post was <b><g>successfully</g></b> shared in the group <b>{group!r}</b>."
                         )
 
                         # Increment share count in report
@@ -479,7 +479,7 @@ class Account(Facebook, Chrome):
             driver.quit()
 
             logger.error(
-                msg := f"User <b>{self.username!r}</b> - An <r>error</r> occurred during sharing the post!"
+                msg := f"User <b>{self.username}</b> - An <r>error</r> occurred during sharing the post!"
             )
 
             asyncio.run(
@@ -490,7 +490,7 @@ class Account(Facebook, Chrome):
             )
 
             logger.info(
-                f"User <b>{self.username!r}</b> - <b>Retrying</b> to share the post."
+                f"User <b>{self.username}</b> - <b>Retrying</b> to share the post."
             )
 
             if timeout > 0:
@@ -537,7 +537,7 @@ class Account(Facebook, Chrome):
 
                     if comment_count >= count:
                         logger.info(
-                            f"User <b>{self.username!r}</b> - <b>Completed</b> commenting process."
+                            f"User <b>{self.username}</b> - <b>Completed</b> commenting process."
                         )
 
                         break
@@ -566,7 +566,7 @@ class Account(Facebook, Chrome):
                                 )
 
                                 logger.warning(
-                                    f"User <b>{self.username!r}</b> - Unable to post comment."
+                                    f"User <b>{self.username}</b> - Unable to post comment."
                                 )
 
                                 driver.quit()
@@ -575,7 +575,7 @@ class Account(Facebook, Chrome):
 
                             except Exception:
                                 logger.success(
-                                    f"User <b>{self.username!r}</b> - Comment <b>{text!r}</b> <g>successfully</g> posted. "
+                                    f"User <b>{self.username}</b> - Comment <b>{text!r}</b> <g>successfully</g> posted. "
                                     f"(Total Comments: {comment_count+1} of {count})."
                                 )
 
@@ -593,7 +593,7 @@ class Account(Facebook, Chrome):
                 driver.quit()
 
                 logger.error(
-                    f"User <b>{self.username!r}</b> - <r>Failed</r> to locate or interact with comment textbox."
+                    f"User <b>{self.username}</b> - <r>Failed</r> to locate or interact with comment textbox."
                 )
                 if timeout > 0:
                     return self.comment(post_url, count, timeout - 1)
