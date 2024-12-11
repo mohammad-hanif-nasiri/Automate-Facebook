@@ -116,23 +116,26 @@ class Account(Facebook, Chrome):
         self.driver.quit()
 
     def close_dialog(
-        self: Self, title: str, driver: Union[WebDriver, None] = None
+        self: Self,
+        title: Union[str, None] = None,
+        driver: Union[WebDriver, None] = None,
     ) -> None:
         if driver is None:
             driver = self.driver
 
         try:
-            dialog: WebElement = driver.find_element(
-                By.XPATH,
-                f"//div[@role='dialog']//span[contains(text(), '{title}')]/ancestor::*[@role='dialog']",
-            )
+            selector: str = "//div[@role='dialog']"
 
+            if title:
+                exp: str = f"contains(text(), '{title}')"
+                selector += f"//span[{exp}]/ancestor::*[@role='dialog']"
+
+            dialog: WebElement = driver.find_element(By.XPATH, selector)
             close_button: WebElement = dialog.find_element(
                 By.XPATH, "//div[@role='button']"
             )
 
             close_button.click()
-
             time.sleep(1 + random.random())
 
         except Exception:
@@ -350,6 +353,9 @@ class Account(Facebook, Chrome):
             driver=self.driver,
         )
         time.sleep(5)
+
+        # Close the 'What happened' dialog
+        self.close_dialog("What happened", driver=self.driver)
 
         self.driver.execute_script(
             """
