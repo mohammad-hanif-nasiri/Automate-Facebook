@@ -4,8 +4,13 @@ import threading
 from typing import List, Union
 
 import click
+from flask import Flask, Response, render_template
+from pyngrok import ngrok
+from selenium.webdriver.chrome.webdriver import WebDriver
 
 from account import start
+from chrome import Chrome
+from console import console
 from facebook import Facebook
 from logger import logger
 from login import Login
@@ -211,5 +216,36 @@ def login(
     login.login(username, password)
 
 
-if __name__ == "__main__":
+def main():
+    # get the main thread process identity
+    PID: Union[None, int] = threading.main_thread().native_id
+
+    # call the cli function
     cli()
+
+    if PID:  # check process identity and then kill the process
+        os.kill(PID, 9)
+
+
+if __name__ == "__main__":
+    app: Flask = Flask(__name__)
+
+    @app.route("/report")
+    def windows():
+        return render_template("report.html", report=Facebook.report)
+
+    thread: threading.Thread = threading.Thread(target=main)
+    thread.start()
+
+    port: int = 5000
+
+    if token := os.getenv("NGROK_TOKEN"):
+        ngrok.set_auth_token(token)
+        tunnel = ngrok.connect(f"{port}")  # Open an ngrok tunnel to the port
+        logger.info(
+            "Public <bold>URL</bold>: <bold><cyan>{}</cyan></bold>".format(
+                tunnel.public_url
+            )
+        )  # Print the public URL
+
+    app.run(port=port)
