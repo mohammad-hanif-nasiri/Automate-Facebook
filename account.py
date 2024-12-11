@@ -139,7 +139,9 @@ class Account(Facebook, Chrome):
             time.sleep(1 + random.random())
 
         except Exception:
-            logger.error(f"User <b>{self.username!r}</b> - Unable to close the dialog.")
+            logger.warning(
+                f"User <b>{self.username!r}</b> - Unable to close the dialog."
+            )
 
         else:
             logger.success(
@@ -440,6 +442,9 @@ class Account(Facebook, Chrome):
 
         try:
             while True:
+                # close the 'What happened' dialog
+                self.close_dialog("What happened", driver)
+
                 share_count: int = Facebook.report[self.username]["share"]
 
                 if share_count >= count:
@@ -561,6 +566,9 @@ class Account(Facebook, Chrome):
                 textbox.click()
 
                 while True:
+                    # close the 'What happened' dialog
+                    self.close_dialog("What happened", driver)
+
                     comment_count: int = Facebook.report[self.username]["comment"]
 
                     if comment_count >= count:
