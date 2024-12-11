@@ -670,7 +670,7 @@ class Account(Facebook, Chrome):
                     logger.error(f"User <b>{self.username}</b> - An error occurred!")
 
                 else:
-                    if Facebook.report[self.username]["like"] > count:
+                    if Facebook.report[self.username]["like"] >= count:
                         return True
 
         self.infinite_scroll(
