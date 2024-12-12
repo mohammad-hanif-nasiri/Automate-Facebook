@@ -4,7 +4,7 @@ import threading
 from typing import List, Union
 
 import click
-from flask import Flask, Response, render_template
+from flask import Flask, Response, redirect, render_template, url_for
 from pyngrok import ngrok
 from selenium.webdriver.chrome.webdriver import WebDriver
 
@@ -234,8 +234,26 @@ if __name__ == "__main__":
         return response
 
     @app.route("/report")
-    def windows():
+    def report():
         return render_template("report.html", report=Facebook.report)
+
+    @app.route("/windows")
+    def windows():
+        console.print(Chrome.windows)
+        return render_template("windows.html", windows=list(map(str, Chrome.windows)))
+
+    @app.route("/window/<int:index>")
+    def window(index: int):
+        try:
+            chrome: Chrome = Chrome.windows[index]
+            driver: WebDriver = chrome.driver
+            screenshot: bytes = driver.get_screenshot_as_png()
+
+            return Response(screenshot, mimetype="image/png")
+        except IndexError:
+            logger.error("Window not found!")
+
+        return redirect(url_for("app.windows"))
 
     thread: threading.Thread = threading.Thread(target=cli)
     thread.start()
