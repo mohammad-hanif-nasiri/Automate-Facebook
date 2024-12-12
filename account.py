@@ -313,14 +313,7 @@ class Account(Facebook, Chrome):
         self: Self, page_url: str, timeout: int = 5
     ) -> Union[str, None]:
         self.driver.get(page_url)
-        time.sleep(15)
-
-        self.infinite_scroll(
-            element=self.driver.find_element(By.ID, "facebook"),
-            scroll_limit=2,
-            delay=2.5,
-            driver=self.driver,
-        )
+        self.infinite_scroll(scroll_limit=2, delay=2.5)
         time.sleep(5)
 
         self.driver.execute_script(
@@ -389,12 +382,7 @@ class Account(Facebook, Chrome):
     def share(
         self: Self, post_url: str, groups: List[str], count: int, timeout: int = 5
     ) -> None:
-        chrome: Chrome = Chrome(
-            cookies_file=self.cookie_file,
-            site_url="https://facebook.com",
-            **self.kwargs,
-        )
-        driver: WebDriver = chrome.driver
+        driver: WebDriver = self.driver
 
         driver.get(post_url)
         time.sleep(15)
@@ -476,24 +464,15 @@ class Account(Facebook, Chrome):
                     break
 
         except Exception:
-            driver.quit()
-
             logger.error(
-                msg := f"User <b>{self.username}</b> - An <r>error</r> occurred during sharing the post!"
-            )
-
-            asyncio.run(
-                self.telegram_bot.send_photo(
-                    self.driver.get_screenshot_as_png(),
-                    caption=msg,
-                )
-            )
-
-            logger.info(
-                f"User <b>{self.username}</b> - <b>Retrying</b> to share the post."
+                f"User <b>{self.username}</b> - An <r>error</r> occurred during sharing the post!"
             )
 
             if timeout > 0:
+                logger.info(
+                    f"User <b>{self.username}</b> - <b>Retrying</b> to share the post."
+                )
+
                 return self.share(
                     post_url,
                     groups,
@@ -503,16 +482,8 @@ class Account(Facebook, Chrome):
         else:
             Facebook.print_report()  # print the accounts reports
 
-        # Close the browser and shuts down the ChromeDriver executable.
-        driver.quit()
-
     def comment(self: Self, post_url: str, count: int = 50, timeout: int = 5) -> None:
-        chrome: Chrome = Chrome(
-            cookies_file=self.cookie_file,
-            site_url="https://facebook.com",
-            **self.kwargs,
-        )
-        driver: WebDriver = chrome.driver
+        driver: WebDriver = self.driver
 
         driver.get(post_url)
         time.sleep(10)
@@ -569,8 +540,6 @@ class Account(Facebook, Chrome):
                                     f"User <b>{self.username}</b> - Unable to post comment."
                                 )
 
-                                driver.quit()
-
                                 return
 
                             except Exception:
@@ -590,8 +559,6 @@ class Account(Facebook, Chrome):
                         break
 
             except Exception:
-                driver.quit()
-
                 logger.error(
                     f"User <b>{self.username}</b> - <r>Failed</r> to locate or interact with comment textbox."
                 )
@@ -603,8 +570,6 @@ class Account(Facebook, Chrome):
 
         else:
             logger.error("<r>No</r> comments available to post.")
-
-        driver.quit()
 
     def like(self: Self, page_url: str, count: int) -> Union[bool, None]:
         driver: WebDriver = self.driver
@@ -637,11 +602,7 @@ class Account(Facebook, Chrome):
                     if Facebook.report[self.username]["like"] >= count:
                         return True
 
-        self.infinite_scroll(
-            element=self.facebook_element,
-            delay=2.5,
-            callback=like,
-        )
+        self.infinite_scroll(delay=2.5, callback=like)
 
     def send_friend_request(self: Self, count: int = 100) -> None:
         driver: WebDriver = self.driver
@@ -715,19 +676,10 @@ class Account(Facebook, Chrome):
                     f"User <b>{self.username}</b> - An error occurred during sending friend requests."
                 )
 
-        self.infinite_scroll(
-            element=self.facebook_element,
-            delay=2.5,
-            callback=send_request,
-        )
+        self.infinite_scroll(delay=2.5, callback=send_request)
 
     def invite(self: Self, page_url: str, timeout: int = 5) -> None:
-        chrome: Chrome = Chrome(
-            cookies_file=self.cookie_file,
-            site_url="https://facebook.com",
-            **self.kwargs,
-        )
-        driver: WebDriver = chrome.driver
+        driver: WebDriver = self.driver
 
         driver.get(page_url)
         time.sleep(15)
@@ -783,8 +735,6 @@ class Account(Facebook, Chrome):
                                 f"User <b>{self.username}</b> - Invites <g>successfully</g> sent."
                             )
 
-                            driver.quit()
-
                             return
 
                         except Exception:
@@ -803,16 +753,12 @@ class Account(Facebook, Chrome):
                     )
 
         except Exception:
-            driver.quit()
-
             logger.error(
                 f"User <b>{self.username}</b> - An error occurred while sending invites. Retrying (<c>{timeout}</c> remaining)."
             )
 
             if timeout > 0:
                 return self.invite(page_url, timeout - 1)
-
-        driver.quit()
 
     def get_selectors_prefix(
         self: Self,
@@ -891,36 +837,14 @@ class Account(Facebook, Chrome):
 
                 screenshots.append(before)
 
-            tasks: List[threading.Thread] = []
-
             if share_count > 0 and groups:
-                tasks.append(
-                    threading.Thread(
-                        target=self.share, args=(post_url, groups, share_count, 5)
-                    )
-                )
+                self.share(post_url, groups, share_count)
 
             if comment_count > 0:
-                tasks.append(
-                    threading.Thread(
-                        target=self.comment, args=(post_url, comment_count)
-                    )
-                )
+                self.comment(post_url, comment_count)
 
             if send_invites:
-                tasks.append(
-                    threading.Thread(
-                        target=self.invite,
-                        args=(page_url,),
-                    ),
-                )
-
-            for task in tasks:
-                task.start()
-                time.sleep(5 + random.random())
-
-            for task in tasks:
-                task.join()
+                self.invite(page_url)
 
             if like_count > 0:
                 self.like(page_url, like_count)
@@ -986,7 +910,7 @@ class Account(Facebook, Chrome):
         if driver is None:
             driver = self.driver
 
-        if not element and driver is None:
+        if element is None and driver is None:
             element = self.facebook_element
 
         last_height = driver.execute_script("return arguments[0].scrollHeight", element)
