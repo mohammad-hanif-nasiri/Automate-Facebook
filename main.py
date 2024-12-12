@@ -226,6 +226,13 @@ def login(
 if __name__ == "__main__":
     app: Flask = Flask(__name__)
 
+    # Add ngrok-skip-browser-warning to all responses
+    @app.after_request
+    def after(response):
+        response.headers["ngrok-skip-browser-warning"] = "True"
+
+        return response
+
     @app.route("/report")
     def windows():
         return render_template("report.html", report=Facebook.report)
