@@ -7,6 +7,7 @@ import click
 from flask import Flask, Response, redirect, render_template, url_for
 from pyngrok import ngrok
 from selenium.webdriver.chrome.webdriver import WebDriver
+from urllib3.exceptions import MaxRetryError
 
 from account import start
 from chrome import Chrome
@@ -245,11 +246,16 @@ if __name__ == "__main__":
     @app.route("/window/<int:index>")
     def window(index: int):
         try:
-            chrome: Chrome = Chrome.windows[index]
-            driver: WebDriver = chrome.driver
-            screenshot: bytes = driver.get_screenshot_as_png()
+            try:
+                chrome: Chrome = Chrome.windows[index]
+                driver: WebDriver = chrome.driver
+                screenshot: bytes = driver.get_screenshot_as_png()
 
-            return Response(screenshot, mimetype="image/png")
+                return Response(screenshot, mimetype="image/png")
+
+            except MaxRetryError as err:
+                console.print(err, style="red bold italic")
+
         except IndexError:
             logger.error("Window not found!")
 
