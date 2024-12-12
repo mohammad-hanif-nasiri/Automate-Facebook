@@ -66,7 +66,7 @@ def send_email(
     try:
         # Set up the Jinja2 environment
         env = Environment(loader=FileSystemLoader("./templates/"))
-        template = env.get_template("base.html")
+        template = env.get_template("email.html")
 
         # Render the HTML template with the provided data
         html_content = template.render(title=subject, cols=cols, rows=rows)
