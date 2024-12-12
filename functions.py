@@ -1,11 +1,12 @@
 import os
 import pickle
 import random
+import signal
 import smtplib
+import threading
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from io import BytesIO
-import threading
 from typing import Any, Dict, List, Literal, Tuple, Union
 
 import requests
@@ -231,7 +232,15 @@ def edit_image(
 def kill_main_thread():
     # get the main thread process identity
     PID: Union[None, int] = threading.main_thread().native_id
-
-    if PID is not None:
-        logger.info(f"Sent <b>SIGINT</b> to process with PID: <c>{PID}</c>")
-        os.kill(PID, 2)
+    try:
+        if PID is None:
+            pass
+        else:
+            os.kill(PID, signal.SIGINT)
+            logger.info(f"Sent SIGINT to process with PID: {PID}")
+    except ProcessLookupError:
+        logger.error(f"No process found with PID: {PID}")
+    except PermissionError:
+        logger.error(f"Permission denied to send SIGINT to PID: {PID}")
+    except Exception as e:
+        logger.error(f"An unexpected error occurred: {e}")
