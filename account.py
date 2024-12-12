@@ -263,16 +263,14 @@ class Account(Facebook, Chrome):
 
         raise UserNotLoggedInException()
 
-    @property
-    def facebook_element(self: Self) -> WebElement:
-        """
-        Retrieves the Facebook element by its unique ID.
+    def facebook_element(
+        self: Self, driver: Union[None, WebDriver] = None
+    ) -> WebElement:
 
-        Returns:
-            WebElement: The web element located by its ID, "facebook",
-                        enabling interaction or further manipulation.
-        """
-        return self.driver.find_element(By.ID, "facebook")
+        if driver is None:
+            driver = self.driver
+
+        return driver.find_element(By.ID, "facebook")
 
     def get_screenshot(
         self: Self,
@@ -313,8 +311,10 @@ class Account(Facebook, Chrome):
         self: Self, page_url: str, timeout: int = 5
     ) -> Union[str, None]:
         self.driver.get(page_url)
-        self.infinite_scroll(scroll_limit=2, delay=2.5)
         time.sleep(5)
+
+        self.infinite_scroll(scroll_limit=2, delay=2.5)
+        time.sleep(2.5)
 
         self.driver.execute_script(
             """
@@ -910,8 +910,8 @@ class Account(Facebook, Chrome):
         if driver is None:
             driver = self.driver
 
-        if element is None and driver is None:
-            element = self.facebook_element
+        if element is None:
+            element = self.facebook_element()
 
         last_height = driver.execute_script("return arguments[0].scrollHeight", element)
 
