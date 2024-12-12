@@ -459,11 +459,11 @@ class Account(Facebook, Chrome):
                         try:
                             driver.find_element(
                                 By.XPATH,
-                                f"{prefix}//span[contains(text(), 'Warning!')]",
+                                "//span[contains(text(), 'Something went wrong. Please try again.')]",
                             )
 
                             logger.error(
-                                f"User <b>{self.username}</b> - You Can't Use This Feature Right Now"
+                                f"User <b>{self.username}</b> - Something went wrong. Please try again later."
                             )
 
                             return
