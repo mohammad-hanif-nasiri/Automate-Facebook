@@ -1,7 +1,7 @@
 import os
 import re
 import threading
-from typing import List, Union
+from typing import Callable, List, Union
 
 import click
 from flask import Flask, Response, redirect, render_template, url_for
@@ -224,7 +224,7 @@ def login(
     kill_main_thread()
 
 
-if __name__ == "__main__":
+def main(bg: Callable) -> None:
     app: Flask = Flask(__name__)
 
     # Add ngrok-skip-browser-warning to all responses
@@ -261,7 +261,7 @@ if __name__ == "__main__":
 
         return redirect(url_for("app.windows"))
 
-    thread: threading.Thread = threading.Thread(target=cli)
+    thread: threading.Thread = threading.Thread(target=bg)
     thread.start()
 
     port: int = 5000
@@ -276,3 +276,7 @@ if __name__ == "__main__":
         )  # Print the public URL
 
     app.run(port=port)
+
+
+if __name__ == "__main__":
+    main(cli)
