@@ -234,6 +234,10 @@ def main(bg: Callable) -> None:
 
         return response
 
+    @app.route("/")
+    def home():
+        return render_template("home.html")
+
     @app.route("/report")
     def report():
         return render_template("report.html", report=Facebook.report)
