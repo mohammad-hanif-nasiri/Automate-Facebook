@@ -456,7 +456,20 @@ class Account(Facebook, Chrome):
 
                         break
                     except Exception:
-                        ...
+                        try:
+                            driver.find_element(
+                                By.XPATH,
+                                f"{prefix}//span[contains(text(), 'Warning!')]",
+                            )
+
+                            logger.error(
+                                f"User <b>{self.username}</b> - You Can't Use This Feature Right Now"
+                            )
+
+                            return
+
+                        except Exception:
+                            pass
 
                     time.sleep(0.512)
 
