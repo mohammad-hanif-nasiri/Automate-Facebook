@@ -17,6 +17,55 @@ from functions import kill_main_thread
 from logger import logger
 from login import Login
 
+app: Flask = Flask(__name__)
+
+
+# Add ngrok-skip-browser-warning to all responses
+@app.after_request
+def after(response):
+    response.headers["ngrok-skip-browser-warning"] = "True"
+
+    return response
+
+
+@app.route("/")
+def home():
+    return render_template("home.html", title="Home")
+
+
+@app.route("/report")
+def report():
+    return render_template("report.html", title="Report", report=Facebook.report)
+
+
+@app.route("/windows")
+def windows():
+    return render_template("windows.html", title="Windows")
+
+
+@app.route("/window/<int:index>")
+def window(index: int):
+    return render_template("window.html", title=f"{index} Window")
+
+
+@app.route("/screenshot/window/<int:index>")
+def screenshot(index: int):
+    try:
+        try:
+            chrome: Chrome = Chrome.windows[index]
+            driver: WebDriver = chrome.driver
+            screenshot: bytes = driver.get_screenshot_as_png()
+
+            return Response(screenshot, mimetype="image/png")
+
+        except MaxRetryError as err:
+            console.print(err, style="red bold italic")
+
+    except IndexError:
+        logger.error("Window not found!")
+
+    return redirect(url_for("app.windows"))
+
 
 @click.group()
 @click.option(
@@ -225,50 +274,10 @@ def login(
 
 
 def main(bg: Callable) -> None:
-    app: Flask = Flask(__name__)
-
-    # Add ngrok-skip-browser-warning to all responses
-    @app.after_request
-    def after(response):
-        response.headers["ngrok-skip-browser-warning"] = "True"
-
-        return response
-
-    @app.route("/")
-    def home():
-        return render_template("home.html")
-
-    @app.route("/report")
-    def report():
-        return render_template("report.html", report=Facebook.report)
-
-    @app.route("/windows")
-    def windows():
-        console.print(Chrome.windows)
-        return render_template("windows.html", windows=list(map(str, Chrome.windows)))
-
-    @app.route("/window/<int:index>")
-    def window(index: int):
-        try:
-            try:
-                chrome: Chrome = Chrome.windows[index]
-                driver: WebDriver = chrome.driver
-                screenshot: bytes = driver.get_screenshot_as_png()
-
-                return Response(screenshot, mimetype="image/png")
-
-            except MaxRetryError as err:
-                console.print(err, style="red bold italic")
-
-        except IndexError:
-            logger.error("Window not found!")
-
-        return redirect(url_for("app.windows"))
-
     thread: threading.Thread = threading.Thread(target=bg)
     thread.start()
 
-    port: int = 5000
+    port: int = 8080
 
     if token := os.getenv("NGROK_TOKEN"):
         ngrok.set_auth_token(token)
@@ -279,6 +288,7 @@ def main(bg: Callable) -> None:
             )
         )  # Print the public URL
 
+    # run flask application on specific port
     app.run(port=port)
 
 
