@@ -15,3 +15,5 @@ EMAIL_DEST: str = "nasiri.waliabdullah@gmail.com"
 TOR_PASSWORD: str = "Ali.Nasiri#88771234"
 TOR_PORT: str = "9050"
 TOR_CONTROL_PORT: str = "9051"
+
+DEFAULT_IMAGE_PATH: str = "static/images/default.png"
