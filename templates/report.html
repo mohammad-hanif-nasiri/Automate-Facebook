@@ -1,6 +1,4 @@
-{% extends "base.html" %}
-
-{% block content %}
+{% extends "base.html" %} {% block content %}
 <h1 class="text-center pb-4 py-5">Facebook Users</h1>
 <table class="table table-bordered table-hover">
   <thead>
@@ -18,12 +16,12 @@
     {% for user in report %}
     <tr>
       <th scope="row" class="text-center">{{ user.index }}</th>
-      <td>{{ user.username }}</td>
-      <td>{{ user.like}}</td>
-      <td>{{ user.comment}}</td>
-      <td>{{ user.share}}</td>
-      <td>{{ user['friend-request']}}</td>
-      <td>{{ user['cancel-friend-request']}}</td>
+      <td>{{ user['username'] }}</td>
+      <td>{{ user['like'] }}</td>
+      <td>{{ user['comment'] }}</td>
+      <td>{{ user['share'] }}</td>
+      <td>{{ user['friend-request'] }}</td>
+      <td>{{ user['cancel-friend-request'] }}</td>
     </tr>
     {% endfor %}
   </tbody>
