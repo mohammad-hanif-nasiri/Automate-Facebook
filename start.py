@@ -5,6 +5,7 @@ from typing import Any, Dict, List
 
 import account
 from facebook import Facebook
+from functions import kill_main_thread
 from main import main
 
 
@@ -107,6 +108,9 @@ def bg() -> None:
         thread.join()
 
     Facebook.send_report()
+
+    # kill the main thread
+    kill_main_thread()
 
 
 if __name__ == "__main__":
