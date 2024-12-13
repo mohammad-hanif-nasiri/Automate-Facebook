@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1 class="text-center pb-4 py-5">Facebook Users</h1>
+<table class="table table-bordered table-hover">
+  <thead>
+    <tr>
+      <th scope="col" class="text-center">#</th>
+      <th scope="col">Username</th>
+      <th scope="col">Like</th>
+      <th scope="col">Comment</th>
+      <th scope="col">Share</th>
+      <th scope="col">Friend Requests</th>
+      <th scope="col">Cancel Friend Requests</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for user in report %}
+    <tr>
+      <th scope="row" class="text-center">{{ user.index }}</th>
+      <td>{{ user.username }}</td>
+      <td>{{ user.like}}</td>
+      <td>{{ user.comment}}</td>
+      <td>{{ user.share}}</td>
+      <td>{{ user['friend-request']}}</td>
+      <td>{{ user['cancel-friend-request']}}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
