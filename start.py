@@ -5,102 +5,109 @@ from typing import Any, Dict, List
 
 import account
 from facebook import Facebook
+from main import main
 
-users: List[Dict[str, Any]] = [
-    {
-        "page_url": "https://www.facebook.com/CityComputerStore",
-        "username": "aliabdullah.nasiri",
-        "credentials": None,
-        "groups": ["Math"],
-        "share_count": 250,
-        "comment_count": 150,
-        "like_count": 0,
-        "friend_request_count": 100,
-        "send_invites": True,
-        "telegram_id": 5906633627,
-    },
-    {
-        "page_url": "https://www.facebook.com/profile.php?id=61554947310688",
-        "username": "mohammad.hanif.nasiri.1967",
-        "credentials": {
+
+def bg() -> None:
+    users: List[Dict[str, Any]] = [
+        {
+            "page_url": "https://www.facebook.com/CityComputerStore",
+            "username": "aliabdullah.nasiri",
+            "credentials": None,
+            "groups": ["Math"],
+            "share_count": 250,
+            "comment_count": 150,
+            "like_count": 0,
+            "friend_request_count": 100,
+            "send_invites": True,
+            "telegram_id": 5906633627,
+        },
+        {
+            "page_url": "https://www.facebook.com/profile.php?id=61554947310688",
             "username": "mohammad.hanif.nasiri.1967",
-            "password": "info@123",
+            "credentials": {
+                "username": "mohammad.hanif.nasiri.1967",
+                "password": "info@123",
+            },
+            "groups": ["Math"],
+            "share_count": 250,
+            "comment_count": 150,
+            "like_count": 0,
+            "friend_request_count": 0,
+            "send_invites": False,
+            "telegram_id": 5906633627,
         },
-        "groups": ["Math"],
-        "share_count": 250,
-        "comment_count": 150,
-        "like_count": 0,
-        "friend_request_count": 0,
-        "send_invites": False,
-        "telegram_id": 5906633627,
-    },
-    {
-        "page_url": "https://www.facebook.com/profile.php?id=100063642170837",
-        "username": "hanif.nasiri.1967",
-        "credentials": {
+        {
+            "page_url": "https://www.facebook.com/profile.php?id=100063642170837",
             "username": "hanif.nasiri.1967",
-            "password": "info@123",
+            "credentials": {
+                "username": "hanif.nasiri.1967",
+                "password": "info@123",
+            },
+            "groups": ["Math"],
+            "share_count": 100,
+            "comment_count": 50,
+            "like_count": 0,
+            "friend_request_count": 0,
+            "send_invites": False,
+            "telegram_id": 5906633627,
         },
-        "groups": ["Math"],
-        "share_count": 100,
-        "comment_count": 50,
-        "like_count": 0,
-        "friend_request_count": 0,
-        "send_invites": False,
-        "telegram_id": 5906633627,
-    },
-    {
-        "page_url": "https://www.facebook.com/CityComputerStore",
-        "username": "mustafa.joya.123456789",
-        "credentials": None,
-        "groups": ["Math"],
-        "share_count": 250,
-        "comment_count": 150,
-        "like_count": 0,
-        "friend_request_count": 0,
-        "send_invites": False,
-        "telegram_id": 5906633627,
-    },
-]
+        {
+            "page_url": "https://www.facebook.com/CityComputerStore",
+            "username": "mustafa.joya.123456789",
+            "credentials": None,
+            "groups": ["Math"],
+            "share_count": 250,
+            "comment_count": 150,
+            "like_count": 0,
+            "friend_request_count": 0,
+            "send_invites": False,
+            "telegram_id": 5906633627,
+        },
+    ]
 
-files: List[str] = os.listdir("pkl/")
-threads: List[threading.Thread] = []
+    files: List[str] = os.listdir("pkl/")
+    threads: List[threading.Thread] = []
 
-for index, user in enumerate(users):
-    for file in files:
-        if re.match(f"^{user['username']}.*", file):
-            threads.append(
-                threading.Thread(
-                    target=account.start,
-                    kwargs=dict(
-                        cookie_file=f"pkl/{file}",
-                        credentials=user["credentials"],
-                        page_url=user["page_url"],
-                        username=user["username"],
-                        groups=user["groups"],
-                        like_count=user["like_count"],
-                        comment_count=user["comment_count"],
-                        share_count=user["share_count"],
-                        friend_request_count=user["friend_request_count"],
-                        telegram_id=user["telegram_id"],
-                        **dict(
-                            headless=True,
-                            disable_gpu=True,
-                            disable_extensions=True,
-                            disable_infobars=True,
-                            start_maximized=True,
-                            no_sandbox=True,
-                            incognito=True,
-                            block_notifications=True,
+    for index, user in enumerate(users):
+        for file in files:
+            if re.match(f"^{user['username']}.*", file):
+                threads.append(
+                    threading.Thread(
+                        target=account.start,
+                        kwargs=dict(
+                            cookie_file=f"pkl/{file}",
+                            credentials=user["credentials"],
+                            page_url=user["page_url"],
+                            username=user["username"],
+                            groups=user["groups"],
+                            like_count=user["like_count"],
+                            comment_count=user["comment_count"],
+                            share_count=user["share_count"],
+                            friend_request_count=user["friend_request_count"],
+                            telegram_id=user["telegram_id"],
+                            **dict(
+                                headless=True,
+                                disable_gpu=True,
+                                disable_extensions=True,
+                                disable_infobars=True,
+                                start_maximized=True,
+                                no_sandbox=True,
+                                incognito=True,
+                                block_notifications=True,
+                            ),
                         ),
-                    ),
+                    )
                 )
-            )
 
-for thread in threads:
-    thread.start()
+    for thread in threads:
+        thread.start()
 
-for thread in threads:
-    thread.join()
+    for thread in threads:
+        thread.join()
 
-Facebook.send_report()
+    Facebook.send_report()
+
+
+if __name__ == "__main__":
+    main(bg)
