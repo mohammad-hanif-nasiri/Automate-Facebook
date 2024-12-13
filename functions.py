@@ -224,6 +224,28 @@ def edit_image(
     return img_bytes
 
 
+def resize_image(
+    image: bytes,
+    width: int,
+    height: int,
+    format: Literal["PNG", "JPEG"] = "PNG",
+) -> bytes:
+    # Open the image
+    img: Image.Image = Image.open(BytesIO(image))
+
+    # Resize the image
+    resize = img.resize(size=(width, height))
+
+    # Create a BytesIO object to hold the binary data
+    image_bytes = BytesIO()
+
+    # Save the image to the BytesIO object in a specific format (e.g., PNG, JPEG)
+    resize.save(image_bytes, format=format)
+
+    # Get and return the binary data from the BytesIO object
+    return image_bytes.getvalue()
+
+
 def kill_main_thread():
     # get the main thread process identity
     PID: Union[None, int] = threading.main_thread().native_id
