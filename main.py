@@ -79,21 +79,17 @@ def screenshot(session_id, width: int, height: int):
         chrome: Union[Chrome, Account] = window
         driver: WebDriver = chrome.driver
 
-        if driver.session_id == session_id:
-            try:
-                screenshot: bytes = driver.get_screenshot_as_png()
+        if driver.session_id == session_id and chrome.is_alive:
+            screenshot: bytes = driver.get_screenshot_as_png()
 
-                return Response(
-                    resize_image(
-                        screenshot,
-                        width,
-                        height,
-                    ),
-                    mimetype="image/png",
-                )
-
-            except MaxRetryError as err:
-                console.print(err, style="red bold italic")
+            return Response(
+                resize_image(
+                    screenshot,
+                    width,
+                    height,
+                ),
+                mimetype="image/png",
+            )
 
     dct = {
         "message": f"Unable to take a screenshot from this session id {session_id!r}.",
