@@ -13,7 +13,6 @@ from telegram import InputMediaPhoto
 from urllib3.exceptions import ReadTimeoutError
 
 from chrome import Chrome
-from console import console
 from const import FONARTO_XT_PATH, TELEGRAM_BOT_API_TOKEN
 from exceptions import UserNotLoggedInException
 from facebook import Facebook
