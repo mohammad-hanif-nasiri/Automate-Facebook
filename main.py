@@ -5,7 +5,7 @@ import threading
 from typing import Callable, Dict, List, Literal, Union
 
 import click
-from flask import Flask, Response, redirect, render_template, url_for
+from flask import Flask, Response, render_template
 from pyngrok import ngrok
 from selenium.webdriver.chrome.webdriver import WebDriver
 from urllib3.exceptions import MaxRetryError
@@ -13,7 +13,6 @@ from urllib3.exceptions import MaxRetryError
 from account import Account, start
 from chrome import Chrome
 from console import console
-from const import DEFAULT_IMAGE_PATH
 from facebook import Facebook
 from functions import kill_main_thread, resize_image
 from logger import logger
