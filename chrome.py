@@ -7,6 +7,7 @@ from typing import List, Self
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
+from urllib3.exceptions import MaxRetryError
 from webdriver_manager.chrome import ChromeDriverManager
 
 
@@ -75,3 +76,16 @@ class Chrome:
 
                     for cookie in cookies:
                         self.driver.add_cookie(cookie)
+
+    @property
+    def is_alive(self: Self):
+        """The is_alive property."""
+        try:
+            self.driver.get_screenshot_as_png()
+
+            return True
+
+        except MaxRetryError:
+            pass
+
+        return False
