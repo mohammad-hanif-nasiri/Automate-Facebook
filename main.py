@@ -8,11 +8,9 @@ import click
 from flask import Flask, Response, render_template
 from pyngrok import ngrok
 from selenium.webdriver.chrome.webdriver import WebDriver
-from urllib3.exceptions import MaxRetryError
 
 from account import Account, start
 from chrome import Chrome
-from console import console
 from facebook import Facebook
 from functions import kill_main_thread, resize_image
 from logger import logger
