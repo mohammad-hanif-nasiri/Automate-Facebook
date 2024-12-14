@@ -1,3 +1,4 @@
+import json
 import os
 import re
 import threading
@@ -9,11 +10,12 @@ from pyngrok import ngrok
 from selenium.webdriver.chrome.webdriver import WebDriver
 from urllib3.exceptions import MaxRetryError
 
-from account import start
+from account import Account, start
 from chrome import Chrome
 from console import console
+from const import DEFAULT_IMAGE_PATH
 from facebook import Facebook
-from functions import kill_main_thread
+from functions import kill_main_thread, resize_image
 from logger import logger
 from login import Login
 
@@ -45,31 +47,37 @@ def report():
 
 @app.route("/windows")
 def windows():
-    return render_template("windows.html", title="Windows")
+    return render_template("windows.html", title="Windows", windows=Chrome.windows)
 
 
-@app.route("/window/<int:index>")
-def window(index: int):
-    return render_template("window.html", title=f"{index} Window")
+@app.route("/screenshot/window/<session_id>/<int:width>/<int:height>")
+def screenshot(session_id, width: int, height: int):
+    for window in Chrome.windows:
+        chrome: Union[Chrome, Account] = window
+        driver: WebDriver = chrome.driver
 
+        if driver.session_id == session_id:
+            try:
+                screenshot: bytes = driver.get_screenshot_as_png()
 
-@app.route("/screenshot/window/<int:index>")
-def screenshot(index: int):
-    try:
-        try:
-            chrome: Chrome = Chrome.windows[index]
-            driver: WebDriver = chrome.driver
-            screenshot: bytes = driver.get_screenshot_as_png()
+                return Response(
+                    resize_image(
+                        screenshot,
+                        width,
+                        height,
+                    ),
+                    mimetype="image/png",
+                )
 
-            return Response(screenshot, mimetype="image/png")
+            except MaxRetryError as err:
+                console.print(err, style="red bold italic")
 
-        except MaxRetryError as err:
-            console.print(err, style="red bold italic")
-
-    except IndexError:
-        logger.error("Window not found!")
-
-    return redirect(url_for("app.windows"))
+    dct = {
+        "message": f"Unable to take a screenshot from this session id {session_id!r}.",
+        "type": "error",
+        "code": 404,
+    }
+    return json.dumps(dct)
 
 
 @click.group()
