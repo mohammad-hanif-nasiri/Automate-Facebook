@@ -2,7 +2,7 @@ import json
 import os
 import re
 import threading
-from typing import Callable, List, Union
+from typing import Callable, Dict, List, Literal, Union
 
 import click
 from flask import Flask, Response, redirect, render_template, url_for
@@ -48,6 +48,30 @@ def report():
 @app.route("/windows")
 def windows():
     return render_template("windows.html", title="Windows", windows=Chrome.windows)
+
+
+@app.route("/terminate/window/<session_id>")
+def terminate_window(session_id):
+    response: Dict[Literal["message", "code", "type"], Union[str, int]] = {}
+
+    for window in Chrome.windows:
+        chrome: Union[Chrome, Account] = window
+        driver: WebDriver = chrome.driver
+
+        if driver.session_id == session_id:
+            driver.quit()
+
+            response["message"] = "Window successfully terminated."
+            response["type"] = "success"
+            response["code"] = 200
+
+            break
+    else:
+        response["message"] = "An error occurred!"
+        response["type"] = "error"
+        response["code"] = 404
+
+    return json.dumps(response)
 
 
 @app.route("/screenshot/window/<session_id>/<int:width>/<int:height>")
