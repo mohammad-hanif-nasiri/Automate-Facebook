@@ -6,6 +6,8 @@
     <title>
       {% block title %}{{ title }} - Automate Facebook {% endblock %}
     </title>
+
+    {% block style %}
     <link
       href="{{ url_for('static', filename='css/style.css') }}"
       rel="stylesheet"
@@ -16,6 +18,7 @@
       integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ"
       crossorigin="anonymous"
     />
+    {% endblock %}
   </head>
   <body>
     <main>
@@ -24,6 +27,8 @@
         "components/jumbotron.html" %} {% block content %}{% endblock %}
       </div>
     </main>
+
+    {% block script %}
     <script
       src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.7/dist/umd/popper.min.js"
       integrity="sha384-zYPOMqeu1DAVkHiLqWBUTcbYfZ8osu1Nd6Z89ify25QV9guujx43ITvfi12/QExE"
@@ -35,5 +40,6 @@
       crossorigin="anonymous"
     ></script>
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    {% endblock %}
   </body>
 </html>
