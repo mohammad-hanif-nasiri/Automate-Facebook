@@ -46,7 +46,11 @@ def report():
 
 @app.route("/windows")
 def windows():
-    return render_template("windows.html", title="Windows", windows=Chrome.windows)
+    return render_template(
+        "windows.html",
+        title="Windows",
+        windows=list(filter(lambda window: window.is_alive, Chrome.windows)),
+    )
 
 
 @app.route("/terminate/window/<session_id>")
