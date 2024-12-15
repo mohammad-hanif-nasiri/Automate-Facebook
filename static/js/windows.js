@@ -1,9 +1,7 @@
 const windowContainer = document.querySelector("div.windows-container");
 
 function viewWindow(sessionId) {
-  window.open(
-    window.location.origin + "/screenshot/window/" + sessionId + "/1920/1080",
-  );
+  window.open(window.location.origin + "/screenshot/window/" + sessionId);
 }
 
 async function terminateWindow(sessionId) {
