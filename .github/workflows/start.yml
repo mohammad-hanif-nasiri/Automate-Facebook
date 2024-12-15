@@ -30,4 +30,6 @@ jobs:
           export DISPLAY=:99
 
       - name: Execute Facebook Bot for Manual Trigger
+        env:
+          NGROK_TOKEN: ${{ secrets.NGROK_TOKEN }}
         run: python start.py
