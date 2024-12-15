@@ -75,8 +75,11 @@ def terminate_window(session_id):
     return json.dumps(response)
 
 
+@app.route("/screenshot/window/<session_id>", defaults={"width": None, "height": None})
 @app.route("/screenshot/window/<session_id>/<int:width>/<int:height>")
-def screenshot(session_id, width: int, height: int):
+def screenshot(
+    session_id, width: Union[int, None] = None, height: Union[int, None] = None
+):
     for window in Chrome.windows:
         chrome: Union[Chrome, Account] = window
         driver: WebDriver = chrome.driver
@@ -84,14 +87,10 @@ def screenshot(session_id, width: int, height: int):
         if driver.session_id == session_id and chrome.is_alive:
             screenshot: bytes = driver.get_screenshot_as_png()
 
-            return Response(
-                resize_image(
-                    screenshot,
-                    width,
-                    height,
-                ),
-                mimetype="image/png",
-            )
+            if width is not None and height is not None:
+                screenshot = resize_image(screenshot, width, height)
+
+            return Response(screenshot, mimetype="image/png")
 
     dct = {
         "message": f"Unable to take a screenshot from this session id {session_id!r}.",
