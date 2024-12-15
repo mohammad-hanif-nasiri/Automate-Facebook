@@ -13,7 +13,7 @@ def bg() -> None:
     users: List[Dict[str, Any]] = [
         {
             "page_url": "https://www.facebook.com/CityComputerStore",
-            "username": "aliabdullah.nasiri",
+            "username": "ahmad.ahmadi.002",
             "credentials": None,
             "groups": ["Math"],
             "share_count": 250,
@@ -21,36 +21,6 @@ def bg() -> None:
             "like_count": 0,
             "friend_request_count": 100,
             "send_invites": True,
-            "telegram_id": 5906633627,
-        },
-        {
-            "page_url": "https://www.facebook.com/profile.php?id=61554947310688",
-            "username": "mohammad.hanif.nasiri.1967",
-            "credentials": {
-                "username": "mohammad.hanif.nasiri.1967",
-                "password": "info@123",
-            },
-            "groups": ["Math"],
-            "share_count": 250,
-            "comment_count": 150,
-            "like_count": 0,
-            "friend_request_count": 0,
-            "send_invites": False,
-            "telegram_id": 5906633627,
-        },
-        {
-            "page_url": "https://www.facebook.com/profile.php?id=100063642170837",
-            "username": "hanif.nasiri.1967",
-            "credentials": {
-                "username": "hanif.nasiri.1967",
-                "password": "info@123",
-            },
-            "groups": ["Math"],
-            "share_count": 100,
-            "comment_count": 50,
-            "like_count": 0,
-            "friend_request_count": 0,
-            "send_invites": False,
             "telegram_id": 5906633627,
         },
         {
