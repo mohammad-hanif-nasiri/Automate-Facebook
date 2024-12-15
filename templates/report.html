@@ -17,11 +17,11 @@
     {% for username, user in report.items() %}
     <tr>
       <td>{{ username }}</td>
-      <td>{{ user[username]['like'] }}</td>
-      <td>{{ user[username]['comment'] }}</td>
-      <td>{{ user[username]['share'] }}</td>
-      <td>{{ user[username]['friend-request'] }}</td>
-      <td>{{ user[username]['cancel-friend-request'] }}</td>
+      <td>{{ user['like'] }}</td>
+      <td>{{ user['comment'] }}</td>
+      <td>{{ user['share'] }}</td>
+      <td>{{ user['friend-request'] }}</td>
+      <td>{{ user['cancel-friend-request'] }}</td>
     </tr>
     {% endfor %}
   </tbody>
