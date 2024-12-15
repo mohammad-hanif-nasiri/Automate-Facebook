@@ -18,7 +18,7 @@ div.window img {
   {% for window in windows %}
   <div class="col window" data-session-id="{{window.driver.session_id}}">
     <div class="card shadow-sm">
-      <img src="{{ url_for('screenshot', session_id=window.driver.session_id, width=300, height=300) }}" class="img-thumbnail">
+      <img src="{{ url_for('screenshot', session_id=window.driver.session_id, width=400, height=300) }}" class="img-thumbnail">
       <div class="card-body">
         <p class="card-text">
         {{ window.driver.session_id }}
