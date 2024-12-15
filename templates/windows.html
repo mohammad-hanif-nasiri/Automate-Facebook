@@ -5,7 +5,7 @@
 <h1 class="text-center pb-4 py-5">Browser Windows</h1>
 <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3 windows-container">
   {% for window in windows %}
-  <div class="col" data-session-id="{{window.driver.session_id}}">
+  <div class="col window" data-session-id="{{window.driver.session_id}}">
     <div class="card shadow-sm">
       <img src="{{ url_for('screenshot', session_id=window.driver.session_id, width=300, height=300) }}" class="img-thumbnail">
       <div class="card-body">
