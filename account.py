@@ -383,7 +383,7 @@ class Account(Facebook, Chrome):
         driver: WebDriver = self.driver
 
         driver.get(post_url)
-        time.sleep(15)
+        time.sleep(10)
 
         suffix: str = "//span[contains(text(), 'Share')]/ancestor::*[@role='button']"
         prefix: str = self.get_selectors_prefix(suffix=suffix, driver=driver)
@@ -410,7 +410,7 @@ class Account(Facebook, Chrome):
                 )
                 self.scroll_into_view(share_button, driver)
                 share_button.click()
-                time.sleep(3.5)
+                time.sleep(2.5)
 
                 # Select the "Share to a Group" option
                 share_to_group_button = driver.find_element(
@@ -418,28 +418,28 @@ class Account(Facebook, Chrome):
                     f"{prefix}//span[contains(text(), 'Group')]/ancestor::*[@role='button']",
                 )
                 share_to_group_button.click()
-                time.sleep(3.5)
+                time.sleep(2.5)
 
                 search_input = driver.find_element(
                     By.XPATH,
                     f'{prefix}//input[@placeholder="Search for groups"]',
                 )
                 search_input.send_keys(group := random.choice(groups))
-                time.sleep(3.5)
+                time.sleep(2.5)
 
                 group_elem = driver.find_element(
                     By.XPATH,
                     f"{prefix}//span[contains(text(), '{group}')]/ancestor::*[@role='button']",
                 )
                 group_elem.click()
-                time.sleep(3.5)
+                time.sleep(2.5)
 
                 post_button = driver.find_element(
                     By.XPATH, f"{prefix}//div[@aria-label='Post']"
                 )
                 post_button.click()
 
-                for _ in range(25):
+                for _ in range(20):
                     try:
                         driver.find_element(
                             By.XPATH,
