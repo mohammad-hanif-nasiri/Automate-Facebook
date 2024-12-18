@@ -63,6 +63,7 @@ class Facebook:
                 "Share",
                 "Friend Requests",
                 "Cancelled Friend Requests",
+                "Page URL",
             ]
             rows: List[List[Any]] = []
 
@@ -72,6 +73,7 @@ class Facebook:
                 like = data.get("like")
                 friend_requests = data.get("friend-requests")
                 canceled_friend_requests = data.get("canceled-friend-requests")
+                page_url = data.get("page-url")
 
                 row = [
                     index + 1,
@@ -81,6 +83,7 @@ class Facebook:
                     share,
                     friend_requests,
                     canceled_friend_requests,
+                    page_url,
                 ]
                 rows.append(row)
 
