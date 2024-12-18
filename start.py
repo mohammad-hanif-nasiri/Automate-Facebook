@@ -15,7 +15,7 @@ def bg() -> None:
             "page_url": "https://www.facebook.com/CityComputerStore",
             "username": "ahmad.ahmadi.002",
             "credentials": None,
-            "groups": ["VIPGroup"],
+            "groups": ["Math"],
             "share_count": 50,
             "comment_count": 50,
             "like_count": 50,
