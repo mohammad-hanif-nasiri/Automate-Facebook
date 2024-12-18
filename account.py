@@ -813,6 +813,8 @@ class Account(Facebook, Chrome):
         cancel_all_friend_requests: bool = False,
         telegram_id: Union[int, None] = None,
     ):
+        Facebook.report[self.username].setdefault("page-url", page_url)
+
         if username and username != self.username:
             return
 
