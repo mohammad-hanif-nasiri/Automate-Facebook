@@ -248,7 +248,9 @@ class Account(Facebook, Chrome):
                 By.XPATH, '//div[@aria-label="Shortcuts"]//a'
             )
             if href := link.get_dom_attribute("href"):
-                username = self._username = href.split("/").pop()
+                username = self._username = (
+                    href.split("/").pop().replace("profile.php?id=", "")
+                )
 
                 logger.info(
                     f"Successfully retrieved the user <b>{username!r}</b> information."
