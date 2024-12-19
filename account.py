@@ -131,7 +131,10 @@ class Account(Facebook, Chrome):
             for span in spans:
                 for message in messages:
                     if message in span.text:
-                        logger.warning(f"User <b>{self.username}</b> - {message}")
+                        logger.warning(
+                            msg := f"User <b>{self.username}</b> - {message}"
+                        )
+                        Chrome.report(driver.session_id, msg)
 
                         return False
 
@@ -259,7 +262,8 @@ class Account(Facebook, Chrome):
                 return username
 
         except Exception:
-            logger.error("<r>Unable</r> to retrieve username!")
+            logger.error(msg := "<r>Unable</r> to retrieve username!")
+            Chrome.report(self.driver.session_id, msg)
 
         raise UserNotLoggedInException()
 
@@ -374,8 +378,9 @@ class Account(Facebook, Chrome):
             pass
 
         logger.error(
-            f"User <b>{self.username}</b> - <r>Unable</r> to get the last post link."
+            msg := f"User <b>{self.username}</b> - <r>Unable</r> to get the last post link."
         )
+        Chrome.report(self.driver.session_id, msg)
 
         return self.get_last_post_url(page_url, timeout - 1) if timeout > 0 else None
 
@@ -463,8 +468,9 @@ class Account(Facebook, Chrome):
                             )
 
                             logger.error(
-                                f"User <b>{self.username}</b> - Something went wrong. Please try again later."
+                                msg := f"User <b>{self.username}</b> - Something went wrong. Please try again later."
                             )
+                            Chrome.report(driver.session_id, msg)
 
                             return
 
@@ -478,13 +484,15 @@ class Account(Facebook, Chrome):
 
         except Exception:
             logger.error(
-                f"User <b>{self.username}</b> - An <r>error</r> occurred during sharing the post!"
+                msg := f"User <b>{self.username}</b> - An <r>error</r> occurred during sharing the post!"
             )
+            Chrome.report(driver.session_id, msg)
 
             if timeout > 0:
                 logger.info(
-                    f"User <b>{self.username}</b> - <b>Retrying</b> to share the post."
+                    msg := f"User <b>{self.username}</b> - <b>Retrying</b> to share the post."
                 )
+                Chrome.report(driver.session_id, msg)
 
                 return self.share(
                     post_url,
@@ -550,8 +558,9 @@ class Account(Facebook, Chrome):
                                 )
 
                                 logger.warning(
-                                    f"User <b>{self.username}</b> - Unable to post comment."
+                                    msg := f"User <b>{self.username}</b> - Unable to post comment."
                                 )
+                                Chrome.report(driver.session_id, msg)
 
                                 return
 
@@ -573,8 +582,10 @@ class Account(Facebook, Chrome):
 
             except Exception:
                 logger.error(
-                    f"User <b>{self.username}</b> - <r>Failed</r> to locate or interact with comment textbox."
+                    msg := f"User <b>{self.username}</b> - <r>Failed</r> to locate or interact with comment textbox."
                 )
+                Chrome.report(driver.session_id, msg)
+
                 if timeout > 0:
                     return self.comment(post_url, count, timeout - 1)
 
@@ -668,8 +679,10 @@ class Account(Facebook, Chrome):
 
                         except Exception:
                             logger.warning(
-                                f"User <b>{self.username}</b> - The request <y>was not</y> sent successfully."
+                                msg := f"User <b>{self.username}</b> - The request <y>was not</y> sent successfully."
                             )
+                            Chrome.report(driver.session_id, msg)
+
                         else:
                             Facebook.report[self.username]["friend-requests"] += 1
 
@@ -686,8 +699,9 @@ class Account(Facebook, Chrome):
 
             except Exception:
                 logger.error(
-                    f"User <b>{self.username}</b> - An error occurred during sending friend requests."
+                    msg := f"User <b>{self.username}</b> - An error occurred during sending friend requests."
                 )
+                Chrome.report(driver.session_id, msg)
 
         self.infinite_scroll(delay=2.5, callback=send_request)
 
@@ -720,8 +734,9 @@ class Account(Facebook, Chrome):
                 )
 
                 logger.warning(
-                    f"User <b>{self.username}</b> - No <b>Friends</b> To Invite."
+                    msg := f"User <b>{self.username}</b> - No <b>Friends</b> To Invite."
                 )
+                Chrome.report(driver.session_id, msg)
 
             except Exception:
                 try:
@@ -757,18 +772,21 @@ class Account(Facebook, Chrome):
 
                     else:
                         logger.warning(
-                            f"User <b>{self.username}</b> - Invites may have <y>failed</y> to send."
+                            msg := f"User <b>{self.username}</b> - Invites may have <y>failed</y> to send."
                         )
+                        Chrome.report(driver.session_id, msg)
 
                 except Exception:
                     logger.warning(
-                        f"User <b>{self.username}</b> - The <b>'Select All'</b> button was not found!"
+                        msg := f"User <b>{self.username}</b> - The <b>'Select All'</b> button was not found!"
                     )
+                    Chrome.report(driver.session_id, msg)
 
         except Exception:
             logger.error(
-                f"User <b>{self.username}</b> - An error occurred while sending invites. Retrying (<c>{timeout}</c> remaining)."
+                msg := f"User <b>{self.username}</b> - An error occurred while sending invites. Retrying (<c>{timeout}</c> remaining)."
             )
+            Chrome.report(driver.session_id, msg)
 
             if timeout > 0:
                 return self.invite(page_url, timeout - 1)
