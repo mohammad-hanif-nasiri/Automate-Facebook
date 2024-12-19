@@ -84,20 +84,20 @@ class Chrome:
                         self.driver.add_cookie(cookie)
 
     @classmethod
-    def report(cls, msg: str) -> None:
+    def report(
+        cls,
+        session_id,
+        msg: str,
+    ) -> None:
         screenshots: List[bytes] = []
 
         for window in cls.windows:
-            if (
-                not isinstance(window, Chrome)
-                and hasattr(window, "username")
-                and window.username in msg
-            ):
+            if window.driver.session_id == session_id:
                 if window.is_alive:
                     screenshot = window.driver.get_screenshot_as_png()
                     screenshot = edit_image(
                         screenshot,
-                        text=window.username,
+                        text=msg,
                         font_path=FONARTO_XT_PATH,
                         size=128,
                         position=(50, 25),
