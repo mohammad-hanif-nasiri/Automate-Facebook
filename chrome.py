@@ -3,7 +3,7 @@ import os
 import pickle
 import random
 import time
-from typing import List, Self, Union
+from typing import Any, List, Self, Union
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -12,7 +12,6 @@ from telegram import InputMediaPhoto
 from urllib3.exceptions import MaxRetryError
 from webdriver_manager.chrome import ChromeDriverManager
 
-from account import Account
 from const import FONARTO_XT_PATH, TELEGRAM_BOT_API_TOKEN_DEBUG
 from functions import edit_image
 from telegram_bot import TelegramBot
@@ -21,7 +20,7 @@ from telegram_bot import TelegramBot
 class Chrome:
     path: str = ChromeDriverManager().install()
     telegram_bot: TelegramBot = TelegramBot(TELEGRAM_BOT_API_TOKEN_DEBUG)
-    windows: List[Union[Self, Account]] = []
+    windows: List[Union[Self, Any]] = []
 
     def __new__(cls, *args, **kwargs) -> Self:
         cls.windows.append(
@@ -89,7 +88,11 @@ class Chrome:
         screenshots: List[bytes] = []
 
         for window in cls.windows:
-            if isinstance(window, Account) and window.username in msg:
+            if (
+                not isinstance(window, Chrome)
+                and hasattr(window, "username")
+                and window.username in msg
+            ):
                 if window.is_alive:
                     screenshot = window.driver.get_screenshot_as_png()
                     screenshot = edit_image(
