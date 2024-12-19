@@ -91,21 +91,20 @@ class Chrome:
         for window in cls.windows:
             if isinstance(window, Account) and window.username in msg:
                 if window.is_alive:
+                    screenshot = window.driver.get_screenshot_as_png()
+                    screenshot = edit_image(
+                        screenshot,
+                        text=window.username,
+                        font_path=FONARTO_XT_PATH,
+                        size=128,
+                        position=(50, 25),
+                        text_color=(255, 0, 0),
+                    )
+
                     screenshots.append(window.driver.get_screenshot_as_png())
 
-        screenshots = [
-            edit_image(
-                screenshot,
-                text=msg,
-                font_path=FONARTO_XT_PATH,
-                size=64,
-                position=(50, 25),
-                text_color=(255, 0, 0),
-            )
-            for screenshot in screenshots
-        ]
         photos: List[InputMediaPhoto] = [
-            InputMediaPhoto(photo) for photo in (screenshots)
+            InputMediaPhoto(photo, caption=msg) for photo in screenshots
         ]
 
         asyncio.run(cls.telegram_bot.send_photos(*photos))
