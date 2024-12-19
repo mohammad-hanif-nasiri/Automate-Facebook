@@ -1,6 +1,7 @@
 import sys
 
 from loguru import logger
+
 from chrome import Chrome
 
 format = (
