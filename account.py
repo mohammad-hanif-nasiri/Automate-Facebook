@@ -906,9 +906,6 @@ class Account(Facebook, Chrome):
             for thread in threads:
                 thread.start()
 
-            # for thread in threads:
-            #     thread.join()
-
             if send_invites:
                 self.invite(page_url)
 
@@ -920,6 +917,10 @@ class Account(Facebook, Chrome):
 
             if cancel_all_friend_requests:
                 pass
+
+
+            for thread in threads:
+                thread.join()
 
             like = Facebook.report[self.username]["like"]
             comment = Facebook.report[self.username]["comment"]
