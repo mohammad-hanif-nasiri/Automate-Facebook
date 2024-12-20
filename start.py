@@ -53,7 +53,7 @@ def bg() -> None:
             "credentials": None,
             "groups": ["Math"],
             "share_count": 50,
-            "comment_count": 100,
+            "comment_count": 25,
             "like_count": 0,
             "friend_request_count": 20,
             "send_invites": True,
