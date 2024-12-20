@@ -1,6 +1,7 @@
 import asyncio
 import pickle
 import random
+import threading
 import time
 import uuid
 from typing import Any, Callable, Dict, List, Literal, Self, Union
@@ -380,12 +381,18 @@ class Account(Facebook, Chrome):
         return self.get_last_post_url(page_url, timeout - 1) if timeout > 0 else None
 
     def share(
-        self: Self, post_url: str, groups: List[str], count: int, timeout: int = 5
+        self: Self,
+        post_url: str,
+        groups: List[str],
+        count: int,
+        timeout: int = 5,
+        driver: Union[WebDriver, None] = None,
     ) -> None:
-        driver: WebDriver = self.driver
+        if driver is None:
+            driver = self.driver
 
         driver.get(post_url)
-        time.sleep(10)
+        time.sleep(15)
 
         suffix: str = "//span[contains(text(), 'Share')]/ancestor::*[@role='button']"
         prefix: str = self.get_selectors_prefix(suffix=suffix, driver=driver)
@@ -412,7 +419,7 @@ class Account(Facebook, Chrome):
                 )
                 self.scroll_into_view(share_button, driver)
                 share_button.click()
-                time.sleep(2.5)
+                time.sleep(2.5 + 1)
 
                 # Select the "Share to a Group" option
                 share_to_group_button = driver.find_element(
@@ -420,28 +427,28 @@ class Account(Facebook, Chrome):
                     f"{prefix}//span[contains(text(), 'Group')]/ancestor::*[@role='button']",
                 )
                 share_to_group_button.click()
-                time.sleep(2.5)
+                time.sleep(2.5 + 1)
 
                 search_input = driver.find_element(
                     By.XPATH,
                     f'{prefix}//input[@placeholder="Search for groups"]',
                 )
                 search_input.send_keys(group := random.choice(groups))
-                time.sleep(2.5)
+                time.sleep(2.5 + 1)
 
                 group_elem = driver.find_element(
                     By.XPATH,
                     f"{prefix}//span[contains(text(), '{group}')]/ancestor::*[@role='button']",
                 )
                 group_elem.click()
-                time.sleep(2.5)
+                time.sleep(2.5 + 1)
 
                 post_button = driver.find_element(
                     By.XPATH, f"{prefix}//div[@aria-label='Post']"
                 )
                 post_button.click()
 
-                for _ in range(20):
+                for _ in range(25):
                     try:
                         driver.find_element(
                             By.XPATH,
@@ -491,12 +498,20 @@ class Account(Facebook, Chrome):
                     groups,
                     count,
                     timeout - 1,
+                    driver,
                 )
         else:
             Facebook.print_report()  # print the accounts reports
 
-    def comment(self: Self, post_url: str, count: int = 50, timeout: int = 5) -> None:
-        driver: WebDriver = self.driver
+    def comment(
+        self: Self,
+        post_url: str,
+        count: int = 50,
+        timeout: int = 5,
+        driver: Union[WebDriver, None] = None,
+    ) -> None:
+        if driver is None:
+            driver = self.driver
 
         driver.get(post_url)
         time.sleep(10)
@@ -577,7 +592,12 @@ class Account(Facebook, Chrome):
                 )
 
                 if timeout > 0:
-                    return self.comment(post_url, count, timeout - 1)
+                    return self.comment(
+                        post_url,
+                        count,
+                        timeout - 1,
+                        driver,
+                    )
 
             else:
                 Facebook.print_report()
@@ -854,11 +874,40 @@ class Account(Facebook, Chrome):
 
                 screenshots.append(before)
 
+            threads: List[threading.Thread] = []
+
             if share_count > 0 and groups:
-                self.share(post_url, groups, share_count)
+
+                def share():
+                    chrome = Chrome(
+                        cookies_file=self.cookie_file,
+                        site_url="https://facebook.com",
+                        **self.kwargs,
+                    )
+                    self.share(post_url, groups, share_count, driver=chrome.driver)
+                    chrome.driver.close()
+
+                threads.append(threading.Thread(target=share))
 
             if comment_count > 0:
-                self.comment(post_url, comment_count)
+
+                def comment():
+                    chrome = Chrome(
+                        cookies_file=self.cookie_file,
+                        site_url="https://facebook.com",
+                        **self.kwargs,
+                    )
+
+                    self.comment(post_url, comment_count, driver=chrome.driver)
+                    chrome.driver.close()
+
+                threads.append(threading.Thread(target=comment))
+
+            for thread in threads:
+                thread.start()
+
+            for thread in threads:
+                thread.join()
 
             if send_invites:
                 self.invite(page_url)
