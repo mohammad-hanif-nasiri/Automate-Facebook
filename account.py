@@ -642,7 +642,7 @@ class Account(Facebook, Chrome):
         driver: WebDriver = self.driver
 
         driver.get("https://www.facebook.com/friends")
-        time.sleep(10)
+        time.sleep(15)
 
         def send_request():
             try:
@@ -680,7 +680,7 @@ class Account(Facebook, Chrome):
                         )
                         self.scroll_into_view(add_friend_button)
                         add_friend_button.click()
-                        time.sleep(2.5)
+                        time.sleep(2.5 + 1)
 
                         try:
                             suggestion.find_element(
@@ -725,7 +725,7 @@ class Account(Facebook, Chrome):
             )
             self.scroll_into_view(more_options_button, driver)
             more_options_button.click()
-            time.sleep(3.5)
+            time.sleep(5)
 
             invite_friends_button: WebElement = driver.find_element(
                 By.XPATH,
@@ -752,7 +752,7 @@ class Account(Facebook, Chrome):
                         "//div[contains(@aria-label, 'Select All')][@role='button']",
                     )
                     select_all_button.click()
-                    time.sleep(2.5)
+                    time.sleep(5)
 
                     send_invite_button: WebElement = driver.find_element(
                         By.XPATH,
@@ -906,8 +906,8 @@ class Account(Facebook, Chrome):
             for thread in threads:
                 thread.start()
 
-            for thread in threads:
-                thread.join()
+            # for thread in threads:
+            #     thread.join()
 
             if send_invites:
                 self.invite(page_url)
